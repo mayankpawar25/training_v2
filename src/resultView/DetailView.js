@@ -62,6 +62,7 @@ async function getStringKeys() {
 }
 
 async function getTheme(request) {
+    getStringKeys();
     let response = await actionSDK.executeApi(request);
     let context = response.context;
     console.log("getContext response: ");
@@ -262,8 +263,6 @@ function getResponders() {
         var matches = ResponderDate[itr].label.match(/\b(\w)/g); // [D,P,R]
         var initials = matches.join('').substring(0, 2); // DPR
 
-        console.log('name: ');
-        console.log(name);
         $(".tabs-content:first")
             .find("table#responder-table tbody")
             .append(
