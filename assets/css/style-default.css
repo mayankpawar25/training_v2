@@ -757,6 +757,10 @@ button:focus {
     background-color: rgb(98, 100, 167, 0.5);
 }
 
+.disabled {
+    cursor: not-allowed;
+}
+
 .add-options svg {
     margin-top: -4px;
 }
@@ -1267,4 +1271,20 @@ body {
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+.pr-35 {
+    padding-right: 35px;
+}
+
+.remove-option-q {
+    border-radius: 0px;
+    position: absolute;
+    right: 0px;
+    z-index: 10;
+    top: 2px;
+}
+
+.mt-04 {
+    margin-top: 4px;
 }

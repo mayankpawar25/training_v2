@@ -3,7 +3,7 @@ import * as actionSDK from "@microsoft/m365-action-sdk";
 // ActionSDK.APIs.actionViewDidLoad(true /*success*/ );
 
 // Fetching HTML Elements in Variables by ID.
-var $root = "";
+let $root = "";
 let row = {};
 let actionInstance = null;
 let summary_answer_resp = [];
@@ -14,7 +14,7 @@ async function getTheme(request) {
     console.log("getContext response: ");
     console.log(JSON.stringify(context));
     $("form.section-1").show();
-    var theme = context.theme;
+    let theme = context.theme;
     console.log(`theme: ${context.theme}`)
     $("link#theme").attr("href", "css/style-" + theme + ".css");
 
@@ -66,11 +66,11 @@ function getActionInstance(actionId) {
 function createBody() {
 
     /*  Check Expiry date time  */
-    var current_time = new Date().getTime();
+    let current_time = new Date().getTime();
     if (actionInstance.expiryTime <= current_time) {
-        var $card = $('<div class="card"></div>');
-        var $spDiv = $('<div class="col-sm-12"></div>');
-        var $sDiv = $('<div class="form-group">Quiz Expired...</div>');
+        let $card = $('<div class="card"></div>');
+        let $spDiv = $('<div class="col-sm-12"></div>');
+        let $sDiv = $('<div class="form-group">Quiz Expired...</div>');
         $card.append($spDiv);
         $spDiv.append($sDiv);
         $root.append($card);
@@ -81,21 +81,108 @@ function createBody() {
         $('#section1-training-title').html(actionInstance.displayName);
         $('#section1-training-description').html(actionInstance.customProperties[0].value);
 
+        /* Check if image upload for training */
+        let req = new actionSDK.GetAttachmentInfo.Request(actionInstance.customProperties[4].value);
+
+        actionSDK.executeApi(req)
+            .then(function(response) {
+                console.info("Attachment - Response: " + JSON.stringify(response));
+                $('#section1-training-description').after(`<img src="${response.attachmentInfo.downloadUrl}" class="img-responsive w-100"/>`);
+            })
+            .catch(function(error) {
+                console.error("AttachmentAction - Error: " + JSON.stringify(error));
+            });
+
+
         /* Create Text and Question summary */
         actionInstance.dataTables.forEach((dataTable) => {
             dataTable.dataColumns.forEach((data, ind) => {
                 if (data.valueType == 'LargeText') {
                     /* Call Text Section 1 */
-                    var counter = $('div.card-box').length;
-                    var text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
-                    $('div.section-1').append(text_section1);
-                    $('div.card-box:last').find('span.counter').text(counter);
-                    $('div.card-box:last').find('.text-description').text(text_title);
+                    let counter = $('div.card-box').length;
+                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+
+                    if (data.name.indexOf("photo") >= 0) {
+                        $('div.section-1').append(text_section3);
+                        $('div.card-box:last').find('span.counter').text(counter);
+                        $('div.card-box:last').find('.text-description').text(text_title);
+
+
+                        $('div.card-box:last').find('span.training-type').text('Photo');
+                        $('div.card-box:last').find("img.image-sec").attr('id', data.name);
+                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                        if (attachment != undefined) {
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            let filesAmount = Object.keys(attachment).length;
+                            actionSDK.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: " + JSON.stringify(response));
+                                    $("img#" + data.name).attr('src', response.attachmentInfo.downloadUrl);
+                                    if (filesAmount > 1)
+                                        $("img#" + data.name).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                });
+
+                            console.log('filesAmount: ' + filesAmount);
+                        }
+                    } else if (data.name.indexOf("document") >= 0) {
+                        $('div.section-1').append(text_section3);
+                        $('div.card-box:last').find('span.counter').text(counter);
+                        $('div.card-box:last').find('.text-description').text(text_title);
+                        $('div.card-box:last').find("img.image-sec").attr('id', data.name);
+                        $('div.card-box:last').find('span.training-type').text('Document');
+                        $("img#" + data.name).attr('src', 'images/doc.png');
+
+                        /* let dname = JSON.parse(data.options[0].displayName)
+                        let attachment = JSON.parse(dname.attachmentId);
+                        let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+
+                        actionSDK.executeApi(req)
+                            .then(function(response) {
+                                console.info("Attachment - Response: " + JSON.stringify(response));
+                                $("img#" + data.name).attr('src', response.attachmentInfo.downloadUrl);
+                                
+                            })
+                            .catch(function(error) {
+                                console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                            }); */
+
+                    } else if (data.name.indexOf("video") >= 0) {
+                        $('div.section-1').append(text_section3);
+                        $('div.card-box:last').find('span.counter').text(counter);
+                        $('div.card-box:last').find('.text-description').text(text_title);
+                        $('div.card-box:last').find('span.training-type').text('Video');
+                        $('div.card-box:last').find("img.image-sec").remove();
+                        $('div.card-box:last').attr("id", data.name);
+
+                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                        if (attachment != undefined) {
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            actionSDK.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: " + JSON.stringify(response));
+                                    $('#' + data.name).find(".img-thumbnail").append('<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="' + data.name + '" src="' + response.attachmentInfo.downloadUrl + '"></video></div>');
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                });
+                        }
+                    } else {
+                        /* text */
+                        $('div.section-1').append(text_section1);
+                        $('div.card-box:last').find('span.counter').text(counter);
+                        $('div.card-box:last').find('.text-description').text(text_title);
+
+                    }
 
                 } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                     /* Call Question Section 1 */
-                    var counter = $('div.card-box').length;
-                    var text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    let counter = $('div.card-box').length;
+                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
                     $('div.section-1').append(question_section1);
                     $('div.card-box:last').find('span.counter').text(counter);
                     $('div.card-box:last').find('.question-title').text(`Question with ${numbertowords(Object.keys(data.options).length)} options`);
@@ -104,21 +191,8 @@ function createBody() {
             });
         });
 
-
         $('div.section-1').append(`<div class="container pb-100"></div>`);
         $('div.section-1').after(footer_section1);
-
-        /* var $card = $('<div class=""></div>');
-        var $title = $("<h4>" + actionInstance.displayName + "</h4>");
-        var $hr = $("<hr>");
-        var $description = $('<p class="">' + actionInstance.customProperties[0].value + '</p>');
-        console.log(actionInstance);
-        $card.append($title);
-        $card.append($description);
-        $root.append($card);
-        createQuestionView();
-        $root.append($hr); */
-        return;
     }
 }
 
@@ -126,16 +200,25 @@ $(document).on('click', '.submit-form', function() {
     submitForm();
 })
 
+function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 function createQuestionView(index_num) {
-    var count = 1;
+    let count = 1;
     actionInstance.dataTables.forEach((dataTable) => {
         dataTable.dataColumns.forEach((question, ind) => {
 
             if (ind == index_num) {
-                var count = ind + 1;
-                var $card = $('<div class="card-box card-border card-bg"></div>');
+                let count = ind + 1;
+                let $card = $('<div class="card-box card-blank"></div>');
 
-                var $questionHeading = `<div class="form-group">
+                let $questionHeading = `<div class="form-group">
                     <div class="hover-btn ">
                         <label><strong><span class="counter">${count}</span>. <span class="training-type">Question</span></strong> </label>
                     </div>
@@ -145,7 +228,7 @@ function createQuestionView(index_num) {
                 <label><strong>${question.displayName}</strong></label>`;
 
                 $card.append($questionHeading);
-                var choice_occurance = 0;
+                let choice_occurance = 0;
                 /* Check multichoice or single choice options  */
                 if (question.valueType == "SingleOption") {
                     choice_occurance = 1;
@@ -159,7 +242,7 @@ function createQuestionView(index_num) {
                 //add radio button
                 if (choice_occurance > 1) {
                     question.options.forEach((option) => {
-                        var $radioOption = getCheckboxButton(
+                        let $radioOption = getCheckboxButton(
                             option.displayName,
                             question.name,
                             option.name
@@ -169,7 +252,7 @@ function createQuestionView(index_num) {
                 } else {
                     //add checkbox button
                     question.options.forEach((option) => {
-                        var $radioOption = getRadioButton(
+                        let $radioOption = getRadioButton(
                             option.displayName,
                             question.name,
                             option.name
@@ -184,22 +267,25 @@ function createQuestionView(index_num) {
 
         count++;
     });
+    if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+        $('#next').text('Check').attr('id', 'check');
+    }
 }
 
 function getRadioButton(text, name, id) {
-    var $div_data = $(`<div class="form-group radio-section custom-radio-outer" id="${id}" columnId="${name}" ><label class="custom-radio"><input type="radio" name="${name}" id="${id}"> <span class="radio-block"></span> ${text}</label></div>`)
+    let $div_data = $(`<div class="form-group radio-section custom-radio-outer" id="${id}" columnId="${name}" ><label class="custom-radio"><input type="radio" name="${name}" id="${id}"> <span class="radio-block"></span> ${text}</label></div>`)
     return $div_data;
 }
 
 function getCheckboxButton(text, name, id) {
-    /* var $oDiv = $('<div class="form-group radio-section custom-check-outer" id="' + id + '" columnId="' + name + '" ></div>');
-    var $soDiv = $('<label class="custom-check form-check-label"></label>');
-    var radiobox = '<input type="checkbox" class="form-check-input" name="' + name + '" id="' + id + '">';
-    var $lDiv = $(radiobox + ' <span class="checkmark"></span>' + text);
+    /* let $oDiv = $('<div class="form-group radio-section custom-check-outer" id="' + id + '" columnId="' + name + '" ></div>');
+    let $soDiv = $('<label class="custom-check form-check-label"></label>');
+    let radiobox = '<input type="checkbox" class="form-check-input" name="' + name + '" id="' + id + '">';
+    let $lDiv = $(radiobox + ' <span class="checkmark"></span>' + text);
     $oDiv.append($soDiv);
     $soDiv.append($lDiv);
     return $oDiv; */
-    var div_data = $(`<div class="form-group radio-section custom-check-outer" id="${id}" columnId="${name}" ><label class="custom-check form-check-label"><input type="checkbox" class="form-check-input" name="${name}" id="${id}"><span class="checkmark"></span> ${text}</label></div>`)
+    let div_data = $(`<div class="form-group radio-section custom-check-outer" id="${id}" columnId="${name}" ><label class="custom-check form-check-label"><input type="checkbox" class="form-check-input" name="${name}" id="${id}"><span class="checkmark"></span> ${text}</label></div>`)
     return div_data;
 }
 
@@ -263,15 +349,25 @@ function loadSummaryView() {
             dataTable.dataColumns.forEach((data, ind) => {
                 if (data.valueType == 'LargeText') {
                     /* Call Text Section 1 */
-                    var counter = $('.section-3 div.card-box').length;
-                    var text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    let counter = $('.section-3 div.card-box').length;
+                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
                     $('div.section-3 .container:first').append(text_section1);
                     $('div.card-box:last').find('span.counter').text(counter);
                     $('div.card-box:last').find('.text-description').text(text_title);
+
+                    if (data.name.indexOf("photo") >= 0) {
+                        $('div.card-box:last').find('.training-type').text('Photo');
+                    } else if (data.name.indexOf("video") >= 0) {
+                        $('div.card-box:last').find('.training-type').text('Video');
+
+                    } else if (data.name.indexOf("document") >= 0) {
+                        $('div.card-box:last').find('.training-type').text('Document');
+
+                    }
                 } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                     /* Call Question Section 1 */
-                    var counter = $('.section-3 div.card-box').length;
-                    var text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    let counter = $('.section-3 div.card-box').length;
+                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
                     $('div.section-3 .container:first').append(question_section1);
                     $('div.card-box:last').find('span.counter').text(counter);
                     $('div.card-box:last').find('.question-title').text(`Question with ${numbertowords(Object.keys(data.options).length)} options`);
@@ -305,10 +401,10 @@ function submitForm() {
 }
 
 /* function radiobuttonclick(questionResponse, colomnId) {
-    var data = [];
+    let data = [];
     row = {};
     $.each($("input[type='checkbox']:checked"), function(ind, v) {
-        var col = $(this).parents("div.form-group").attr("columnid");
+        let col = $(this).parents("div.form-group").attr("columnid");
         data.push($(this).attr("id"));
 
         if (!row[col]) row[col] = [];
@@ -318,7 +414,7 @@ function submitForm() {
     });
 
     $.each($("input[type='radio']:checked"), function() {
-        var col = $(this).parents("div.form-group").attr("columnid");
+        let col = $(this).parents("div.form-group").attr("columnid");
 
         if (!row[col]) row[col] = [];
         row[col] = $(this).attr("id");
@@ -333,14 +429,14 @@ function submitForm() {
 
 function generateGUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        var r = (Math.random() * 16) | 0,
+        let r = (Math.random() * 16) | 0,
             v = c == "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
 }
 
 function getDataRow(actionId) {
-    var data = {
+    let data = {
         id: generateGUID(),
         actionId: actionId,
         dataTableId: "TestDataSet",
@@ -352,11 +448,11 @@ function getDataRow(actionId) {
 }
 
 function addDataRows(actionId) {
-    var addDataRowRequest = new actionSDK.AddActionDataRow.Request(
+    let addDataRowRequest = new actionSDK.AddActionDataRow.Request(
         getDataRow(actionId)
     );
-    var closeViewRequest = new actionSDK.CloseView.Request();
-    var batchRequest = new actionSDK.BaseApi.BatchRequest([
+    let closeViewRequest = new actionSDK.CloseView.Request();
+    let batchRequest = new actionSDK.BaseApi.BatchRequest([
         addDataRowRequest,
         closeViewRequest,
     ]);
@@ -374,26 +470,129 @@ function createTrainingSection(index_num) {
     /* Create Text and Question summary */
     actionInstance.dataTables.forEach((dataTable, index) => {
         if (index == 0) {
-            var y = Object.keys(dataTable.dataColumns).length;
+            let y = Object.keys(dataTable.dataColumns).length;
             $('#y').text(y);
 
             dataTable.dataColumns.forEach((data, ind) => {
                 if (ind == index_num) {
-                    var x = ind + 1;
+                    let x = ind + 1;
                     $('#x').text(x);
 
                     if (data.valueType == 'LargeText') {
                         /* Call Text Section 1 */
                         $('div.section-2 > .container:first').append(text_section2);
-                        var counter = $('div.section-2 .container > div.card-box').length;
-                        var text_title = data.displayName;
+                        let counter = $('div.section-2 .container > div.card-box').length;
+                        let text_title = data.displayName;
                         $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
                         $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(text_title);
                         console.log(`counter tet ${counter}`);
 
+                        if (data.name.indexOf("photo") >= 0) {
+
+                            $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text('Photo');
+
+                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            let $carousel = $('<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel"></div>');
+                            let $ol_section = $('<ol class="carousel-indicators"></ol>');
+                            let $carousel_inner = $('<div class="carousel-inner"></div>');
+
+                            if (attachment != undefined) {
+                                let filesAmount = Object.keys(attachment).length;
+
+                                $carousel.append($ol_section);
+                                $carousel.append($carousel_inner);
+
+                                console.log('filesAmount: ' + filesAmount);
+
+                                let count = 0;
+                                $.each(attachment, function(i, att) {
+                                    let req = new actionSDK.GetAttachmentInfo.Request(att);
+                                    console.log('count: ' + count);
+
+                                    actionSDK.executeApi(req)
+                                        .then(function(response) {
+
+                                            let $img_div = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
+                                                            <img class="d-block w-100" src="${response.attachmentInfo.downloadUrl}" alt="${count+1} slide">
+                                                        </div>`);
+                                            $carousel_inner.append($img_div);
+                                            console.log('count:' + count);
+                                            console.log('filesAmount:' + filesAmount);
+
+                                            if (count == (filesAmount - 1)) {
+                                                console.log('start here:');
+                                                $carousel.append(`<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="sr-only">Previous</span>
+                                                </a>
+                                                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="sr-only">Next</span>
+                                                </a>`);
+
+                                                $('div.section-2 .container:first div.card-box:visible').find('.text-description').before($carousel);
+                                                $('.carousel').carousel();
+                                                $('.carousel').after('<hr>');
+                                            }
+                                            console.log($carousel);
+                                            console.info("Attachment - Response: " + JSON.stringify(response));
+                                            count++;
+                                        })
+                                        .catch(function(error) {
+                                            console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                        });
+                                })
+
+                            }
+                        } else if (data.name.indexOf("document") >= 0) {
+                            $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text('Document');
+                            // $('div.section-2 > .container:first > div.card-box:last').find('.text-description').before("<img id='" + data.name + "' src='images/doc.png' >");
+
+                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+
+                            actionSDK.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: " + JSON.stringify(response));
+                                    $('div.section-2 > .container:first > div.card-box:last').find(".text-description").after('<hr><a href="' + response.attachmentInfo.downloadUrl + '" class="teams-link" download>View Document</a>');
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                });
+
+                        } else if (data.name.indexOf("video") >= 0) {
+                            $('div.section-1').append(text_section3);
+                            $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
+                            $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(text_title);
+                            $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text('Video');
+                            $('div.section-2 > .container:first > div.card-box:last').find("img.image-sec").remove();
+                            $('div.section-2 > .container:first > div.card-box:last').attr("id", data.name);
+
+                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            actionSDK.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: " + JSON.stringify(response));
+                                    $('div.section-2 > .container:first > div.card-box:last').find(".text-description").before('<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="' + data.name + '" src="' + response.attachmentInfo.downloadUrl + '"></video></div><hr>');
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                });
+
+                        } else {
+                            /* text */
+                            $('div.section-1').append(text_section1);
+                            $('div.card-box:last').find('span.counter').text(counter);
+                            $('div.card-box:last').find('.text-description').text(text_title);
+
+                        }
+
                     } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                         createQuestionView(index_num);
-                        var counter = $('div.section-2 .container > div.card-box').length;
+                        let counter = $('div.section-2 .container > div.card-box').length;
                         $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
                         console.log(`counter  ${counter}`);
                     }
@@ -423,18 +622,163 @@ $(document).on('click', '#start', function() {
 
 });
 
+$(document).on('click', '#check', function() {
+    /* Question Validations */
+    let data = [];
+    let answerKeys = isJson(actionInstance.customProperties[5].value) ? JSON.parse(actionInstance.customProperties[5].value) : actionInstance.customProperties[5].value;
+
+    let correct_ans_arr = [];
+    let selected_answer = [];
+    let check_counter = 0;
+    let correct_answer = false;
+    let attr_name = '';
+
+    let is_checked = false;
+
+    $('div.card-box:visible').find("input[type='checkbox']:checked").each(function(ind, ele) {
+        if ($(ele).is(':checked')) {
+            check_counter++;
+            // selected_answer.push($.trim($(ele).parent('label').text()));
+            selected_answer.push($.trim($(ele).attr('id')));
+            attr_name = $(ele).attr('name');
+            data.push($(this).attr("id"));
+
+            is_checked = true;
+        }
+    });
+
+    if (!row[(pagination + 1)]) {
+
+        row[(pagination + 1)] = [];
+    }
+    row[(pagination + 1)] = JSON.stringify(data);
+
+    $('div.card-box:visible').find("input[type='radio']:checked").each(function(ind, ele) {
+        if ($(ele).is(':checked')) {
+            check_counter++;
+            selected_answer.push($.trim($(ele).attr('id')));
+            attr_name = $(ele).attr('name');
+
+            if (!row[(pagination + 1)]) row[(pagination + 1)] = [];
+            row[(pagination + 1)] = $(this).attr("id");
+
+            is_checked = true;
+        }
+    });
+
+    if (check_counter <= 0) {
+        $('#next').prop('disabled', true);
+    } else {
+        $('#next').prop('disabled', false);
+    }
+
+    /* Validate if show answer is Yes */
+    if (is_checked == true) {
+        is_checked = false;
+        let ans_res = [];
+        $.each(selected_answer, function(i, selected_subarray) {
+            if ($.inArray(selected_subarray, answerKeys[(attr_name - 1)]) !== -1) {
+                ans_res.push("true");
+            } else {
+                ans_res.push("false");
+            }
+        });
+
+        if ((answerKeys[(attr_name - 1)].length == ans_res.length) && ($.inArray("false", ans_res) == -1)) {
+            correct_answer = true
+        } else {
+            correct_answer = false;
+        }
+
+        summary_answer_resp.push(correct_answer);
+
+        $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
+            correct_ans_arr.push($.trim($('#' + subarr).text()));
+        });
+
+        let correct_value = correct_ans_arr.join();
+
+        if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+            if (correct_answer == true) {
+                $('div.card-box:last').find('.result').remove();
+                $('div.card-box:last').append(`
+                        <div class="result">
+                        <hr>
+                            <div class="form-group">
+                                <div class="hover-btn ">
+                                    <label><strong><span class="question-title">Result</span></strong> </label>
+                                    <span class="float-right result"><span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> Correct</span></span>
+                                    <button type="button" class="close remove-question" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            
+                                        </span>
+                                        <span class="sr-only">Close</span>
+                                    </button>
+                                </div>
+                                <div class="clearfix"></div>
+                                <hr>
+                            </div>
+                            <label><strong>Correct answer is: </strong> <span class="question-title-main">${correct_value}</span></label>
+                        </div>`);
+
+                $('#check').text('Next').attr('id', 'next');
+
+            } else {
+                $('div.card-box:last').find('.result').remove();
+                $('div.card-box:last').append(`
+                        <div class="result">
+                        <hr>
+                            <div class="form-group">
+                                <div class="hover-btn ">
+                                    <label><strong><span class="question-title">Result</span></strong> </label><span class="float-right result"><span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> Incorrect</span></span>
+                                    <button type="button" class="close remove-question" data-dismiss="alert">
+                                        <span aria-hidden="true">
+                                            
+                                        </span>
+                                        <span class="sr-only">Close</span>
+                                    </button>
+                                </div>
+                                <div class="clearfix"></div>
+                                <hr>
+                            </div>
+                            <label><strong>Correct answer is: </strong> <span class="question-title-main">${correct_value}</span></label>
+                        </div>`);
+
+                $('#check').text('Next').attr('id', 'next');
+            }
+        }
+    } else {
+        $('#exampleModalCenter').find('#exampleModalLongTitle').html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Note!');
+        $('#exampleModalCenter').find('.modal-body').html(`<label>Please choose any choice<label>`);
+        $('#exampleModalCenter').find('.modal-footer').html('<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Continue</button>');
+        $('#exampleModalCenter').find('#save-changes').hide();
+        $('#exampleModalCenter').modal('show');
+
+        $("#exampleModalCenter").on("hidden.bs.modal", function() {
+            $('#next').attr('disabled', false);
+            // $('.card-box.card-border.card-bg:visible').find('input').prop('disabled', false);
+        });
+    }
+
+});
+
 $(document).on('click', '#next', function() {
-    var data = [];
+    let data = [];
+    let limit = $('#y').text();
 
     /* Validate */
     if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
         /* Question Validations */
-        var selected_answer = [];
-        var check_counter = 0;
-        var correct_answer = false;
-        var attr_name = '';
+        let answerKeys = isJson(actionInstance.customProperties[5].value) ? JSON.parse(actionInstance.customProperties[5].value) : actionInstance.customProperties[5].value;
+        let correct_ans_arr = [];
+        let selected_answer = [];
+        let check_counter = 0;
+        let correct_answer = false;
+        let attr_name = '';
 
-        var is_checked = false;
+        let is_checked = false;
+
+        console.log('Question: ');
 
         $('div.card-box:visible').find("input[type='checkbox']:checked").each(function(ind, ele) {
             if ($(ele).is(':checked')) {
@@ -470,69 +814,72 @@ $(document).on('click', '#next', function() {
         }
 
         /* Validate if show answer is Yes */
-        var answerKeys = JSON.parse(actionInstance.customProperties[4].value);
-        var correct_ans_arr = [];
-
-        $.each(selected_answer, function(i, selected_subarray) {
-            console.log(answerKeys.toString());
-            if ($.inArray(selected_subarray, answerKeys[(attr_name - 1)]) !== -1) {
-                correct_answer = true;
-            }
-        });
-
-        summary_answer_resp.push(correct_answer)
-
-        /* console.log(attr_name - 1);
-        console.log(answerKeys[(attr_name - 1)].toString()); */
-        $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
-            correct_ans_arr.push($.trim($('#' + subarr).text()));
-        });
-
-
-
-        var correct_value = correct_ans_arr.join();
         if (is_checked == true) {
-            pagination++;
-            if (correct_answer == true) {
-                if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").attr('disabled') !== "disabled") {
-                    $('#exampleModalCenter').find('#exampleModalLongTitle').html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Answer response!');
-                    $('#exampleModalCenter').find('.modal-body').html(`<label class="text-success"><i class="fa fa-check" aria-hidden="true"></i> <strong>Correct</strong></label><p><label>Your Answer</label><br>${correct_value}</p>`);
-                    $('#exampleModalCenter').find('.modal-footer').html('<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Continue</button>');
-                    $('#exampleModalCenter').find('#save-changes').hide();
-                    $('#exampleModalCenter').modal('show');
-
-                    $("#exampleModalCenter").on("hidden.bs.modal", function() {
-                        // put your default event here
-                        // addDataRows(response.context.actionId);
-                        $('div.card-box:visible').find("input").each(function(ind, ele) {
-                            $(ele).prop('disabled', true);
-                        });
-
-                        var limit = $('#y').text();
-                        console.log(`${pagination} < ${limit}`);
-
-                        if (pagination < limit) {
-                            $('#next').prop('disabled', false);
-                            $('#back').prop('disabled', false);
-
-                            $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-                            console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
-                            if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
-                                createTrainingSection(pagination);
-                            } else {
-                                console.log(pagination);
-                                $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                                console.log(pagination + 1);
-                            }
-                            $('#x').text((pagination + 1));
-
-                        } else {
-                            /* Show Summary */
-                            // $('#next').prop('disabled', true);
-                        }
-                    });
+            is_checked = false;
+            let ans_res = [];
+            $.each(selected_answer, function(i, selected_subarray) {
+                if ($.inArray(selected_subarray, answerKeys[(attr_name - 1)]) !== -1) {
+                    ans_res.push("true");
                 } else {
-                    var limit = $('#y').text();
+                    ans_res.push("false");
+                }
+            });
+
+            if ((answerKeys[(attr_name - 1)].length == ans_res.length) && ($.inArray("false", ans_res) == -1)) {
+                correct_answer = true
+            } else {
+                correct_answer = false;
+            }
+
+            summary_answer_resp.push(correct_answer);
+
+            $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
+                correct_ans_arr.push($.trim($('#' + subarr).text()));
+            });
+
+            let correct_value = correct_ans_arr.join();
+
+            if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+                if (correct_answer == true) {
+                    /* If Correct Answer */
+                    pagination++;
+                    $('div.section-2').find('div.card-box:visible').find("input").each(function(ind, ele) {
+                        $(ele).parent('label').attr('disabled', true);
+                        if ($(ele).parents('div.custom-radio-outer').length > 0)
+                            $(ele).parents('div.custom-radio-outer').addClass('disabled');
+                        else
+                            $(ele).parents('div.custom-check-outer').addClass('disabled');
+                    });
+                    let limit = $('#y').text();
+                    console.log(`${pagination} < ${limit}`);
+                    if (pagination < limit) {
+                        $('#next').prop('disabled', false);
+                        $('#back').prop('disabled', false);
+
+                        $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
+                        console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
+                        if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
+                            createTrainingSection(pagination);
+                        } else {
+                            console.log(pagination);
+                            $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
+                            console.log(pagination + 1);
+                            setTimeout(
+                                function() {
+                                    if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
+                                        if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+                                            $('#next').text('Check').attr('id', 'check');
+                                        }
+                                    }
+                                }, 500);
+                        }
+                        $('#x').text((pagination + 1));
+
+                    }
+                } else {
+                    /* If Incorrect */
+                    let limit = $('#y').text();
+                    pagination++;
                     console.log(`${pagination} < ${limit}`);
 
                     if (pagination < limit) {
@@ -547,6 +894,14 @@ $(document).on('click', '#next', function() {
                             console.log(pagination);
                             $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
                             console.log(pagination + 1);
+                            setTimeout(
+                                function() {
+                                    if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
+                                        if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+                                            $('#next').text('Check').attr('id', 'check');
+                                        }
+                                    }
+                                }, 500);
                         }
                         $('#x').text((pagination + 1));
                     } else {
@@ -555,71 +910,43 @@ $(document).on('click', '#next', function() {
                     }
                 }
             } else {
-                if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").attr('disabled') !== "disabled") {
+                /* If Question is not answerable */
+                let limit = $('#y').text();
+                pagination++;
+                console.log(`${pagination} < ${limit}`);
 
-                    $('#exampleModalCenter').find('#exampleModalLongTitle').html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Answer response!');
-                    $('#exampleModalCenter').find('.modal-body').html(`<label class="text-danger"><i class="fa fa-remove" aria-hidden="true"></i> <strong>Incorrect</strong></label><p><label>Correct Answer</label><br>${correct_value}</p>`);
-                    $('#exampleModalCenter').find('.modal-footer').html('<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Continue</button>');
-                    $('#exampleModalCenter').find('#save-changes').hide();
-                    $('#exampleModalCenter').modal('show');
 
-                    $("#exampleModalCenter").on("hidden.bs.modal", function() {
-                        // put your default event here
-                        $('div.card-box:visible').find("input").each(function(ind, ele) {
-                            $(ele).prop('disabled', true);
-                        });
-                        var limit = $('#y').text();
-                        console.log(`${pagination} < ${limit}`);
+                if (pagination < limit) {
+                    $('#next').prop('disabled', false);
+                    $('#back').prop('disabled', false);
 
-                        if ((pagination) < limit) {
-                            $('#next').prop('disabled', false);
-                            $('#back').prop('disabled', false);
-
-                            $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-                            console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
-                            if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
-                                createTrainingSection(pagination);
-                            } else {
-                                console.log(pagination);
-                                $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                                console.log(pagination + 1);
-                            }
-                            $('#x').text((pagination + 1));
-
-                            summary_answer_resp.push(true);
-
-                        } else {
-                            /* Show Summary */
-                            // $('#next').prop('disabled', true);
-                        }
-                    });
-                } else {
-                    var limit = $('#y').text();
-                    console.log(`${pagination} < ${limit}`);
-
-                    if ((pagination) < limit) {
-                        $('#next').prop('disabled', false);
-                        $('#back').prop('disabled', false);
-
-                        $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-                        console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
-                        if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
-                            createTrainingSection(pagination);
-                        } else {
-                            console.log(pagination);
-                            $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                            console.log(pagination + 1);
-                        }
-                        $('#x').text((pagination + 1));
-
-                        summary_answer_resp.push(true);
-
+                    $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
+                    console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
+                    if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
+                        createTrainingSection(pagination);
                     } else {
-                        /* Show Summary */
-                        $('#next').prop('disabled', true);
-                        loadSummaryView();
+                        console.log(pagination);
+                        $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
+                        console.log(pagination + 1);
+                        setTimeout(
+                            function() {
+                                if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
+                                    if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+                                        $('#next').text('Check').attr('id', 'check');
+                                    }
+                                }
+                            }, 500);
                     }
+                    $('#x').text((pagination + 1));
+
+                    summary_answer_resp.push(true);
+
+                } else {
+                    /* Show Summary */
+                    $('#next').prop('disabled', true);
+                    loadSummaryView();
                 }
+
 
             }
         } else {
@@ -635,12 +962,13 @@ $(document).on('click', '#next', function() {
             });
         }
 
-        if ((pagination + 1) >= limit) {
+        if (pagination >= limit) {
             loadSummaryView();
         }
     } else {
+        /* Not Question Type */
         pagination++;
-        var limit = $('#y').text();
+        limit = $('#y').text();
         console.log(`${pagination} < ${limit}`);
         row[pagination] = 'question' + pagination;
 
@@ -657,36 +985,58 @@ $(document).on('click', '#next', function() {
                 console.log(pagination);
                 $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
                 console.log(pagination + 1);
+                setTimeout(
+                    function() {
+                        if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
+                            if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+                                $('#next').text('Check').attr('id', 'check');
+                            }
+                        }
+                    }, 500);
             }
             $('#x').text((pagination + 1));
         } else {
             /* Show Summary */
             $('#next').prop('disabled', true);
+            loadSummaryView();
         }
         if (pagination >= limit) {
             loadSummaryView();
         }
     }
+
 });
 
 $(document).on('click', '#back', function() {
     console.log(`${pagination} <= 1`)
+    if ($('#check').length > 0) {
+        $('#check').text('Next').attr('id', 'next');
+    }
     if (pagination < 1) {
         $('#back').prop('disabled', true);
     } else {
+
         $('#back').prop('disabled', false);
         $('#next').prop('disabled', false);
 
         $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').hide();
         $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').show();
 
+        setTimeout(
+            function() {
+                if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
+                    if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
+                        $('#next').text('Check').attr('id', 'check');
+                    }
+                }
+            }, 500);
         $('#x').text(pagination);
         pagination--;
     }
 });
 // *********************************************** OTHER ACTION END***********************************************
 
-var footer_section = `<div class="footer" style="display:none;">
+let footer_section = `<div class="footer" style="display:none;">
         <div class="footer-padd bt">
             <div class="container ">
                 <div class="row">
@@ -699,7 +1049,7 @@ var footer_section = `<div class="footer" style="display:none;">
         </div>
     </div>`;
 
-var modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+let modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -720,25 +1070,46 @@ var modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-
         </div>
     </div>`;
 
-var head_section1 = `<div class="card-box card-bg card-border">
+let head_section1 = `<div class="card-box card-bg card-border">
                             <h4 id="section1-training-title">My Training title</h4>
-                            <p class="mb0" id="section1-training-description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
+                            <p class="text-justify" id="section1-training-description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
                                 specimen book.</p>
                         </div>`;
 
-var text_section1 = `<div class="card-box card-bg card-border">
+let text_section1 = `<div class="card-box card-bg card-border">
                         <div class="form-group">
                             <div class="hover-btn ">
-                                <label><strong><span class="counter">1</span>. <span class="training-type">Text</span></strong> </label><span class="float-right result"></span>
+                                <label class="mb0"><strong><span class="counter">1</span>. <span class="training-type">Text</span></strong> </label><span class="float-right result"></span>
                             </div>
                             <div class="clearfix"></div>
                             <hr>
                         </div>
-                        <p class="mb0 text-description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
+                        <p class="mb0 text-description text-justify">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
                             specimen book.</p>
                     </div>`;
 
-var question_section1 = `<div class="card-box card-bg card-border">
+let text_section3 = `<div class="card-box card-bg card-border">
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-9">
+                                <div class="hover-btn ">
+                                    <label class="mb0"><strong><span class="counter">1</span>. <span class="training-type">Text</span></strong> </label><span class="float-right result"></span>
+                                    <hr>
+                                    <p class="mb0 text-description text-justify">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
+                        specimen book.</p>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="img-thumbnail">
+                                    <img class="image-sec">                
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>                
+                </div>`;
+
+let question_section1 = `<div class="card-box card-bg card-border">
                             <div class="form-group">
                                 <div class="hover-btn ">
                                     <label><strong><span class="counter">2</span>. <span class="question-title">Question with two option</span></strong> </label><span class="float-right result"></span>
@@ -755,7 +1126,7 @@ var question_section1 = `<div class="card-box card-bg card-border">
                             <label><strong><span class="question-title-main">My new Question</span></strong></label>
                         </div>`;
 
-var footer_section1 = `<div class="footer section-1-footer">
+let footer_section1 = `<div class="footer section-1-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
                                     <div class="row">
@@ -767,10 +1138,10 @@ var footer_section1 = `<div class="footer section-1-footer">
                             </div>
                         </div>`;
 
-var text_section2 = `<div class="card-box card-bg card-border">
+let text_section2 = `<div class="card-box card-bg card-border">
                         <div class="form-group">
                             <div class="hover-btn ">
-                                <label><strong><span class="counter">1</span>. Text</strong> </label>
+                                <label><strong><span class="counter">1</span>. <span class="section-type-title">Text</span></strong> </label>
                                 <button type="button" class="close remove-question" data-dismiss="alert">
                                     <span aria-hidden="true">
                                         
@@ -781,11 +1152,11 @@ var text_section2 = `<div class="card-box card-bg card-border">
                             <div class="clearfix"></div>
                             <hr>
                         </div>
-                        <p class="mb0 text-description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
+                        <p class="mb0 text-description text-justify">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
                             specimen book.</p>
                     </div>`;
-var question_section2 = ``;
-var footer_section2 = `<div class="footer section-2-footer">
+
+let footer_section2 = `<div class="footer section-2-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
                                     <div class="row">
@@ -797,7 +1168,7 @@ var footer_section2 = `<div class="footer section-2-footer">
                             </div>
                         </div>`;
 
-var footer_section3 = `<div class="footer section-3-footer">
+let footer_section3 = `<div class="footer section-3-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
                                     <div class="row">

@@ -1,8 +1,8 @@
 import * as actionSDK from "@microsoft/m365-action-sdk";
 import { Localizer } from '../common/ActionSdkHelper';
 
-// var question_counter = 1
-var questionCount = 0;
+// let question_counter = 1
+let questionCount = 0;
 let questions = new Array();
 let validate = true;
 let setting_text = '';
@@ -50,7 +50,7 @@ $(document).on("click", "#add-questions", function() {
         $('form.sec1 > div.question-section').find('.container').addClass('pt-4');
     }
 
-    var question_counter = 0;
+    let question_counter = 0;
     $("div.question-container:visible").each(function(index, elem) {
         question_counter = index + 1;
         $(elem)
@@ -64,7 +64,7 @@ $(document).on("click", "#add-questions", function() {
 $(document).on("click", "#add-questions-same-section", function() {
     $(".slideup-content").slideUp("slow", function() {});
 
-    var question_counter;
+    let question_counter;
     $('form.sec1').append(questions_section);
     $('form > .question_button').remove();
 
@@ -96,8 +96,8 @@ $(document).on("click", "#back-question", function() {
 $(document).on("click", ".remove-question", function() {
     $(".slideup-content").slideUp("slow", function() {});
 
-    var element = $(this);
-    var data_id = $(this).parents('.question-container').attr('id');
+    let element = $(this);
+    let data_id = $(this).parents('.question-container').attr('id');
 
     if ($("div.question-container:visible").length > 1) {
         $("#exampleModalCenter")
@@ -132,10 +132,10 @@ $(document).on("click", ".remove-question", function() {
 $(document).on("click", "#delete-question", function() {
     $(".slideup-content").slideUp("slow", function() {});
 
-    var element = $(this).attr('data-id');
+    let element = $(this).attr('data-id');
     $("#exampleModalCenter").modal("hide");
     $('#' + element).parents('div.question-section').remove();
-    var question_counter;
+    let question_counter;
     $("div.question-container:visible").each(function(index, elem) {
         question_counter = index + 1;
         $(elem).find("span.question-number").text(question_counter);
@@ -185,11 +185,11 @@ $(document).on("click", ".add-options", function() {
     $(this).parents(".container").find("div.option-div:last").after(opt.clone());
     // $("div.input-group.mb-2.option-div").last().find("input");
 
-    var selector = $(this).parents("div.container");
+    let selector = $(this).parents("div.container");
     $(selector)
-        .find('div.option-div > div.input-group > input[type="text"]')
+        .find('div.option-div div.input-group input[type="text"]')
         .each(function(index, elem) {
-            var counter = index + 1;
+            let counter = index + 1;
             $(elem).attr({
                 placeholder: "Option " + counter,
             });
@@ -208,12 +208,12 @@ $(document).on("click", ".remove-option", function(eve) {
     if (
         $(this).parents("div.question-container").find("div.option-div").length > 2
     ) {
-        var selector = $(this).closest("div.container");
+        let selector = $(this).closest("div.container");
         $(this).parents("div.option-div").remove();
         $(selector)
-            .find('div.option-div > div.input-group > input[type="text"]')
+            .find('div.option-div div.input-group input[type="text"]')
             .each(function(index, elem) {
-                var counter = index + 1;
+                let counter = index + 1;
                 $(elem).attr({
                     placeholder: "Option " + counter,
                 });
@@ -259,9 +259,9 @@ $(document).on("click", "#question-done", function() {
     $('#question-done').prop('disabled', true);
 
     /* Validate */
-    var error_text = "";
-    var question_number = 0;
-    var error = false;
+    let error_text = "";
+    let question_number = 0;
+    let error = false;
     validate = true;
     $("input[type='text']").removeClass("danger");
     $("label.label-alert").remove();
@@ -270,7 +270,7 @@ $(document).on("click", "#question-done", function() {
     $("form")
         .find("input[type='text']")
         .each(function() {
-            var element = $(this);
+            let element = $(this);
             if (element.val() == "") {
                 validate = false;
 
@@ -303,16 +303,16 @@ $(document).on("click", "#question-done", function() {
             }
         });
 
-    var questionCount = $("form div.question-section").find("div.container.question-container").length;
+    let questionCount = $("form div.question-section").find("div.container.question-container").length;
     questions = new Array();
 
-    for (var i = 1; i <= questionCount; i++) {
-        var is_selected = 0;
+    for (let i = 1; i <= questionCount; i++) {
+        let is_selected = 0;
 
         $(".question-section > #question" + i)
             .find("div.option-div")
             .each(function(index, elem) {
-                var count = index + 1;
+                let count = index + 1;
                 if (
                     $(".question-section > #question" + i)
                     .find("#check" + count)
@@ -354,27 +354,27 @@ $(document).on("click", "#question-done", function() {
         $('.section-2-footer').show();
 
         /* Create Question Section Here */
-        for (var j = 1; j <= questionCount; j++) {
+        for (let j = 1; j <= questionCount; j++) {
 
-            var text_number = parseInt($("div.training-card-section").length);
+            let text_number = parseInt($("div.training-card-section").length);
 
             console.log(`text_number: ${text_number}`);
 
             /*  Get selected Answer */
-            var correct = [];
+            let correct = [];
 
             /* Looping for options */
             $("#question" + j)
                 .find("div.option-div")
                 .each(function(index, elem) {
-                    var count = index + 1;
+                    let count = index + 1;
 
                     if (
                         $("#question" + j)
                         .find("#check" + count)
                         .is(":checked")
                     ) {
-                        var opt_data = $(elem).find('input[id^="option"]').val();;
+                        let opt_data = $(elem).find('input[id^="option"]').val();;
 
                         // if it is checked
                         correct.push(opt_data);
@@ -384,11 +384,11 @@ $(document).on("click", "#question-done", function() {
 
 
 
-            var question_inputs = $("#question" + j).find('div.card-box').clone();
-            var question_text = $("#question" + j).find('#question-title').val();
-            var correct_answer = correct.join(', ');
+            let question_inputs = $("#question" + j).find('div.card-box').clone();
+            let question_text = $("#question" + j).find('#question-title').val();
+            let correct_answer = correct.join(', ');
 
-            var options_counter = numbertowords($('#question' + j).find('input[id^="option"]').length);
+            let options_counter = numbertowords($('#question' + j).find('input[id^="option"]').length);
 
             $("form.sec1 div.section-2:visible div#root .card-box.training-card-section:last").after(`<div class="card-box card-bg card-border training-card-section section-div question-section-div">
                 <div class="form-group">
@@ -462,8 +462,8 @@ $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", 
 
 /* Add Text */
 $(document).on("click", "#add-text", function() {
-    var text_number = parseInt($("div.training-card-section").length);
-    var text_data = '';
+    let text_number = parseInt($("div.training-card-section").length);
+    let text_data = '';
 
     $(".slideup-content").slideUp("slow", function() {});
 
@@ -483,8 +483,8 @@ $(document).on("click", "#add-text", function() {
     $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
             <div class="card-box card-bg card-border training-card-section section-div text-section-div">
                 <div class="form-group">
-                    <div class="hover-btn h-32">
-                        <label><strong><span class="counter">${text_number}</span>. <span class="type">Text</span></strong> </label>
+                    <div class="hover-btn">
+                        <label class="mb-0"><strong><span class="counter">${text_number}</span>. <span class="type">Text</span></strong> </label>
                         <button type="button" class="close remove-text" data-dismiss="alert">
                             <span aria-hidden="true">
                                 <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -501,17 +501,17 @@ $(document).on("click", "#add-text", function() {
                     <hr>
                 </div>
                 <p class="mb0 text-description-preview">${text_data}</p>
-                <textarea class="textarea-text" style="display:none">${text_data}</textarea>
+                <textarea class="textarea-text d-none" >${text_data}</textarea>
             </div>`);
 });
 
 /* Submit Text */
 $(document).on("click", "#text-done", function() {
-    var text_number = parseInt($("div.training-card-section").length) - 1;
+    let text_number = parseInt($("div.training-card-section").length) - 1;
     console.log('text_number: ' + text_number);
     $(".slideup-content").slideUp("slow", function() {});
 
-    var error_text = "";
+    let error_text = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -521,7 +521,7 @@ $(document).on("click", "#text-done", function() {
         $("textarea#training-text").addClass('danger');
     } else {
         console.log(`text_number: ${text_number}`);
-        var text_desc = $('textarea#training-text').val();
+        let text_desc = $('textarea#training-text').val();
         $('.text-section').hide();
         $('.text-footer').hide();
 
@@ -541,8 +541,8 @@ $(document).on("click", "#text-done", function() {
 
 /* Add Photo */
 $(document).on('click', '#add-photo', function() {
-    var text_data = '';
-    var text_number = parseInt($("div.training-card-section").length);
+    let text_data = '';
+    let text_number = parseInt($("div.training-card-section").length);
     $(".slideup-content").slideUp("slow", function() {});
     $("#exampleModalCenter").modal("hide");
 
@@ -559,8 +559,8 @@ $(document).on('click', '#add-photo', function() {
                 <div class="form-group">
                     <div class="row">
                         <div class="col-12">
-                            <div class="hover-btn h-32">
-                                <label>
+                            <div class="hover-btn">
+                                <label class="mb-0">
                                     <strong><span class="counter">${text_number}</span>. <span class="type">Photo</span></strong> 
                                 </label>
                                 <button type="button" class="close remove-text" data-dismiss="alert">
@@ -590,8 +590,8 @@ $(document).on('click', '#add-photo', function() {
                         </div>
                     </div>
                 </div>
-                <textarea class="textarea-photo-description" style="display:none">${text_data}</textarea>
-                <input type="file" id="upload-photo" class="in-t form-control" accept="image/*" src="images/px-img.png" style="display:none" multiple>
+                <textarea class="textarea-photo-description d-none" >${text_data}</textarea>
+                <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple>
             </div>`);
 
     $('form.sec1').append(add_photo_section);
@@ -601,11 +601,11 @@ $(document).on('click', '#add-photo', function() {
 
 /* Submit Photo */
 $(document).on("click", "#photo-done", function() {
-    var text_number = parseInt($("div.training-card-section").length) - 1;
+    let text_number = parseInt($("div.training-card-section").length) - 1;
     $(".slideup-content").slideUp("slow", function() {});
     console.log('text_number: ' + text_number);
 
-    var error_text = "";
+    let error_text = "";
     $("input[type='file']#upload-photo").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -616,7 +616,7 @@ $(document).on("click", "#photo-done", function() {
             $("input[type='file']#upload-photo").addClass('danger');
         }
     } else {
-        var photo_desc = $('textarea#photo-description').val();
+        let photo_desc = $('textarea#photo-description').val();
         $('.text-section').hide();
         $('.text-footer').hide();
 
@@ -631,13 +631,13 @@ $(document).on("click", "#photo-done", function() {
         });
 
         /* File reader */
-        var input = $("input[type='file']#upload-photo")[0];
+        let input = $("input[type='file']#upload-photo")[0];
         if (input.files) {
-            var filesAmount = input.files.length;
+            let filesAmount = input.files.length;
 
-            var count = 0;
-            for (var j = 0; j < filesAmount; j++) {
-                var reader = new FileReader();
+            let count = 0;
+            for (let j = 0; j < filesAmount; j++) {
+                let reader = new FileReader();
                 reader.onload = function(event) {
                     if (count == 0) {
                         console.log("#section-" + text_number);
@@ -653,13 +653,38 @@ $(document).on("click", "#photo-done", function() {
         }
         $("#section-" + text_number).find('.textarea-photo-description').val(photo_desc);
         $("#section-" + text_number).find('.photo-description-preview').text(photo_desc);
+
+        let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
+        let attachment_request = '';
+        let attachmentId = {};
+        for (let i = 0; i < image_counter; i++) {
+            let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+            console.log('file_data: ');
+            console.log(file_data);
+            let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
+            attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
+                console.log("Status: " + status);
+            });
+
+            actionSDK.executeApi(attachment_request)
+                .then(function(response) {
+                    attachmentId[i] = response.attachmentId;
+
+                    if (i >= (image_counter - 1)) {
+                        console.log('attachmentId: ');
+                        console.log(attachmentId);
+                        $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" >' + JSON.stringify(attachmentId) + '</textarea>');
+                    }
+                });
+        }
+
     }
 });
 
 /* Add Video */
 $(document).on('click', '#add-video', function() {
-    var text_number = parseInt($("div.training-card-section").length);
-    var text_data = '';
+    let text_number = parseInt($("div.training-card-section").length);
+    let text_data = '';
 
     $(".slideup-content").slideUp("slow", function() {});
     $("#exampleModalCenter").modal("hide");
@@ -679,8 +704,8 @@ $(document).on('click', '#add-video', function() {
     $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
         <div class="card-box card-bg card-border training-card-section section-div video-section-div">
             <div class="form-group">
-                <div class="hover-btn h-32">
-                    <label>
+                <div class="hover-btn">
+                    <label class="mb-0">
                         <strong><span class="counter">${text_number}</span>. <span class="type">Video</span></strong> 
                     </label>
                     <button type="button" class="close remove-text" data-dismiss="alert">
@@ -698,31 +723,31 @@ $(document).on('click', '#add-video', function() {
                 <div class="clearfix"></div>
                 <hr>
                 <div class="row">
-                    <div class="col-sm-12">
+                    <div class="col-9">
+                        <p class="mb0 video-description-preview">${text_data}</p>
+                    </div>
+                    <div class="col-3">
                         <div class="embed-responsive embed-responsive-21by9">
                             <video controls class="video" id="video-sec-${text_number}">
                             </video>
                         </div>        
                     </div>
-                    <div class="col-sm-12">
-                        <p class="mb0 video-description-preview">${text_data}</p>
-                    </div>
                 </div>
             </div>
-            <textarea class="textarea-video" style="display:none">${text_data}</textarea>
-            <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" style="width:100%; height: 180px; display: none;">  
+            <textarea class="textarea-video d-none">${text_data}</textarea>
+            <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
         </div>`);
 
 });
 
 /* Submit Video */
 $(document).on("click", "#video-done", function() {
-    var text_number = parseInt($("div.training-card-section").length) - 1;
-    var video_desc = $('textarea#video-description').val();
+    let text_number = parseInt($("div.training-card-section").length) - 1;
+    let video_desc = $('textarea#video-description').val();
     $(".slideup-content").slideUp("slow", function() {});
     console.log('text_number: ' + text_number);
 
-    var error_text = "";
+    let error_text = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -744,18 +769,41 @@ $(document).on("click", "#video-done", function() {
         });
         // readURL($("input[type='file']#upload-video")[0], "#image-sec-" + text_number);
 
-        var fileInput = document.getElementById('upload-video');
-        var fileUrl = window.URL.createObjectURL(fileInput.files[0]);
+        let fileInput = document.getElementById('upload-video');
+        let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
         $("#section-" + text_number).find("#video-sec-" + text_number).attr("src", fileUrl);
         $("#section-" + text_number).find('textarea.textarea-video').val(video_desc);
         $("#section-" + text_number).find('.video-description-preview').text(video_desc);
+    }
+    let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
+    let attachment_request = '';
+    let attachmentId = {};
+    for (let i = 0; i < image_counter; i++) {
+        let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+        console.log('file_data: ');
+        console.log(file_data);
+        let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
+        attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
+            console.log("Status: " + status);
+        });
+
+        actionSDK.executeApi(attachment_request)
+            .then(function(response) {
+                attachmentId[i] = response.attachmentId;
+
+                if (i >= (image_counter - 1)) {
+                    console.log('attachmentId: ');
+                    console.log(attachmentId);
+                    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" >' + JSON.stringify(attachmentId) + '</textarea>');
+                }
+            });
     }
 });
 
 /* Add Document */
 $(document).on('click', '#add-document', function() {
-    var text_number = parseInt($("div.training-card-section").length);
-    var text_data = '';
+    let text_number = parseInt($("div.training-card-section").length);
+    let text_data = '';
     $(".slideup-content").slideUp("slow", function() {});
     $("#exampleModalCenter").modal("hide");
 
@@ -770,8 +818,8 @@ $(document).on('click', '#add-document', function() {
     $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
     <div class="card-box card-bg card-border training-card-section section-div document-section-div">
         <div class="form-group">
-            <div class="hover-btn h-32">
-                <label>
+            <div class="hover-btn">
+                <label class="mb-0">
                     <strong><span class="counter">${text_number}</span>. <span class="type">Document</span></strong> 
                 </label>
                 <button type="button" class="close remove-text" data-dismiss="alert">
@@ -791,7 +839,7 @@ $(document).on('click', '#add-document', function() {
         </div>
         <div class="row">
             <div class="col-9">
-                <p class="mb0 document-description-preview">${text_data}</p>                    
+                <p class="mb0 document-description-preview">${text_data}</p>
             </div>
             <div class="col-3">
                 <div class="img-thumbnail">
@@ -810,11 +858,11 @@ $(document).on('click', '#add-document', function() {
 
 /* Submit Document */
 $(document).on("click", "#document-done", function() {
-    var text_number = parseInt($("div.training-card-section").length) - 1;
+    let text_number = parseInt($("div.training-card-section").length) - 1;
     $(".slideup-content").slideUp("slow", function() {});
     console.log('text_number: ' + text_number);
 
-    var error_text = "";
+    let error_text = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -845,7 +893,30 @@ $(document).on("click", "#document-done", function() {
 
         // readURL($("input[type='file']#upload-photo")[0], "#image-sec-" + text_number);
         $("#section-" + text_number).find("#image-sec-" + text_number).attr('src', 'images/doc.png');
-        $("#section-" + text_number).find("#image-sec-" + text_number).parents('div.img-thumbnail').after('<span class="doc-name">' + $("input[type='file']#upload-document")[0].files[0].name + '</span>');
+        $("#section-" + text_number).find("#image-sec-" + text_number).parents('div.row').find('p.document-description-preview').after('<hr><p>File name: <span class="doc-name">' + $("input[type='file']#upload-document")[0].files[0].name + '</span></p>');
+    }
+    let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
+    let attachment_request = '';
+    let attachmentId = {};
+    for (let i = 0; i < image_counter; i++) {
+        let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+        console.log('file_data: ');
+        console.log(file_data);
+        let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
+        attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
+            console.log("Status: " + status);
+        });
+
+        actionSDK.executeApi(attachment_request)
+            .then(function(response) {
+                attachmentId[i] = response.attachmentId;
+
+                if (i >= (image_counter - 1)) {
+                    console.log('attachmentId: ');
+                    console.log(attachmentId);
+                    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" >' + JSON.stringify(attachmentId) + '</textarea>');
+                }
+            });
     }
 });
 
@@ -858,36 +929,36 @@ $(document).on('change', '#upload-photo', function() {
     }
 })
 
-var imagesPreview = function(input, placeToInsertImagePreview) {
+let imagesPreview = function(input, placeToInsertImagePreview) {
 
     if (input.files) {
-        var filesAmount = input.files.length;
+        let filesAmount = input.files.length;
 
         if (filesAmount > 10) {
-            var svg = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg >';
-            var title = 'Notice!';
-            var msg = 'Maximum 10 images allowed at a time';
+            let svg = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg >';
+            let title = 'Notice!';
+            let msg = 'Maximum 10 images allowed at a time';
             showAlert(svg, title, msg);
             return false;
         }
 
         $('.updated-img').html('');
-        var $carousel = $('<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel"></div>');
-        var $ol_section = $('<ol class="carousel-indicators"></ol>');
-        var $carousel_inner = $('<div class="carousel-inner"></div>');
+        let $carousel = $('<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel"></div>');
+        let $ol_section = $('<ol class="carousel-indicators"></ol>');
+        let $carousel_inner = $('<div class="carousel-inner"></div>');
 
         $carousel.append($ol_section);
         $carousel.append($carousel_inner);
 
-        var count = 0;
-        for (var i = 0; i < filesAmount; i++) {
-            var reader = new FileReader();
-            var $li_list = $(`<li data-target="#carouselExampleIndicators" data-slide-to="${i}" class="${i == 0 ? 'active': ''}"></li>`);
+        let count = 0;
+        for (let i = 0; i < filesAmount; i++) {
+            let reader = new FileReader();
+            let $li_list = $(`<li data-target="#carouselExampleIndicators" data-slide-to="${i}" class="${i == 0 ? 'active': ''}"></li>`);
             $ol_section.append($li_list);
 
             reader.onload = function(event) {
 
-                var $img_div = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
+                let $img_div = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
                                     <img class="d-block w-100" src="${event.target.result}" alt="${count+1} slide">
                                 </div>`);
                 $carousel_inner.append($img_div);
@@ -924,8 +995,8 @@ $(document).on('click', '.carousel-control-next', function() {
 
 $(document).on('change', '#upload-video', function() {
     // readURL(this, '#video-section-preview');
-    var fileInput = document.getElementById('upload-video');
-    var fileUrl = window.URL.createObjectURL(fileInput.files[0]);
+    let fileInput = document.getElementById('upload-video');
+    let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
     $('.updated-video').show();
     $('.change-link').show();
     $('.video-box').hide();
@@ -940,8 +1011,8 @@ $(document).on('change', '#upload-document', function() {
 });
 
 $(document).on("click", ".remove-text", function() {
-    var element = '';
-    var data_id = $(this).parents('.card-box').attr('data-id');
+    let element = '';
+    let data_id = $(this).parents('.card-box').attr('data-id');
 
     $("#exampleModalCenter")
         .find("#exampleModalLongTitle")
@@ -962,7 +1033,7 @@ $(document).on("click", ".remove-text", function() {
 });
 
 $(document).on("click", "#confirm-delete-text", function() {
-    var eve = $(this).attr('data-id');
+    let eve = $(this).attr('data-id');
 
     $('div.card-box[data-id="' + eve + '"]').remove();
     $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
@@ -982,13 +1053,13 @@ $(document).on("click", "#next", function() {
     $(".slideup-content").slideUp("slow", function() {});
 
     /* Validate */
-    var error_text = "";
-    var question_number = 0;
+    let error_text = "";
+    let question_number = 0;
 
     $("form")
         .find("input[type='text']")
         .each(function() {
-            var element = $(this);
+            let element = $(this);
             if (element.val() == "") {
                 validate = false;
                 if (element.attr("id").startsWith("question-title")) {
@@ -1180,14 +1251,14 @@ function getQuestionSet() {
     $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
         if ($(elem).hasClass("question-section-div") == true) {
             /* Get Questions */
-            var option_type = actionSDK.ActionDataColumnValueType.SingleOption;
-            var question_id = $(elem).find('span.counter').text();
+            let option_type = actionSDK.ActionDataColumnValueType.SingleOption;
+            let question_id = $(elem).find('span.counter').text();
             let option = [];
 
             $(elem).find("div.option-div").each(function(ind, e) {
-                var count = ind + 1;
-                var opt_id = "question" + question_id + "option" + count;
-                var opt_title = $("div.section-2 #quest-text-" + question_id).find("#option" + count).val();
+                let count = ind + 1;
+                let opt_id = "question" + question_id + "option" + count;
+                let opt_title = $("div.section-2 #quest-text-" + question_id).find("#option" + count).val();
 
                 if ($("div.section-2 #quest-text-" + question_id).find("input[type=checkbox]:checked").length > 1) {
                     console.log("multiselect");
@@ -1199,7 +1270,7 @@ function getQuestionSet() {
                 option.push({ name: opt_id, displayName: opt_title });
             });
 
-            var val = {
+            let val = {
                 name: question_id.toString(),
                 displayName: $("div.section-2 #quest-text-" + question_id).find("#question-title").val(),
                 valueType: option_type,
@@ -1213,14 +1284,14 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("text-section-div") == true) {
 
             /*  Get Text  */
-            var option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
             let option = [];
-            var opt_id = $(elem).find('span.counter').text();
-            var opt_title = $(elem).find('textarea').val();
+            let opt_id = $(elem).find('span.counter').text();
+            let opt_title = $(elem).find('textarea').val();
             console.log(`name: ${opt_id}, displayName: ${opt_title}`);
             option.push({ name: opt_id, displayName: opt_title });
 
-            var val = {
+            let val = {
                 name: opt_id.toString(),
                 displayName: opt_title,
                 valueType: option_type,
@@ -1231,106 +1302,93 @@ function getQuestionSet() {
             questions.push(val);
         } else if ($(elem).hasClass("photo-section-div") == true) {
             /* Photo */
-            let image_counter = $(elem).find('input[type="file"]').get(0).files.length;
-            let attachment_request = '';
-            for (let i = 0; i < image_counter; i++) {
-                var file_data = $(elem).find('input[type="file"]').get(0).files[i];
-                var reader = new FileReader();
-                reader.onload = function(event) {
-                    var blob = event.target.result
-                    var attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(blob, file_data['type']);
-                    attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
-                        console.log("Status: " + status);
-                    });
-                }
-                reader.readAsText(file_data);
-            }
+            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option = [];
+            let opt_id = $(elem).find('span.counter').text();
+            let opt_title = $(elem).find('textarea').val();
+            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+            let display_name_arr = { 'description': opt_title, 'attachmentId': $(elem).find('textarea#attachment-id').val() };
+            option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
 
-            actionSDK.executeApi(attachment_request)
-                .then(function(response) {
-                    attachmentId = response.attachmentId;
-                    console.log("response = " + response);
+            let val = {
+                name: 'photo-' + opt_id.toString(),
+                displayName: opt_title,
+                valueType: option_type,
+                allowNullValue: false,
+                options: option,
+            };
 
-                    var option_type = actionSDK.ActionDataColumnValueType.LargeText;
-                    let option = [];
-                    var opt_id = $(elem).find('span.counter').text();
-                    var opt_title = $(elem).find('textarea').val();
-                    console.log(`name: ${opt_id}, displayName: ${opt_title}`);
-                    option.push({ name: opt_id, displayName: opt_title });
+            questions.push(val);
+        } else if ($(elem).hasClass("document-section-div") == true) {
+            /* Document */
+            let attachmentId = $(elem).find('textarea#attachment-id').val();
+            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option = [];
+            let opt_id = $(elem).find('span.counter').text();
+            let opt_title = $(elem).find('textarea').val();
+            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+            let display_name_arr = { 'description': opt_title, 'attachmentId': (attachmentId) };
+            option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
 
-                    var val = {
-                        name: opt_id.toString(),
-                        displayName: opt_title,
-                        valueType: option_type,
-                        allowNullValue: false,
-                        options: option,
-                    };
+            let val = {
+                name: 'document-' + opt_id.toString(),
+                displayName: opt_title,
+                valueType: option_type,
+                allowNullValue: false,
+                options: option,
+            };
 
-                    questions.push(val);
-                });
+            questions.push(val);
+        } else if ($(elem).hasClass("video-section-div") == true) {
+            /* Video */
+            let attachmentId = $(elem).find('textarea#attachment-id').val();
+            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option = [];
+            let opt_id = $(elem).find('span.counter').text();
+            let opt_title = $(elem).find('textarea').val();
+            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+            let display_name_arr = { 'description': opt_title, 'attachmentId': (attachmentId) };
+            option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
 
-
+            let val = {
+                name: 'video-' + opt_id.toString(),
+                displayName: opt_title,
+                valueType: option_type,
+                allowNullValue: false,
+                options: option,
+            };
+            questions.push(val);
         }
     });
     return questions;
+
 }
 
 function getCorrectAnswer() {
     let correct_option = [];
 
     $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
-        var correct = [];
-        var question_id = $(elem).find('span.counter').text();
+        let correct = [];
+        let question_id = $(elem).find('span.counter').text();
         if ($(elem).hasClass("question-section-div") == true) {
             $(elem).find("div.option-div").each(function(ind, e) {
-                var count = ind + 1;
+                let count = ind + 1;
 
                 if ($(elem).find("#quest-text-" + question_id + " #check" + count).is(":checked")) {
-                    var opt_id = "question" + question_id + "option" + count;
+                    let opt_id = "question" + question_id + "option" + count;
 
                     // if it is checked
                     correct.push(opt_id);
                 }
             });
-        } else if ($(elem).hasClass("text-section-div") == true) {
-            var opt_id = "question" + question_id;
+        } else {
+            let opt_id = "question" + question_id;
             correct.push(opt_id);
         }
         correct_option[question_id - 1] = correct;
     });
 
-    var property = {
-        name: "Question Answers",
-        type: "LargeText",
-        value: JSON.stringify(correct_option),
-    };
-
-    return property;
-
-    for (var i = 1; i <= questionCount; i++) {
-
-        var correct = [];
-
-        /* Looping for options */
-        $("div.section-2  #question" + i)
-            .find("div.option-div")
-            .each(function(index, elem) {
-                var count = index + 1;
-
-                if (
-                    $("div.section-2  #question" + i)
-                    .find("#check" + count)
-                    .is(":checked")
-                ) {
-                    var opt_id = "question" + i + "option" + count;
-
-                    // if it is checked
-                    correct.push(opt_id);
-                }
-            });
-        correct_option[i - 1] = correct;
-    }
-    var property = {
+    let property = {
         name: "Question Answers",
         type: "LargeText",
         value: JSON.stringify(correct_option),
@@ -1340,23 +1398,18 @@ function getCorrectAnswer() {
 }
 
 function createAction(actionPackageId) {
-    var trainingTitle = $("#training-title").val();
-    var trainingDescription = $("#training-description").val();
+    let trainingTitle = $("#training-title").val();
+    let trainingDescription = $("#training-description").val();
     console.log(`trainingTitle: ${trainingTitle} : trainingDescription: ${trainingDescription}`);
-    var trainingExpireDate = $("#expiry-date").val();
-    var trainingExpireTime = $("#expiry-time").val();
-    var resultVisible = $("input[name='visible_to']:checked").val();
-    var showCorrectAnswer = $("#show-correct-answer").is(":checked") ?
+    let trainingExpireDate = $("input[name='expiry_date']").val();
+    let trainingExpireTime = $("input[name='expiry_time']").val();
+    let resultVisible = $("input[name='visible_to']:checked").val();
+    let showCorrectAnswer = $("#show-correct-answer").is(":checked") ?
         "Yes" :
         "No";
-    var questionsSet = getQuestionSet();
-    var getcorrectanswers = getCorrectAnswer();
-
-    if (questionsSet.length <= 0) {
-        return;
-    }
-
-    var properties = [];
+    let questionsSet = getQuestionSet();
+    let getcorrectanswers = getCorrectAnswer();
+    let properties = [];
     properties.push({
         name: "Training Description",
         type: "LargeText",
@@ -1373,11 +1426,17 @@ function createAction(actionPackageId) {
         name: "Show Correct Answer",
         type: "Text",
         value: showCorrectAnswer,
+    }, {
+        name: "Attachment Id",
+        type: "Text",
+        value: ($('#training-attachment-id').length && $('#training-attachment-id').val().length) ? $('#training-attachment-id').val() : '',
     });
     properties.push(getcorrectanswers);
+
+    console.log('properties:');
     console.log(properties);
-    console.log("resultVisible: " + resultVisible);
-    var action = {
+
+    let action = {
         id: generateGUID(),
         actionPackageId: actionPackageId,
         version: 1,
@@ -1388,17 +1447,16 @@ function createAction(actionPackageId) {
         dataTables: [{
             name: "TestDataSet",
             itemsVisibility: actionSDK.Visibility.All,
-            rowsVisibility: resultVisible == "Everyone" ?
-                actionSDK.Visibility.All : actionSDK.Visibility.Sender,
+            rowsVisibility: resultVisible == "Everyone" ? actionSDK.Visibility.All : actionSDK.Visibility.All,
             itemsEditable: false,
             canUserAddMultipleItems: false,
-            dataColumns: questionsSet,
-        }, ],
+            dataColumns: questionsSet
+        }]
     };
     console.log("action: ");
     console.log(JSON.stringify(action));
 
-    var request = new actionSDK.CreateAction.Request(action);
+    let request = new actionSDK.CreateAction.Request(action);
     actionSDK
         .executeApi(request)
         .then(function(response) {
@@ -1411,7 +1469,7 @@ function createAction(actionPackageId) {
 
 function generateGUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        var r = (Math.random() * 16) | 0,
+        let r = (Math.random() * 16) | 0,
             v = c == "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
     });
@@ -1432,7 +1490,7 @@ async function getTheme() {
     let response = await actionSDK.executeApi(request);
     let context = response.context;
 
-    var theme = context.theme;
+    let theme = context.theme;
     $("link#theme").attr("href", "css/style-" + theme + ".css");
 
 
@@ -1529,7 +1587,7 @@ $(document).on('click', '#next1', function() {
     $("form > .section-1")
         .find("input[type='text']")
         .each(function() {
-            var element = $(this);
+            let element = $(this);
             if (element.val() == "") {
                 validate = false;
 
@@ -1555,41 +1613,27 @@ $(document).on('click', '#next1', function() {
 
                 $('#training-title-content').text($('#training-title').val());
                 $('#training-description-content').text($('#training-description').val());
-                $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>')
-                $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>')
+                $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
+                $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
             }
         });
 
     let image_counter = $(".training-card-section").find('input[type="file"]').get(0).files.length;
     let attachment_request = '';
     for (let i = 0; i < image_counter; i++) {
-        var file_data = $(".training-card-section").find('input[type="file"]').get(0).files[i];
-        var reader = new FileReader();
-        reader.onload = function(event) {
-            var blob = event.target.result
-            var attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(blob, file_data['type']);
-            attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
-                // console.log("Status: " + status);
+        let file_data = $(".training-card-section").find('input[type="file"]').get(0).files[i];
+        let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
+        attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
+            console.log("Status: " + status);
+        });
+        actionSDK.executeApi(attachment_request)
+            .then(function(response) {
+                $('.training-card-section').find('textarea:last').after('<textarea id="training-attachment-id" class="d-none" >' + response.attachmentId + '</textarea>');
+            })
+            .catch(function(error) {
+                console.log("GetContext - Error: " + JSON.stringify(error));
             });
-            console.log(`attachment_request: ${JSON.stringify(attachment_request)}`);
-            actionSDK.executeApi(attachment_request)
-                .then(function(response) {
-                    attachmentId = response.attachmentId;
-                    console.log("response = " + response);
-                    console.log("attachmentId = " + attachmentId);
-                }).catch(function(error) {
-                    console.log("GetContext - Error: " + JSON.stringify(error));
-                });
-
-        }
-        reader.readAsText(file_data);
     }
-
-    /* 
-     */
-
-
-
 });
 
 
@@ -1597,7 +1641,7 @@ $(document).on('change', '#cover-image', function() {
     readURL(this, '#training-img-preview, #training-title-image');
     $('.photo-box').hide();
     $('.img-thumbnail').show();
-    $('.updated-img').show();
+    $('.training-updated-img').show();
     $('#training-title-image').show();
 });
 
@@ -1613,9 +1657,9 @@ $(document).on('click', '.upvj', function(event) {
 /***********************************  Settings ***************************/
 
 $(document).on("change", "#expiry-date, #expiry-time, .visible-to", function() {
-    var end = new Date($('input[name="expiry_date"]').val() + ' ' + $('input[name="expiry_time"]').val());
-    var start = new Date();
-    var days = calc_date_diff(start, end);
+    let end = new Date($('input[name="expiry_date"]').val() + ' ' + $('input[name="expiry_time"]').val());
+    let start = new Date();
+    let days = calc_date_diff(start, end);
 
     if (days == undefined) {
 
@@ -1632,7 +1676,7 @@ $(document).on("change", "#expiry-date, #expiry-time, .visible-to", function() {
             );
         $("#exampleModalCenter").modal("show");
     } else {
-        var result_visible = $('.visible-to:checked').val() == 'Everyone' ? 'Results visible to everyone' : 'Results visible to only me';
+        let result_visible = $('.visible-to:checked').val() == 'Everyone' ? 'Results visible to everyone' : 'Results visible to only me';
         console.log('due: ' + days + ', ' + result_visible);
         setting_text = ' Due in ' + days + ', ' + result_visible;
     }
@@ -1644,29 +1688,29 @@ $(document).on("change", "#expiry-date, #expiry-time, .visible-to", function() {
 /***********************************  Methods ***************************/
 
 function calc_date_diff(start, end) {
-    var days = (end - start) / (1000 * 60 * 60 * 24);
+    let days = (end - start) / (1000 * 60 * 60 * 24);
     console.log('days: ' + days);
     if (days > 6) {
-        var weeks = Math.ceil(days) / 7;
+        let weeks = Math.ceil(days) / 7;
         return Math.floor(weeks) + ' week';
     } else {
         if (days < 1) {
-            var t1 = start.getTime();
-            var t2 = end.getTime();
+            let t1 = start.getTime();
+            let t2 = end.getTime();
 
-            var minsDiff = Math.floor((t2 - t1) / 1000 / 60);
-            var hourDiff = Math.floor(minsDiff / 60);
+            let minsDiff = Math.floor((t2 - t1) / 1000 / 60);
+            let hourDiff = Math.floor(minsDiff / 60);
             minsDiff = minsDiff % 60;
 
             if (hourDiff > 1) {
-                var hourText = 'hours';
+                let hourText = 'hours';
             } else {
-                var hourText = 'hour';
+                let hourText = 'hour';
             }
             if (hourDiff > 1) {
-                var minuteText = 'minutes';
+                let minuteText = 'minutes';
             } else {
-                var minuteText = 'minute';
+                let minuteText = 'minute';
             }
             if (hourDiff > 0 && minsDiff > 0) {
                 return hourDiff + ' ' + hourText + ', ' + minsDiff + ' ' + minuteText;
@@ -1720,7 +1764,7 @@ function numbertowords(num) {
 
 function readURL(input, elem) {
     if (input.files && input.files[0]) {
-        var reader = new FileReader();
+        let reader = new FileReader();
 
         reader.onload = function(e) {
             $(elem).attr('src', e.target.result);
@@ -1751,7 +1795,7 @@ function showAlert(svg, title, message) {
 
 /*  HTML Sections  */
 // form
-var form_section = `<div class="section-1" style="display:none">
+let form_section = `<div class="section-1" style="display:none">
             <div class="container pt-4">
                 <div id="root" class="card-box card-border card-bg">
                     <div class="form-group">
@@ -1767,9 +1811,10 @@ var form_section = `<div class="section-1" style="display:none">
                         <div class="relative">
                             <!-- hide this div after img added -->
                             <div class="photo-box card card-bg card-border max-min-220 upvj" >
+                                <span>Tap to upload training cover image</span>
                             </div>
                             <!-- show this div after img added -->
-                            <div class="updated-img card card-bg card-border max-min-220 upvj" style="display:none">
+                            <div class="training-updated-img card card-bg card-border max-min-220 upvj" style="display:none">
                                 <img src="" id="training-img-preview">
                             </div>
                         </div> 
@@ -1796,14 +1841,14 @@ var form_section = `<div class="section-1" style="display:none">
             </div>
         </div>`;
 
-var training_section_view = `<div class="section-2" style="display:none">
+let training_section_view = `<div class="section-2" style="display:none">
             <div class="container pt-4">
                 <div id="root" class="">
                     <div class="card-box card-bg card-border training-card-section">
                         <div class="row">
                             <div class="col-9">
                                 <h4 id="training-title-content"></h4>
-                                <p class="mb0" id="training-description-content"></p>
+                                <p class="mb0 text-justify" id="training-description-content"></p>
                             </div>
                             <div class="col-3">
                                 <div class="img-thumbnail" style="display:none">
@@ -1846,13 +1891,17 @@ var training_section_view = `<div class="section-2" style="display:none">
         </div>`;
 
 // Question
-var questions_section = `<div class="question-section">
-        <div class="container question-container">
+let questions_section = `<div class="question-section">
+        <div class="container question-container pt-4">
             <div class="card-box card-border card-bg">
                 <div class="form-group">
-                    <div class="hover-btn mb-2 h-32">
-                        <button type="button" class="close remove-question" data-dismiss="alert">
-                            <span aria-hidden="true">
+                    <div class="input-group mb-2">
+                        <div class="input-group-append">
+                            <span class="question-number input-group-text input-tpt pl-0 strong" style="cursor: pointer;">1.</span>
+                        </div>
+                        <input type="text" class="form-control in-t" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
+                        <div class="input-group-append">
+                            <span class="input-group-text remove-question remove-option-q input-tpt" style="cursor: pointer;" aria-hidden="true">
                                 <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
                                     <path
                                         d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
@@ -1864,17 +1913,7 @@ var questions_section = `<div class="question-section">
                                         d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
                                 </svg>
                             </span>
-                            <span class="sr-only">Close</span>
-                        </button>
-                    </div>
-                    <div class="clearfix"></div>
-                    <div class="input-group mb-2 ">
-                        <div class="input-group-append">
-                            <span class="question-number input-group-text input-tpt pl-0 strong"
-                                style="cursor: pointer;">1.</span>
                         </div>
-                        <input type="text" class="form-control in-t" placeholder="Enter the question"
-                            aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
                     </div>
                 </div>
                 <div class="d-flex">
@@ -1882,61 +1921,67 @@ var questions_section = `<div class="question-section">
                     <div class="form-group" id="options">
                         <label><strong>Choices</strong></label>
                         <div class="option-div">
-                            <div class="input-group input-group-tpt mb-2 ">
-                                <input type="text" class="form-control in-t" placeholder="Option 1"
-                                    aria-label="Option 1" aria-describedby="basic-addon2" id="option1">
-                                <div class="input-group-append">
-                                    <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
-                                        <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                            <path
-                                                d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                            <path
-                                                d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                            <path
-                                                d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
-                                            <path
-                                                d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                        </svg>
-                                    </span>
+                            <div class="form-group">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-append">
+                                        <div class="custom-check-outer mt-04">
+                                            <label class="custom-check  ">
+                                                <input type="checkbox" class="form-check-input" id="check1" value="yes">
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control in-t" placeholder="Option 1" aria-label="Option 1" aria-describedby="basic-addon2" id="option1">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
+                                            <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                <path
+                                                    d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+                                                <path
+                                                    d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+                                                <path
+                                                    d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
+                                                <path
+                                                    d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+                                            </svg>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="input-group mb-2  form-check custom-check-outer">
-                                <label class="form-check-label custom-check"><input type="checkbox"
-                                        class="form-check-input" id="check1" value="yes"> <span
-                                        class="checkmark"></span> Check me if correct</label>
-                            </div>
-
                         </div>
                         <div class="option-div">
-                            <div class="input-group input-group-tpt mb-2">
-                                <input type="text" class="form-control in-t" placeholder="Option 2"
-                                    aria-label="Option 2" aria-describedby="basic-addon2" id="option2">
-                                <div class="input-group-append">
-                                    <span class="input-group-text remove-option input-tpt" style="cursor: pointer;"><svg
-                                            viewBox="-40 0 427 427.00131"
-                                            xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                            <path
-                                                d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                            <path
-                                                d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                            <path
-                                                d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
-                                            <path
-                                                d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                        </svg></span>
+                            <div class="form-group">
+                                <div class="input-group mb-2"> 
+                                    <div class="input-group-append">
+                                        <div class="custom-check-outer mt-04">
+                                            <label class="custom-check">
+                                                <input type="checkbox" class="form-check-input" value="yes" id="check2"> 
+                                                <span class="checkmark"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control in-t" placeholder="Option 2" aria-label="Option 2" aria-describedby="basic-addon2" id="option2">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text remove-option input-tpt" style="cursor: pointer;"><svg
+                                                viewBox="-40 0 427 427.00131"
+                                                xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                <path
+                                                    d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+                                                <path
+                                                    d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+                                                <path
+                                                    d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
+                                                <path
+                                                    d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
+                                            </svg>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="input-group mb-2 form-check custom-check-outer">
-                                <label class="form-check-label custom-check"><input type="checkbox"
-                                        class="form-check-input" value="yes" id="check2"> <span
-                                        class="checkmark"></span> Check me if correct</label>
-                            </div>
-
                         </div>
                         <div class="">
-                            <button type="button" class="teams-link add-options"> <svg role="presentation"
-                                    focusable="false" viewBox="8 8 16 16" class="cc gs gt ha gv">
+                            <button type="button" class="teams-link add-options"> 
+                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="cc gs gt ha gv">
                                     <path class="ui-icon__outline cc"
                                         d="M23.352 16.117c.098.1.148.217.148.352 0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149h-6v6c0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149.477.477 0 0 1-.352-.149.477.477 0 0 1-.148-.351v-6h-6a.477.477 0 0 1-.352-.149.48.48 0 0 1-.148-.351c0-.135.05-.252.148-.352A.481.481 0 0 1 10 15.97h6v-6c0-.135.049-.253.148-.352a.48.48 0 0 1 .352-.148c.135 0 .252.05.352.148.098.1.148.216.148.352v6h6c.135 0 .252.05.352.148z">
                                     </path>
@@ -1952,7 +1997,7 @@ var questions_section = `<div class="question-section">
     </div>`;
 
 // Add Question Button
-var add_question_button = `<div class="container pb-5 question_button">
+let add_question_button = `<div class="container pb-5 question_button">
                 <div class="form-group pb-5">
                     <button type="button" class="btn btn-primary btn-sm" id="add-questions-same-section"> <svg role="presentation"
                             focusable="false" viewBox="8 8 16 16" class="cc gs gt wh gv">
@@ -1967,7 +2012,7 @@ var add_question_button = `<div class="container pb-5 question_button">
             </div>`;
 
 // Question Footer
-var question_footer = `<div class="footer question-footer" >
+let question_footer = `<div class="footer question-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
                     <div class="row">
@@ -1991,11 +2036,18 @@ var question_footer = `<div class="footer question-footer" >
         </div>`;
 
 // Option
-var option_section = `<div style="display: none;" id="option-section">
+let option_section = `<div style="display: none;" id="option-section">
         <div class="option-div">
-            <div class="input-group input-group-tpt mb-2">
-                <input type="text" class="form-control in-t" placeholder="Option" aria-label="Recipient's username"
-                    aria-describedby="basic-addon2" id="option-1">
+            <div class="input-group mb-2">
+                <div class="input-group-append">
+                    <div class="custom-check-outer  mt-04">
+                        <label class="custom-check ">
+                            <input type="checkbox" class="form-check-input" value="yes">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+                <input type="text" class="form-control in-t" placeholder="Option" aria-label="Recipient's username" aria-describedby="basic-addon2" id="option-1">
                 <div class="input-group-append">
                     <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
                         <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -2011,17 +2063,11 @@ var option_section = `<div style="display: none;" id="option-section">
                     </span>
                 </div>
             </div>
-            <div class="input-group mb-2  form-check custom-check-outer">
-                <label class="custom-check form-check-label">
-                    <input type="checkbox" class="form-check-input" value="yes">
-                    <span class="checkmark"></span> Check me if correct
-                </label>
-            </div>
         </div>
     </div>`;
 
 // Text 
-var add_text_section = `<div class="text-section" >
+let add_text_section = `<div class="text-section" >
             <div class="container pt-4">
                 <div id="root" class="">
                     <div class="card-box card-bg card-border">
@@ -2033,7 +2079,7 @@ var add_text_section = `<div class="text-section" >
             </div>
         </div>`;
 
-var add_text_footer = `<div class="footer text-footer" >
+let add_text_footer = `<div class="footer text-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
                     <div class="row">
@@ -2057,7 +2103,7 @@ var add_text_footer = `<div class="footer text-footer" >
         </div>`;
 
 // Photo
-var add_photo_section = `<div class="text-section" >
+let add_photo_section = `<div class="text-section" >
             <div class="container pt-4">
                 <div id="root" class="">
                     <div class="card-box card-bg card-border">
@@ -2082,7 +2128,7 @@ var add_photo_section = `<div class="text-section" >
             </div>
         </div>`;
 
-var add_photo_footer = `<div class="footer text-footer" >
+let add_photo_footer = `<div class="footer text-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
                     <div class="row">
@@ -2107,7 +2153,7 @@ var add_photo_footer = `<div class="footer text-footer" >
 
 
 // Video
-var add_video_section = `<div class="text-section" >
+let add_video_section = `<div class="text-section" >
 <div class="container pt-4">
     <div id="root" class="">
         <div class="card-box card-bg card-border">
@@ -2133,7 +2179,7 @@ var add_video_section = `<div class="text-section" >
 </div>
 </div>`;
 
-var add_video_footer = `<div class="footer text-footer" >
+let add_video_footer = `<div class="footer text-footer" >
 <div class="footer-padd bt">
     <div class="container ">
         <div class="row">
@@ -2158,7 +2204,7 @@ var add_video_footer = `<div class="footer text-footer" >
 
 
 // Document
-var add_document_section = `<div class="text-section" >
+let add_document_section = `<div class="text-section" >
 <div class="container pt-4">
     <div id="root" class="">
         <div class="card-box card-bg card-border">
@@ -2184,7 +2230,7 @@ var add_document_section = `<div class="text-section" >
 </div>
 </div>`;
 
-var add_document_footer = `<div class="footer text-footer" >
+let add_document_footer = `<div class="footer text-footer" >
 <div class="footer-padd bt">
     <div class="container ">
         <div class="row">
@@ -2209,7 +2255,7 @@ var add_document_footer = `<div class="footer text-footer" >
 
 
 // Setting 
-var setting_section1 = `<div class="" style="display: none;" id="setting">
+let setting_section1 = `<div class="" style="display: none;" id="setting">
         <div class="container pt-4 setting-section">
             <div class="row">
                 <div class="col-sm-12">
@@ -2381,7 +2427,7 @@ let setting_section = `<div style="display:none" id="setting">
 
 
 //  modal
-var modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
+let modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
         aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
@@ -2403,7 +2449,7 @@ var modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-
     </div>`;
 
 
-var toggle_section = `<div class="slideup-content">
+let toggle_section = `<div class="slideup-content">
     <div class="row">
         <div class="col-3">
             <div id="add-text">
