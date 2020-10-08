@@ -10,6 +10,7 @@ let setting_text = '';
 let question_section = '';
 let opt = '';
 let request;
+let lastSession = '';
 
 let optionKey = '';
 let addMoreOptionsKey = '';
@@ -31,8 +32,6 @@ let answerCannotChangeKey = '';
 
 /***********************************  Manage Questions *********************************/
 $(document).on("click", "#add-questions", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $('.section-2').hide();
     $('.section-2-footer').hide();
 
@@ -62,8 +61,6 @@ $(document).on("click", "#add-questions", function() {
 });
 
 $(document).on("click", "#add-questions-same-section", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     let question_counter;
     $('form.sec1').append(questions_section);
     $('form > .question_button').remove();
@@ -81,8 +78,6 @@ $(document).on("click", "#add-questions-same-section", function() {
 });
 
 $(document).on("click", "#back-question", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $(".question-section").hide();
     $(".add_question_button").hide();
     $(".question-footer").hide();
@@ -94,13 +89,26 @@ $(document).on("click", "#back-question", function() {
 
 /* Remove Questions */
 $(document).on("click", ".remove-question", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     let element = $(this);
     let data_id = $(this).parents('.question-container').attr('id');
-
+    $('div.question-section').find('div.error-msg').remove();
     if ($("div.question-container:visible").length > 1) {
-        $("#exampleModalCenter")
+        let confirm_box = `
+            <div class="confirm-box">
+                <hr class="hr-danger">
+                <ul class="d-flex table-remove mb-0">
+                    <li><span class="text-danger">Are you sure you want to delete?</span></li>
+                    <li> 
+                        <button class="btn btn-primary btn-sm pull-right" data-id="${data_id}" id="delete-question">Ok</button> 
+                        <button class="btn btn-primary-outline btn-sm pull-right mr-1" id="cancel-confirm">Close</button>
+                    </li>
+                </ul>
+            </div>
+        `;
+
+        $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
+        $(this).parents("div.question-container").find('div.d-flex').after(confirm_box);
+        /* $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
             .html('<svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs mt--4">< path d = "m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" ></path ><path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path><path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path><path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path></svg > Delete?');
         $("#exampleModalCenter")
@@ -111,10 +119,12 @@ $(document).on("click", ".remove-question", function() {
             .html(
                 '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button><button type="button" data-id="' + data_id + '" class="btn btn-primary" id="delete-question">Ok</button>'
             );
-        $("#exampleModalCenter").modal("show");
+        $("#exampleModalCenter").modal("show"); */
 
     } else {
-        $("#exampleModalCenter")
+        $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! For quiz atleast one question is required.</div>`);
+
+        /* $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
             .html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Notice!');
         $("#exampleModalCenter")
@@ -125,17 +135,23 @@ $(document).on("click", ".remove-question", function() {
             .html(
                 '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
             );
-        $("#exampleModalCenter").modal("show");
+        $("#exampleModalCenter").modal("show"); */
     }
 });
 
-$(document).on("click", "#delete-question", function() {
-    $(".slideup-content").slideUp("slow", function() {});
+$(document).on('click', '#cancel-confirm', function() {
+    $(this).parents("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
+    $(this).parents('.confirm-box').remove();
+})
 
+
+$(document).on("click", "#delete-question", function() {
     let element = $(this).attr('data-id');
-    $("#exampleModalCenter").modal("hide");
+    // $("#exampleModalCenter").modal("hide");
     $('#' + element).parents('div.question-section').remove();
     let question_counter;
+    $('div.question-section').find('div.error-msg').remove();
+
     $("div.question-container:visible").each(function(index, elem) {
         question_counter = index + 1;
         $(elem).find("span.question-number").text(question_counter);
@@ -145,65 +161,34 @@ $(document).on("click", "#delete-question", function() {
 
 /* Add Options */
 $(document).on("click", ".add-options", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
-    if (
-        $(this)
-        .parents("div.container")
-        .find("div.option-div > div.input-group > input[type='text']").length >=
-        10
-    ) {
-        $("#exampleModalCenter")
-            .find("#exampleModalLongTitle")
-            .html(`<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4">
-<g>
-	<g>
-		<g>
-			<path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022
-				L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796
-				c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441
-				c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007
-				L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434
-				C482.61,446.047,481.748,448.32,481.101,449.441z"/>
-			<rect x="240.987" y="166.095" width="30.037" height="160.197"/>
-			<circle cx="256.005" cy="376.354" r="20.025"/>
-		</g>
-	</g>
-</g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg> Notice!`);
-        $("#exampleModalCenter")
-            .find(".modal-body")
-            .html("Maximum 10 options allowed for a question");
-        $("#exampleModalCenter")
-            .find(".modal-footer")
-            .html(
-                '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
-            );
-        $("#exampleModalCenter").modal("show");
-        // alert("Maximum 10 options allowed for a Question");
+    $(this).parents('div.card-box:visible').find('.error-msg').remove();
+    if ($(this).parents("div.container").find("div.option-div input[type='text']").length >= 10) {
+        $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! Maximum 10 options allowed for a question.</div>`);
         return false;
-    }
-    $(this).parents(".container").find("div.option-div:last").after(opt.clone());
-    // $("div.input-group.mb-2.option-div").last().find("input");
+    } else {
+        $(this).parents(".container").find("div.option-div:last").after(opt.clone());
+        // $("div.input-group.mb-2.option-div").last().find("input");
 
-    let selector = $(this).parents("div.container");
-    $(selector)
-        .find('div.option-div div.input-group input[type="text"]')
-        .each(function(index, elem) {
-            let counter = index + 1;
-            $(elem).attr({
-                placeholder: "Option " + counter,
+        let selector = $(this).parents("div.container");
+        $(selector)
+            .find('div.option-div div.input-group input[type="text"]')
+            .each(function(index, elem) {
+                let counter = index + 1;
+                $(elem).attr({
+                    placeholder: "Option " + counter,
+                });
+                $(elem).attr({ id: "option" + counter });
+                $(elem)
+                    .parents(".option-div")
+                    .find("input.form-check-input")
+                    .attr({ id: "check" + counter });
             });
-            $(elem).attr({ id: "option" + counter });
-            $(elem)
-                .parents(".option-div")
-                .find("input.form-check-input")
-                .attr({ id: "check" + counter });
-        });
+    }
 });
 
 /* Remove Options */
 $(document).on("click", ".remove-option", function(eve) {
-    $(".slideup-content").slideUp("slow", function() {});
+    $('div.question-section').find('div.error-msg').remove();
 
     if (
         $(this).parents("div.question-container").find("div.option-div").length > 2
@@ -223,8 +208,11 @@ $(document).on("click", ".remove-option", function(eve) {
                     .find("input.form-check-input")
                     .attr({ id: "check" + counter });
             });
+
     } else {
-        $("#exampleModalCenter")
+        $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! At least 2 options required for a Question.</div>`);
+
+        /* $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
             .html(`<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4">
 <g>
@@ -249,13 +237,11 @@ $(document).on("click", ".remove-option", function(eve) {
             .html(
                 '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
             );
-        $("#exampleModalCenter").modal("show");
+        $("#exampleModalCenter").modal("show"); */
     }
 });
 
 $(document).on("click", "#question-done", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $('#question-done').prop('disabled', true);
 
     /* Validate */
@@ -265,6 +251,8 @@ $(document).on("click", "#question-done", function() {
     validate = true;
     $("input[type='text']").removeClass("danger");
     $("label.label-alert").remove();
+    $('div.error-msg').remove();
+
     $("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
 
     $("form")
@@ -409,8 +397,8 @@ $(document).on("click", "#question-done", function() {
                     <div class="clearfix"></div>
                     <hr>
                 </div>
-                <label><strong class="question">${question_text}</strong></label>
-                <p class="mb0">Correct Answer: <span class="correct-answer">${correct_answer}</span></p>
+                <label class="text-justify"><strong class="question">${question_text}</strong></label>
+                <p class="mb0 text-justify">Correct Answer: <span class="correct-answer">${correct_answer}</span></p>
                 <div class="question-inputs" id="quest-text-${text_number}" style="display:none">
                 
                 </div>
@@ -434,22 +422,19 @@ $(document).on("click", "#question-done", function() {
 /***********************************  Add Text *********************************/
 /* Add Content */
 
-$(document).on("click", '#add-content', function() {
+/* $(document).on("click", '#add-content', function() {
     $(".slideup-content").slideToggle("slow", function() {
 
     });
-});
+}); */
 
 $(document).on("click", ".show-setting", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $(".section-1").hide();
     $(".section-1-footer").hide();
     $("form #setting").show();
 });
 
 $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", function() {
-    $(".slideup-content").slideUp("slow", function() {});
 
     $(".text-section").hide();
     $(".text-footer").hide();
@@ -465,9 +450,7 @@ $(document).on("click", "#add-text", function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
 
-    $(".slideup-content").slideUp("slow", function() {});
-
-    $("#exampleModalCenter").modal("hide");
+    // $("#exampleModalCenter").modal("hide");
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -500,7 +483,7 @@ $(document).on("click", "#add-text", function() {
                     <div class="clearfix"></div>
                     <hr>
                 </div>
-                <p class="mb0 text-description-preview">${text_data}</p>
+                <p class="mb0 text-description-preview text-justify">${text_data}</p>
                 <textarea class="textarea-text d-none" >${text_data}</textarea>
             </div>`);
 });
@@ -509,7 +492,6 @@ $(document).on("click", "#add-text", function() {
 $(document).on("click", "#text-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
     console.log('text_number: ' + text_number);
-    $(".slideup-content").slideUp("slow", function() {});
 
     let error_text = "";
     $("textarea").removeClass('danger');
@@ -543,8 +525,8 @@ $(document).on("click", "#text-done", function() {
 $(document).on('click', '#add-photo', function() {
     let text_data = '';
     let text_number = parseInt($("div.training-card-section").length);
-    $(".slideup-content").slideUp("slow", function() {});
-    $("#exampleModalCenter").modal("hide");
+
+    // $("#exampleModalCenter").modal("hide");
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -581,7 +563,7 @@ $(document).on('click', '#add-photo', function() {
                     </div>
                     <div class="row">
                         <div class="col-9">
-                            <p class="mb0 photo-description-preview">${text_data}</p>                    
+                            <p class="mb0 photo-description-preview text-justify">${text_data}</p>                    
                         </div>
                         <div class="col-3">
                             <div class="img-thumbnail">
@@ -602,7 +584,7 @@ $(document).on('click', '#add-photo', function() {
 /* Submit Photo */
 $(document).on("click", "#photo-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
-    $(".slideup-content").slideUp("slow", function() {});
+
     console.log('text_number: ' + text_number);
 
     let error_text = "";
@@ -686,8 +668,7 @@ $(document).on('click', '#add-video', function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
 
-    $(".slideup-content").slideUp("slow", function() {});
-    $("#exampleModalCenter").modal("hide");
+    // $("#exampleModalCenter").modal("hide");
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -724,7 +705,7 @@ $(document).on('click', '#add-video', function() {
                 <hr>
                 <div class="row">
                     <div class="col-9">
-                        <p class="mb0 video-description-preview">${text_data}</p>
+                        <p class="mb0 video-description-preview text-justify">${text_data}</p>
                     </div>
                     <div class="col-3">
                         <div class="embed-responsive embed-responsive-21by9">
@@ -744,7 +725,6 @@ $(document).on('click', '#add-video', function() {
 $(document).on("click", "#video-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
     let video_desc = $('textarea#video-description').val();
-    $(".slideup-content").slideUp("slow", function() {});
     console.log('text_number: ' + text_number);
 
     let error_text = "";
@@ -804,8 +784,7 @@ $(document).on("click", "#video-done", function() {
 $(document).on('click', '#add-document', function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
-    $(".slideup-content").slideUp("slow", function() {});
-    $("#exampleModalCenter").modal("hide");
+    // $("#exampleModalCenter").modal("hide");
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -839,7 +818,7 @@ $(document).on('click', '#add-document', function() {
         </div>
         <div class="row">
             <div class="col-9">
-                <p class="mb0 document-description-preview">${text_data}</p>
+                <p class="mb0 document-description-preview text-justify">${text_data}</p>
             </div>
             <div class="col-3">
                 <div class="img-thumbnail">
@@ -859,7 +838,6 @@ $(document).on('click', '#add-document', function() {
 /* Submit Document */
 $(document).on("click", "#document-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
-    $(".slideup-content").slideUp("slow", function() {});
     console.log('text_number: ' + text_number);
 
     let error_text = "";
@@ -1011,10 +989,24 @@ $(document).on('change', '#upload-document', function() {
 });
 
 $(document).on("click", ".remove-text", function() {
-    let element = '';
+    // let element = '';
     let data_id = $(this).parents('.card-box').attr('data-id');
+    let confirm_box = `
+            <div class="confirm-box">
+                <hr class="hr-danger">
+                <ul class="d-flex table-remove mb-0">
+                    <li><span class="text-danger">Are you sure you want to delete?</span></li>
+                    <li> 
+                        <button class="btn btn-primary btn-sm pull-right" data-id="${data_id}" id="confirm-delete-text">Ok</button> 
+                        <button class="btn btn-primary-outline btn-sm pull-right mr-1" id="cancel-confirm">Close</button>
+                    </li>
+                </ul>
+            </div>
+        `;
+    $(this).parents("div.card-box").find('p:last').after(confirm_box);
+    $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
 
-    $("#exampleModalCenter")
+    /* $("#exampleModalCenter")
         .find("#exampleModalLongTitle")
         .html('<svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs mt--4">< path d = "m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" ></path ><path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path><path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path><path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path></svg > Delete?');
     $("#exampleModalCenter")
@@ -1028,76 +1020,53 @@ $(document).on("click", ".remove-text", function() {
         );
     $("#exampleModalCenter").modal("show");
 
-    element = $(this);
+    element = $(this); */
 
 });
 
 $(document).on("click", "#confirm-delete-text", function() {
     let eve = $(this).attr('data-id');
 
-    $('div.card-box[data-id="' + eve + '"]').remove();
+    $('div.card-box-alert[data-id="' + eve + '"]').remove();
     $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
         $(this).find('span.counter').text(index);
         $(this).attr("data-id", "text-section-" + index);
+        $(this).attr("id", "section-" + index);
         if ($(this).find('div.question-inputs').length > 0) {
             $(this).find('div.question-inputs').attr('id', 'quest-text-' + index);
         }
     });
-
-    $("#exampleModalCenter").modal("hide");
-
 });
 
 
 $(document).on("click", "#next", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     /* Validate */
     let error_text = "";
     let question_number = 0;
 
-    $("form")
-        .find("input[type='text']")
-        .each(function() {
-            let element = $(this);
-            if (element.val() == "") {
-                validate = false;
-                if (element.attr("id").startsWith("question-title")) {
-                    console.log("question_number.length" + question_number.length);
-                    if (
-                        question_number !=
-                        element
-                        .parents("div.form-group")
-                        .find("span.question-number")
-                        .text()
-                    ) {
-                        question_number = element
-                            .parents("div.form-group")
-                            .find("span.question-number")
-                            .text();
-                        error_text += "<h6><u>Question " + question_number + "</u> </h6>";
-                    }
-
-                    error_text += "<p>Question is required. </p>";
-                } else if (element.attr("id").startsWith("option")) {
-                    if (
-                        question_number !=
-                        element.parents("div.card").find("span.question-number").text()
-                    ) {
-                        question_number = element
-                            .parents("div.card")
-                            .find("span.question-number")
-                            .text();
-                        error_text += "<h6><u>Question " + question_number + "</u> </h6>";
-                    }
-
-                    error_text +=
-                        "<p>Blank option not allowed for " +
-                        element.attr("placeholder") +
-                        ".</p>";
+    $("form").find("input[type='text']").each(function() {
+        let element = $(this);
+        if (element.val() == "") {
+            validate = false;
+            if (element.attr("id").startsWith("question-title")) {
+                console.log("question_number.length" + question_number.length);
+                if (question_number != element.parents("div.form-group").find("span.question-number").text()) {
+                    question_number = element.parents("div.form-group").find("span.question-number").text();
+                    error_text += "<h6><u>Question " + question_number + "</u> </h6>";
                 }
+                error_text += "<p>Question is required. </p>";
+            } else if (element.attr("id").startsWith("option")) {
+                if (question_number != element.parents("div.card").find("span.question-number").text()) {
+                    question_number = element
+                        .parents("div.card")
+                        .find("span.question-number")
+                        .text();
+                    error_text += "<h6><u>Question " + question_number + "</u> </h6>";
+                }
+                error_text += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
             }
-        });
+        }
+    });
 
     console.log("error_text.length: " + error_text.length);
     if ($.trim(error_text).length <= 0) {
@@ -1125,8 +1094,6 @@ $(document).on("click", "#next", function() {
 
 /***********************************  Submit Training *********************************/
 $(document).on("click", "#submit", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $("#submit").prop('disabled', true);
     submitForm();
 });
@@ -1149,7 +1116,7 @@ async function getStringKeys() {
     Localizer.getString('option', '').then(function(result) {
         optionKey = result;
     });
-    Localizer.getString('dueIn', ' 1 week', ', Results visible to everyone', ', Correct answer shown after every question').then(function(result) {
+    Localizer.getString('dueIn', ' 1 week, ', 'Correct answer shown after every question').then(function(result) {
         setting_text = result;
         $('#due').text(setting_text);
     });
@@ -1404,9 +1371,7 @@ function createAction(actionPackageId) {
     let trainingExpireDate = $("input[name='expiry_date']").val();
     let trainingExpireTime = $("input[name='expiry_time']").val();
     let resultVisible = $("input[name='visible_to']:checked").val();
-    let showCorrectAnswer = $("#show-correct-answer").is(":checked") ?
-        "Yes" :
-        "No";
+    let showCorrectAnswer = $("#show-correct-answer").is(":checked") ? "Yes" : "No";
     let questionsSet = getQuestionSet();
     let getcorrectanswers = getCorrectAnswer();
     let properties = [];
@@ -1483,12 +1448,13 @@ $(document).ready(function() {
     getStringKeys();
     getTheme();
     console.log('setting_text ' + setting_text);
-
+    $('.training-clear').hide();
 });
 
 async function getTheme() {
     let response = await actionSDK.executeApi(request);
     let context = response.context;
+    lastSession = context.lastSessionData;
 
     let theme = context.theme;
     $("link#theme").attr("href", "css/style-" + theme + ".css");
@@ -1516,49 +1482,88 @@ async function getTheme() {
 
     let current_time = (("0" + new Date().getHours()).substr(-2)) + ":" + (("0" + new Date().getMinutes()).substr(-2));
 
-    $('.form_date input').val(week_date_format);
-    $(".form_date").attr({ "data-date": week_date_format });
+    /* If Edit back the quiz */
+    if (lastSession != null) {
+        let ddtt = ((lastSession.action.customProperties[1].value).split('T'));
+        let dt = ddtt[0].split('-');
+        week_date_format = new Date(dt[1]).toLocaleString('default', { month: 'short' }) + " " + dt[2] + ", " + dt[0];
+        let tt_time = (ddtt[1].split('Z')[0]).split(':');
+        current_time = `${tt_time[0]}:${tt_time[1]}`;
 
-    $('.form_time').datetimepicker({
-        language: 'en',
-        weekStart: 1,
-        todayBtn: 1,
-        autoclose: 1,
-        todayHighlight: 1,
-        startView: 1,
-        minView: 0,
-        maxView: 1,
-        forceParse: 0
-    });
+        if (lastSession.action.customProperties[2].value == 'Everyone') {
+            $('input[name="visible_to"][value="Everyone"]').prop("checked", true);
+        } else {
+            $('input[name="visible_to"][value="Only me"]').prop("checked", true);
+        }
 
-    $('.form_time input').val(current_time);
+        if (lastSession.action.customProperties[3].value == 'Yes') {
+            $('#show-correct-answer').prop("checked", true);
+        } else {
+            $('#show-correct-answer').prop("checked", false);
+        }
+
+        /* Quiz Section */
+        $('#quiz-title').val(lastSession.action.displayName);
+        $('#quiz-description').val(lastSession.action.customProperties[0].value);
 
 
-    let date_input = $('input[name="expiry_date"]');
-    let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
-    let options = {
-        format: 'M dd, yyyy',
-        container: container,
-        todayHighlight: true,
-        autoclose: true,
-        orientation: 'top'
-    };
-    date_input.datepicker(options);
+        /* Due Setting String */
+        let end = new Date(week_date_format + ' ' + current_time);
+        let start = new Date();
+        let days = calc_date_diff(start, end);
 
-    await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
+        let result_visible = lastSession.action.customProperties[2].value == 'Everyone' ? resultEveryoneKey : resultMeKey;
+        let correct_answer = lastSession.action.customProperties[3].value == 'Yes' ? correctAnswerKey : '';
 
-    setTimeout(() => {
-        $("form.sec1").show();
-        $(".section-1").show();
-        $(".section-1-footer").show()
-    }, 1000);
+        Localizer.getString('dueIn', days, correct_answer).then(function(result) {
+            setting_text = result;
+            $('#due').text(setting_text);
+        });
+
+    } else {
+
+        $('.form_date input').val(week_date_format);
+        $(".form_date").attr({ "data-date": week_date_format });
+
+        $('.form_time').datetimepicker({
+            language: 'en',
+            weekStart: 1,
+            todayBtn: 1,
+            autoclose: 1,
+            todayHighlight: 1,
+            startView: 1,
+            minView: 0,
+            maxView: 1,
+            forceParse: 0
+        });
+
+        $('.form_time input').val(current_time);
+
+
+        let date_input = $('input[name="expiry_date"]');
+        let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
+        let options = {
+            format: 'M dd, yyyy',
+            container: container,
+            todayHighlight: true,
+            autoclose: true,
+            orientation: 'top'
+        };
+        date_input.datepicker(options);
+
+        await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
+
+        setTimeout(() => {
+            $("form.sec1").show();
+            $(".section-1").show();
+            $(".section-1-footer").show()
+        }, 1000);
+    }
+
 }
-
 /***********************************  Other Actions *******************************/
 
 $(document).on("click", "#back", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $(".section-2").hide();
     $(".section-2-footer").hide();
 
@@ -1567,8 +1572,6 @@ $(document).on("click", "#back", function() {
 });
 
 $(document).on("click", "#back-setting", function() {
-    $(".slideup-content").slideUp("slow", function() {});
-
     $(".section-1").show();
     $(".section-1-footer").show();
 
@@ -1579,7 +1582,6 @@ $(document).on("click", "#back-setting", function() {
 
 
 $(document).on('click', '#next1', function() {
-    $(".slideup-content").slideUp("slow", function() {});
     $("input[type='text']").removeClass("danger");
     $("label.label-alert").remove();
     $("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
@@ -1643,6 +1645,15 @@ $(document).on('change', '#cover-image', function() {
     $('.img-thumbnail').show();
     $('.training-updated-img').show();
     $('#training-title-image').show();
+    $('.training-clear').show();
+});
+
+$(document).on('click', '.training-clear', function() {
+    $('.photo-box').show();
+    $('.training-updated-img').hide();
+    $('.training-clear').hide();
+    $('#cover-image').val('');
+    $('.img-thumbnail').hide();
 });
 
 $(document).on('click', '.upvj', function(event) {
@@ -1656,13 +1667,16 @@ $(document).on('click', '.upvj', function(event) {
 
 /***********************************  Settings ***************************/
 
-$(document).on("change", "#expiry-date, #expiry-time, .visible-to", function() {
+$(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], .visible-to, #show-correct-answer", function() {
     let end = new Date($('input[name="expiry_date"]').val() + ' ' + $('input[name="expiry_time"]').val());
     let start = new Date();
     let days = calc_date_diff(start, end);
-
+    $(this).parents('div.row').find('.error-msg').remove();
     if (days == undefined) {
+        $(this).parents('div.row').find('div.col-sm-12:first').prepend(`<div class="alert alert-danger error-msg">Alert! Invalid Date or Time!<p>It must be greater than current date and time.</p></div>`);
+        $('#back-setting').parents('a.cursur-pointer').addClass('disabled');
 
+        /* 
         $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
             .html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Notice!');
@@ -1674,11 +1688,18 @@ $(document).on("change", "#expiry-date, #expiry-time, .visible-to", function() {
             .html(
                 '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
             );
-        $("#exampleModalCenter").modal("show");
+        $("#exampleModalCenter").modal("show"); 
+        */
+
     } else {
-        let result_visible = $('.visible-to:checked').val() == 'Everyone' ? 'Results visible to everyone' : 'Results visible to only me';
+        $('#back-setting').parents('a.cursur-pointer').removeClass('disabled');
+        let result_visible = $('.visible-to:checked').val() == 'Everyone' ? resultEveryoneKey : resultMeKey;
+        let correct_answer = $('#show-correct-answer:eq(0)').is(":checked") == true ? correctAnswerKey : '';
         console.log('due: ' + days + ', ' + result_visible);
-        setting_text = ' Due in ' + days + ', ' + result_visible;
+        // setting_text = ' Due in ' + days + ', ' + result_visible;
+        Localizer.getString('dueIn', days, correct_answer).then(function(result) {
+            setting_text = result;
+        });
     }
 });
 
@@ -1689,6 +1710,8 @@ $(document).on("change", "#expiry-date, #expiry-time, .visible-to", function() {
 
 function calc_date_diff(start, end) {
     let days = (end - start) / (1000 * 60 * 60 * 24);
+    let hourText = '';
+    let minuteText = '';
     console.log('days: ' + days);
     if (days > 6) {
         let weeks = Math.ceil(days) / 7;
@@ -1703,14 +1726,14 @@ function calc_date_diff(start, end) {
             minsDiff = minsDiff % 60;
 
             if (hourDiff > 1) {
-                let hourText = 'hours';
+                hourText = 'hours';
             } else {
-                let hourText = 'hour';
+                hourText = 'hour';
             }
             if (hourDiff > 1) {
-                let minuteText = 'minutes';
+                minuteText = 'minutes';
             } else {
-                let minuteText = 'minute';
+                minuteText = 'minute';
             }
             if (hourDiff > 0 && minsDiff > 0) {
                 return hourDiff + ' ' + hourText + ', ' + minsDiff + ' ' + minuteText;
@@ -1808,13 +1831,14 @@ let form_section = `<div class="section-1" style="display:none">
                     </div>
                     <div class="form-group">
                         <label>Cover Image (Optional)</label>
+                        <label class="training-clear cursur-pointer pull-right theme-color">Clear</label>
                         <div class="relative">
                             <!-- hide this div after img added -->
-                            <div class="photo-box card card-bg card-border max-min-220 upvj" >
+                            <div class="photo-box card card-bg card-border max-min-220 upvj cursur-pointer" >
                                 <span>Tap to upload training cover image</span>
                             </div>
                             <!-- show this div after img added -->
-                            <div class="training-updated-img card card-bg card-border max-min-220 upvj" style="display:none">
+                            <div class="training-updated-img card card-bg card-border max-min-220 upvj cursur-pointer" style="display:none">
                                 <img src="" id="training-img-preview">
                             </div>
                         </div> 
@@ -1862,8 +1886,26 @@ let training_section_view = `<div class="section-2" style="display:none">
             </div>
             <div class="container pb-100">
                 <div class="row">
-                    <div class="col-6"><button type="button" class="btn btn-primary btn-sm btn-block" id="add-content"><i class="fa fa-text-width" aria-hidden="true"></i> Add Content</button></div>
-                    <div class="col-6"><button type="button" class="btn btn-primary btn-sm btn-block" id="add-questions"><i class="fa fa-question" aria-hidden="true"></i> Add Question</button></div>
+                    <div class="col-6">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-primary btn-sm  dropdown-toggle dd-btn" id="add-content" data-toggle="dropdown">
+                                <span class="span1">
+                                    Add Content
+                                </span>
+                                <span class="span2">
+                                    <i data-icon-name="ChevronDown" aria-hidden="true" class="ms-Icon root-43"></i>
+                                </span>    
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a id="add-text"><i data-icon-name="InsertTextBox" aria-hidden="true" class="ms-Icon root-43"></i> Text</a></li>
+                                <li><a id="add-photo"><i data-icon-name="PictureFill" aria-hidden="true" class="ms-Icon root-43"></i> Photo</a></li>
+                                <li><a id="add-document"><i data-icon-name="TextDocument" aria-hidden="true" class="ms-Icon root-43"></i> Document</a></li>
+                                <li><a id="add-video"><i data-icon-name="Video" aria-hidden="true" class="ms-Icon root-43"></i> Video</a></li>
+                                <li><a id="add-questions"><i data-icon-name="BulletedList" aria-hidden="true" class="ms-Icon root-43"></i> Quiz</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- <div class="col-6"><button type="button" class="btn btn-primary btn-sm btn-block" id="add-questions"><i class="fa fa-question" aria-hidden="true"></i> Add Question</button></div> -->
                 </div>
             </div>
         </div>
@@ -2276,26 +2318,28 @@ let setting_section1 = `<div class="" style="display: none;" id="setting">
                     </div>
                 </div>
                 <div class="clearfix"></div>
-                <div class="col-12">
-                    <label><strong>Results visible to</strong></label>
-                </div>
-                <div class="clearfix"></div>
-                <div class="col-1"></div>
-                <div class="col-11">
-                    <div class="custom-radio-outer">
-                        <label class="custom-radio">
-                            <input type="radio" name="visible_to" class="visible-to" value="Everyone" checked>
-                            <span class="radio-block"></span> Everyone
-                        </label>
+                <div class="d-none">
+                    <div class="col-12">
+                        <label><strong>Results visible to</strong></label>
                     </div>
-                    <div class="custom-radio-outer">
-                        <label class="custom-radio">
-                            <input type="radio" name="visible_to" class="visible-to" value="Only me"><span
-                                class="radio-block"></span> Only Me
-                        </label>
+                    <div class="clearfix"></div>
+                    <div class="col-1"></div>
+                    <div class="col-11">
+                        <div class="custom-radio-outer">
+                            <label class="custom-radio">
+                                <input type="radio" name="visible_to" class="visible-to" value="Everyone" checked>
+                                <span class="radio-block"></span> Everyone
+                            </label>
+                        </div>
+                        <div class="custom-radio-outer">
+                            <label class="custom-radio">
+                                <input type="radio" name="visible_to" class="visible-to" value="Only me"><span
+                                    class="radio-block"></span> Only Me
+                            </label>
+                        </div>
                     </div>
+                    <div class="clearfix"></div>
                 </div>
-                <div class="clearfix"></div>
                 <div class="col-12">
                     <label><strong>Show correct answer after each question</strong></label>
                 </div>
@@ -2364,26 +2408,28 @@ let setting_section = `<div style="display:none" id="setting">
                     </div>
                 </div>
                 <div class="clearfix"></div>
-                <div class="col-12">
-                    <label><strong class="result-visible-key">${resultVisibleToKey}</strong></label>
-                </div>
-                <div class="clearfix"></div>
-                <div class="col-1"></div>
-                <div class="col-11">
-                    <div class="custom-radio-outer">
-                        <label class="custom-radio">
-                            <input type="radio" name="visible_to" class="visible-to" value="Everyone" checked>
-                            <span class="radio-block"></span> <span class="everyone-key">${everyoneKey}</span>
-                        </label>
+                <div class="d-none">
+                    <div class="col-12">
+                        <label><strong class="result-visible-key">${resultVisibleToKey}</strong></label>
                     </div>
-                    <div class="custom-radio-outer">
-                        <label class="custom-radio">
-                            <input type="radio" name="visible_to" class="visible-to" value="Only me"><span
-                                class="radio-block"></span> <span class="onlyme-key">${onlyMeKey}</span>
-                        </label>
+                    <div class="clearfix"></div>
+                    <div class="col-1"></div>
+                    <div class="col-11">
+                        <div class="custom-radio-outer">
+                            <label class="custom-radio">
+                                <input type="radio" name="visible_to" class="visible-to" value="Everyone" checked>
+                                <span class="radio-block"></span> <span class="everyone-key">${everyoneKey}</span>
+                            </label>
+                        </div>
+                        <div class="custom-radio-outer">
+                            <label class="custom-radio">
+                                <input type="radio" name="visible_to" class="visible-to" value="Only me"><span
+                                    class="radio-block"></span> <span class="onlyme-key">${onlyMeKey}</span>
+                            </label>
+                        </div>
                     </div>
+                    <div class="clearfix"></div>
                 </div>
-                <div class="clearfix"></div>
                 <div class="col-12">
                     <div class="input-group mb-2 form-check custom-check-outer">
                         <label class="custom-check form-check-label">

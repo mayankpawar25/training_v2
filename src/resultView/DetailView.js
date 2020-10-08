@@ -522,7 +522,7 @@ function createReponderQuestionView(userId, responder) {
                     $card_div.append($rowdDiv);
                     $rowdDiv.append($qDiv);
 
-                    let $questionHeading = $("<label></label>");
+                    let $questionHeading = $(`<label class="mb0"></label>`);
                     $questionHeading.append(
                         "<strong>" + count + ". " + question.displayName + "</strong>"
                     );
@@ -531,7 +531,7 @@ function createReponderQuestionView(userId, responder) {
                     $dflex.append($questionHeading);
 
                     $dflex.append(
-                        '<label class="float-right" id="status-' + question.name + '"></label>'
+                        '<label class="float-right mb0" id="status-' + question.name + '"></label>'
                     );
 
                     question.options.forEach((option) => {
@@ -668,122 +668,275 @@ function createQuestionView(userId) {
     $("div#root > div.question-content").html("");
     let count = 1;
     // console.log(JSON.stringify(actionInstance));
+
+
     actionInstance.dataTables.forEach((dataTable) => {
         // let $linebreak = $("<br>");
         // $qDiv.append($linebreak);
 
         dataTable.dataColumns.forEach((question, ind) => {
             answer_is = "";
-
-            let $cardDiv = $('<div class="card-box card-bg card-border"></div>');
-            let $rowdDiv = $('<div class="row"></div>');
-            let $qDiv = $('<div class="col-sm-12"></div>');
-            let $dflex = $("<div class='d-table'></div>");
-
-            $cardDiv.append($rowdDiv);
-            $rowdDiv.append($qDiv);
-
             let count = ind + 1;
-            let $questionHeading = $("<label></label>");
-            $questionHeading.append(
-                "<strong>" + count + ". " + question.displayName + "</strong>"
-            );
 
-            $cardDiv.append($dflex);
-            $dflex.append($questionHeading);
+            let $card_div = $(`<div class="card-blank"></div>`);
+            let $form_group = $(`<div class="form-group"></div>`);
+            let $row = $(`<div class="row"></div>`);
+            let $hover_btn = $('<div class="hover-btn"></div>');
+            $card_div.append($form_group);
+            $form_group.append($row);
+            if (question.name.indexOf("photo") >= 0) {
+                /* Photo Section */
+                let $col_9 = $(`<div class="col-9"></div>`);
+                let content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
+                                    <span class="training-type">Photo</span></strong> 
+                                </label>
+                                <span class="float-right result"></span>
+                                <p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                $form_group.append($row);
+                $row.append($col_9);
+                $col_9.append(content);
 
-            $dflex.append(
-                '<label class="float-right" id="status-' + question.name + '"></label>'
-            );
+                let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
+                let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                if (attachment != undefined) {
+                    let attachment_img = '';
+                    $.each(attachment, function(ind, att) {
+                        attachment_img = att;
+                        return false;
+                    });
 
-            question.options.forEach((option) => {
-                /* User Responded */
-                let userResponse = [];
-                let userResponseAnswer = "";
+                    let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
+                    let filesAmount = Object.keys(attachment).length;
+                    let $col_3 = $(`<div class="col-3"></div>`);
+                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
+                    actionSDK.executeApi(req)
+                        .then(function(response) {
+                            console.info("Attachment - Response: " + JSON.stringify(response));
+                            $img_thumbnail.append(`<img class="image-sec" id="${question.name}" src="${response.attachmentInfo.downloadUrl}"></img>`);
+                            if (filesAmount > 1) {
+                                $img_thumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
+                            }
+                            $col_3.append($img_thumbnail);
+                        })
+                        .catch(function(error) {
+                            console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                        });
 
-                for (let i = 0; i < actionDataRowsLength; i++) {
-                    if (actionDataRows[i].creatorId == userId) {
-                        userResponse = actionDataRows[i].columnValues;
-                        let userResponseLength = Object.keys(userResponse).length;
+                    $row.append($col_3);
+                }
+                $form_group.append($row);
+                $card_div.append($form_group);
+                $("div.question-content:first").append($card_div);
+                $("div.question-content:first").append('<hr>');
+            } else if (question.name.indexOf("document") >= 0) {
+                /* Document Section */
+                let $col_9 = $(`<div class="col-9"></div>`);
+                let content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
+                                    <span class="training-type">Document</span></strong> 
+                                </label>
+                                <span class="float-right result"></span>
+                                <p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                $form_group.append($row);
+                $row.append($col_9);
+                $col_9.append(content);
 
-                        for (let j = 1; j <= userResponseLength; j++) {
-                            // console.log('isJson(userResponse[' + j + '])' + isJson(userResponse[j]));
-                            if (isJson(userResponse[j])) {
-                                let userResponseAns = JSON.parse(userResponse[j]);
-                                let userResponseAnsLen = userResponseAns.length;
-                                // console.log('userResponseAns: ' + JSON.stringify(userResponseAns));
-                                // console.log('userResponseAnsLen: ' + userResponseAnsLen);
-                                if (userResponseAnsLen > 1) {
-                                    console.log("here if block");
-                                    for (let k = 0; k < userResponseAnsLen; k++) {
-                                        console.log("userResponseAns[k]" + userResponseAns[k]);
-                                        if (userResponseAns[k] == option.name) {
-                                            userResponseAnswer = userResponseAns[k];
-                                            // console.log('if userResponseAnswer' + k + ': ' + JSON.stringify(userResponseAnswer));
+                let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
+                let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                if (attachment != undefined) {
+                    let attachment_img = '';
+                    $.each(attachment, function(ind, att) {
+                        attachment_img = att;
+                        return false;
+                    })
+                    let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
+                    let filesAmount = Object.keys(attachment).length;
+                    let $col_3 = $(`<div class="col-3"></div>`);
+                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
+                    actionSDK.executeApi(req)
+                        .then(function(response) {
+                            console.info("Attachment - Response: " + JSON.stringify(response));
+                            $img_thumbnail.append(`<img class="image-sec" id="${question.name}" src="images/doc.png"></img>`);
+                            if (filesAmount > 1) {
+                                $img_thumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
+                            }
+                            $col_3.append($img_thumbnail);
+                        })
+                        .catch(function(error) {
+                            console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                        });
+                    $row.append($col_3);
+                }
+                $form_group.append($row);
+                $card_div.append($form_group);
+                $("div.question-content:first").append($card_div);
+                $("div.question-content:first").append('<hr>');
+            } else if (question.name.indexOf("video") >= 0) {
+                /* Video Section */
+                let $col_9 = $(`<div class="col-9"></div>`);
+                let content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
+                                    <span class="training-type">Document</span></strong> 
+                                </label>
+                                <span class="float-right result"></span>
+                                <p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                $form_group.append($row);
+                $row.append($col_9);
+                $col_9.append(content);
+
+                let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
+                let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                if (attachment != undefined) {
+                    let attachment_img = '';
+                    $.each(attachment, function(ind, att) {
+                        attachment_img = att;
+                        return false;
+                    });
+                    let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
+                    let $col_3 = $(`<div class="col-3"></div>`);
+                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
+                    actionSDK.executeApi(req)
+                        .then(function(response) {
+                            console.info("Attachment - Response: " + JSON.stringify(response));
+                            $img_thumbnail.append(`<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="${data.name}" src="${response.attachmentInfo.downloadUrl}"></video></div>`);
+                            $col_3.append($img_thumbnail);
+                        })
+                        .catch(function(error) {
+                            console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                        });
+                    $row.append($col_3);
+                }
+
+                $form_group.append($row);
+                $card_div.append($form_group);
+                $("div.question-content:first").append($card_div);
+                $("div.question-content:first").append('<hr>');
+            } else {
+                if (question.options.length > 1) {
+                    /* Question Section */
+                    let $rowdDiv = $('<div class="row"></div>');
+                    let $qDiv = $('<div class="col-sm-12"></div>');
+                    let $dflex = $("<div class='d-table'></div>");
+
+                    $card_div.append($rowdDiv);
+                    $rowdDiv.append($qDiv);
+
+                    let $questionHeading = $("<label class='mb0'></label>");
+                    $questionHeading.append(
+                        "<strong>" + count + ". " + question.displayName + "</strong>"
+                    );
+
+                    $card_div.append($dflex);
+                    $dflex.append($questionHeading);
+
+                    $dflex.append(
+                        '<label class="float-right mb0" id="status-' + question.name + '"></label>'
+                    );
+
+                    question.options.forEach((option) => {
+                        /* User Responded */
+                        let userResponse = [];
+                        let userResponseAnswer = "";
+
+                        for (let i = 0; i < actionDataRowsLength; i++) {
+                            if (actionDataRows[i].creatorId == userId) {
+                                userResponse = actionDataRows[i].columnValues;
+                                let userResponseLength = Object.keys(userResponse).length;
+
+                                for (let j = 1; j <= userResponseLength; j++) {
+                                    // console.log('isJson(userResponse[' + j + '])' + isJson(userResponse[j]));
+                                    if (isJson(userResponse[j])) {
+                                        let userResponseAns = JSON.parse(userResponse[j]);
+                                        let userResponseAnsLen = userResponseAns.length;
+                                        // console.log('userResponseAns: ' + JSON.stringify(userResponseAns));
+                                        // console.log('userResponseAnsLen: ' + userResponseAnsLen);
+                                        if (userResponseAnsLen > 1) {
+                                            console.log("here if block");
+                                            for (let k = 0; k < userResponseAnsLen; k++) {
+                                                console.log("userResponseAns[k]" + userResponseAns[k]);
+                                                if (userResponseAns[k] == option.name) {
+                                                    userResponseAnswer = userResponseAns[k];
+                                                    // console.log('if userResponseAnswer' + k + ': ' + JSON.stringify(userResponseAnswer));
+                                                } else {
+                                                    continue;
+                                                }
+                                            }
                                         } else {
-                                            continue;
+                                            userResponseAnswer = userResponseAns;
+                                            // console.log('userResponseAnswer: ' + userResponseAnswer);
+                                        }
+                                    } else {
+                                        console.log(
+                                            "Else: userResponseAns - " + JSON.stringify(userResponse)
+                                        );
+                                        if (userResponse[j] == option.name) {
+                                            userResponseAnswer = userResponse[j];
+                                            // console.log('userResponseAnswer: ' + userResponseAnswer);
                                         }
                                     }
-                                } else {
-                                    userResponseAnswer = userResponseAns;
-                                    // console.log('userResponseAnswer: ' + userResponseAnswer);
-                                }
-                            } else {
-                                console.log(
-                                    "Else: userResponseAns - " + JSON.stringify(userResponse)
-                                );
-                                if (userResponse[j] == option.name) {
-                                    userResponseAnswer = userResponse[j];
-                                    // console.log('userResponseAnswer: ' + userResponseAnswer);
                                 }
                             }
                         }
-                    }
-                }
 
-                /* Correct Answer */
-                let correctResponse = JSON.parse(
-                    actionInstance.customProperties[5].value
-                );
-                let correctResponseLength = Object.keys(correctResponse).length;
-                let correctAnswer = "";
-                for (let j = 0; j < correctResponseLength; j++) {
-                    console.log("correctResponse: " + JSON.stringify(correctResponse[j]));
+                        /* Correct Answer */
+                        let correctResponse = JSON.parse(
+                            actionInstance.customProperties[5].value
+                        );
+                        let correctResponseLength = Object.keys(correctResponse).length;
+                        let correctAnswer = "";
+                        for (let j = 0; j < correctResponseLength; j++) {
+                            console.log("correctResponse: " + JSON.stringify(correctResponse[j]));
 
-                    let correctResponseAns = correctResponse[j];
-                    console.log(
-                        "correctResponseAns: " + JSON.stringify(correctResponseAns)
-                    );
-                    let correctResponseAnsLen = correctResponseAns.length;
-                    for (let k = 0; k < correctResponseAnsLen; k++) {
-                        if (correctResponseAns[k] == option.name) {
-                            console.log("correctAnswer: " + JSON.stringify(correctAnswer));
-                            correctAnswer = correctResponseAns[k];
+                            let correctResponseAns = correctResponse[j];
+                            console.log(
+                                "correctResponseAns: " + JSON.stringify(correctResponseAns)
+                            );
+                            let correctResponseAnsLen = correctResponseAns.length;
+                            for (let k = 0; k < correctResponseAnsLen; k++) {
+                                if (correctResponseAns[k] == option.name) {
+                                    console.log("correctAnswer: " + JSON.stringify(correctAnswer));
+                                    correctAnswer = correctResponseAns[k];
+                                }
+                            }
                         }
+
+
+                        if (question.options.length > 1) {
+                            let $radioOption = getOptions(
+                                option.displayName,
+                                question.name,
+                                option.name,
+                                userResponseAnswer,
+                                correctAnswer,
+                            );
+                            console.log($radioOption);
+                            $card_div.append($radioOption);
+
+                            $card_div.find("#status-" + question.name).html(`<span class="${answer_is == 'Correct' ? 'text-success' : 'text-danger'}">${answer_is}</span>`);
+                        }
+                    });
+
+                    if (answer_is == "Correct") {
+                        score++;
                     }
+                    $("div.question-content:first").append($card_div);
+                    // $("#root").append('<hr>');
+                } else {
+                    /* Text Section */
+                    let $text_section = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
+                                        <span class="training-type">Text</span></strong></label>
+                                        <span class="float-right result"></span>`);
+
+                    let $clearfix = $(`<div class="clearfix"></div>`);
+                    $form_group.append($hover_btn);
+                    $hover_btn.append($text_section);
+                    $form_group.append($clearfix);
+
+                    let $description_section = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                    $card_div.append($description_section);
+                    // $card_div.after('<hr>');
                 }
-
-
-
-                if (question.options.length > 1) {
-                    let $radioOption = getOptions(
-                        option.displayName,
-                        question.name,
-                        option.name,
-                        userResponseAnswer,
-                        correctAnswer
-                    );
-                    console.log($radioOption);
-                    $cardDiv.append($radioOption);
-
-                    $cardDiv.find("#status-" + question.name).html(`<span class="${answer_is == 'Correct' ? 'text-success' : 'text-danger'}">${answer_is}</span>`);
-                }
-            });
-
-            if (answer_is == "Correct") {
-                score++;
+                $("div.question-content:first").append($card_div);
+                $("div.question-content:first").append('<hr>');
             }
-            $("div.question-content:first").append($cardDiv);
         });
         count++;
     });

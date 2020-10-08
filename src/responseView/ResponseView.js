@@ -1,4 +1,5 @@
 import * as actionSDK from "@microsoft/m365-action-sdk";
+import { Localizer } from '../common/ActionSdkHelper';
 
 // ActionSDK.APIs.actionViewDidLoad(true /*success*/ );
 
@@ -7,6 +8,116 @@ let $root = "";
 let row = {};
 let actionInstance = null;
 let summary_answer_resp = [];
+let memberIds = [];
+let myUserId = [];
+let contextActionId;
+let request = '';
+let actionDataRows = null;
+let actionDataRowsLength = 0;
+
+let questionKey = '';
+let questionsKey = '';
+let startKey = '';
+let noteKey = '';
+let choiceAnyChoiceKey = '';
+let continueKey = '';
+let answerResponseKey = '';
+let correctKey = '';
+let yourAnswerKey = '';
+let incorrectKey = '';
+let correctAnswerKey = '';
+let yourAnswerRightKey = '';
+let yourAnswerIsKey = ''
+let rightAnswerIsKey = '';
+let submitKey = '';
+let quizSummaryKey = '';
+let nextKey = '';
+let backKey = '';
+let quizExpiredKey = '';
+
+/* Async method for fetching localization strings */
+async function getStringKeys() {
+    Localizer.getString('question').then(function(result) {
+        questionKey = result;
+        $('.question-key').text(questionKey);
+    });
+
+    Localizer.getString('questions').then(function(result) {
+        questionsKey = result;
+        $('.question-key').text(questionsKey);
+    });
+
+    Localizer.getString('start').then(function(result) {
+        startKey = result;
+        $('#start').text(startKey);
+    });
+
+    Localizer.getString('note').then(function(result) {
+        noteKey = result;
+        $('.note-key').text(noteKey);
+    });
+
+    Localizer.getString('choose_any_choice').then(function(result) {
+        choiceAnyChoiceKey = result;
+    });
+
+    Localizer.getString('continue').then(function(result) {
+        continueKey = result;
+    });
+
+    Localizer.getString('answer_response').then(function(result) {
+        answerResponseKey = result;
+    });
+
+    Localizer.getString('correct').then(function(result) {
+        correctKey = result;
+    });
+
+    Localizer.getString('your_answer').then(function(result) {
+        yourAnswerKey = result;
+    });
+
+    Localizer.getString('incorrect').then(function(result) {
+        incorrectKey = result;
+    });
+
+    Localizer.getString('correct_answer').then(function(result) {
+        correctAnswerKey = result;
+    });
+
+    Localizer.getString('your_answer_is').then(function(result) {
+        yourAnswerIsKey = result;
+    });
+
+    Localizer.getString('right_answer_is').then(function(result) {
+        rightAnswerIsKey = result;
+    });
+
+    Localizer.getString('submit').then(function(result) {
+        submitKey = result;
+        $('.submit-key').text(submitKey);
+    });
+
+    Localizer.getString('quiz_summary').then(function(result) {
+        quizSummaryKey = result;
+    });
+
+    Localizer.getString('next').then(function(result) {
+        nextKey = result;
+        $('.next-key').text(nextKey);
+    });
+
+    Localizer.getString('back').then(function(result) {
+        backKey = result;
+        $('.back-key').text(backKey);
+    });
+
+    Localizer.getString('quiz_expired').then(function(result) {
+        quizExpiredKey = result;
+        $('#quiz-expired-key').text(backKey);
+    });
+
+}
 
 async function getTheme(request) {
     let response = await actionSDK.executeApi(request);
@@ -19,8 +130,6 @@ async function getTheme(request) {
     $("link#theme").attr("href", "css/style-" + theme + ".css");
 
     $('div.section-1').append(`<div class="row"><div class="col-12"><div id="root"></div></div></div>`);
-    $('div.section-1').after(modal_section);
-    // $('div.section-1').after(footer_section);
     $root = $("#root")
 
     setTimeout(() => {
@@ -32,17 +141,46 @@ async function getTheme(request) {
     OnPageLoad();
 }
 
+/* 
+ * @desc Method get Responder Details  
+ * @param action context id
+ */
+async function getResponderIds(actionId) {
+    actionSDK
+        .executeApi(new actionSDK.GetActionDataRows.Request(actionId))
+        .then(function(batchResponse) {
+            actionDataRows = batchResponse.dataRows;
+            actionDataRowsLength = actionDataRows == null ? 0 : actionDataRows.length;
+
+            if (actionDataRowsLength > 0) {
+                for (let i = 0; i < actionDataRowsLength; i++) {
+                    memberIds.push(actionDataRows[i].creatorId);
+                }
+            }
+
+            console.log('memberIds: ');
+            console.log(memberIds);
+        })
+        /* .catch(function(error) {
+            console.error("Console log: Error: " + JSON.stringify(error));
+        }) */
+    ;
+}
+
 // *********************************************** HTML ELEMENT***********************************************
 $(document).ready(function() {
-    let request = new actionSDK.GetContext.Request();
+    request = new actionSDK.GetContext.Request();
     getTheme(request);
 });
 
 function OnPageLoad() {
     actionSDK
-        .executeApi(new actionSDK.GetContext.Request())
+        .executeApi(request)
         .then(function(response) {
             console.info("GetContext - Response: " + JSON.stringify(response));
+            myUserId = response.context.userId;
+            contextActionId = response.context.actionId
+            getResponderIds(contextActionId);
             getActionInstance(response.context.actionId);
         })
         .catch(function(error) {
@@ -64,6 +202,23 @@ function getActionInstance(actionId) {
 }
 
 function createBody() {
+
+    /* Check if already responded */
+    if ($.inArray(myUserId, memberIds) > -1) {
+        getStringKeys();
+        // $('div.section-1').append('<hr>');
+
+        Localizer.getString('alreadyTired').then(function(result) {
+            $('div.section-1').append(`<div><b> ${result} </b></div>`);
+        });
+        /* Localizer.getString('notConsideredFinalScore').then(function(result) {
+            $('div.section-1').append(`<div><small>${result}</small></div>`);
+        }); */
+        // $('div.ection-1').append('<div class="section-2"></div>');
+        // loadSummaryView();
+        // $('div.section-1').after(footer_section1);
+        return;
+    }
 
     /*  Check Expiry date time  */
     let current_time = new Date().getTime();
@@ -113,7 +268,12 @@ function createBody() {
                         let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                         let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                         if (attachment != undefined) {
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            let attachment_img = '';
+                            $.each(attachment, function(ind, att) {
+                                attachment_img = att;
+                                return false;
+                            });
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
                             let filesAmount = Object.keys(attachment).length;
                             actionSDK.executeApi(req)
                                 .then(function(response) {
@@ -194,6 +354,8 @@ function createBody() {
         $('div.section-1').append(`<div class="container pb-100"></div>`);
         $('div.section-1').after(footer_section1);
     }
+
+
 }
 
 $(document).on('click', '.submit-form', function() {
@@ -502,7 +664,6 @@ function createTrainingSection(index_num) {
 
                                 $carousel.append($ol_section);
                                 $carousel.append($carousel_inner);
-
                                 console.log('filesAmount: ' + filesAmount);
 
                                 let count = 0;
@@ -672,6 +833,9 @@ $(document).on('click', '#check', function() {
         $('#next').prop('disabled', false);
     }
 
+    if ($('.error-msg').length > 0)
+        $('.error-msg').remove();
+
     /* Validate if show answer is Yes */
     if (is_checked == true) {
         is_checked = false;
@@ -690,7 +854,13 @@ $(document).on('click', '#check', function() {
             correct_answer = false;
         }
 
-        summary_answer_resp.push(correct_answer);
+        $('div.section-2').find('div.card-box').each(function(inde, ele) {
+            if ($(ele).is(':visible')) {
+                summary_answer_resp[inde] = correct_answer;
+                return false;
+            }
+        });
+        // summary_answer_resp.push(correct_answer);
 
         $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
             correct_ans_arr.push($.trim($('#' + subarr).text()));
@@ -746,18 +916,18 @@ $(document).on('click', '#check', function() {
 
                 $('#check').text('Next').attr('id', 'next');
             }
-        }
-    } else {
-        $('#exampleModalCenter').find('#exampleModalLongTitle').html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Note!');
-        $('#exampleModalCenter').find('.modal-body').html(`<label>Please choose any choice<label>`);
-        $('#exampleModalCenter').find('.modal-footer').html('<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Continue</button>');
-        $('#exampleModalCenter').find('#save-changes').hide();
-        $('#exampleModalCenter').modal('show');
 
-        $("#exampleModalCenter").on("hidden.bs.modal", function() {
-            $('#next').attr('disabled', false);
-            // $('.card-box.card-border.card-bg:visible').find('input').prop('disabled', false);
-        });
+            $('div.section-2').find('div.card-box:visible').find("input").each(function(ind, ele) {
+                $(ele).parent('label').attr('disabled', true);
+                if ($(ele).parents('div.custom-radio-outer').length > 0)
+                    $(ele).parents('div.custom-radio-outer').addClass('disabled');
+                else
+                    $(ele).parents('div.custom-check-outer').addClass('disabled');
+            });
+        }
+
+    } else {
+        $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Note! Please choose any choice</div>`);
     }
 
 });
@@ -765,6 +935,10 @@ $(document).on('click', '#check', function() {
 $(document).on('click', '#next', function() {
     let data = [];
     let limit = $('#y').text();
+
+    if ($('.error-msg').length > 0)
+        $('.error-msg').remove();
+
 
     /* Validate */
     if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
@@ -831,7 +1005,13 @@ $(document).on('click', '#next', function() {
                 correct_answer = false;
             }
 
-            summary_answer_resp.push(correct_answer);
+            $('div.section-2').find('div.card-box').each(function(inde, ele) {
+                if ($(ele).is(':visible')) {
+                    summary_answer_resp[inde] = correct_answer;
+                    return false;
+                }
+            });
+            // summary_answer_resp.push(correct_answer);
 
             $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
                 correct_ans_arr.push($.trim($('#' + subarr).text()));
@@ -843,13 +1023,7 @@ $(document).on('click', '#next', function() {
                 if (correct_answer == true) {
                     /* If Correct Answer */
                     pagination++;
-                    $('div.section-2').find('div.card-box:visible').find("input").each(function(ind, ele) {
-                        $(ele).parent('label').attr('disabled', true);
-                        if ($(ele).parents('div.custom-radio-outer').length > 0)
-                            $(ele).parents('div.custom-radio-outer').addClass('disabled');
-                        else
-                            $(ele).parents('div.custom-check-outer').addClass('disabled');
-                    });
+
                     let limit = $('#y').text();
                     console.log(`${pagination} < ${limit}`);
                     if (pagination < limit) {
@@ -939,7 +1113,14 @@ $(document).on('click', '#next', function() {
                     }
                     $('#x').text((pagination + 1));
 
-                    summary_answer_resp.push(true);
+                    $('div.section-2').find('div.card-box').each(function(inde, ele) {
+                        if ($(ele).is(':visible')) {
+                            summary_answer_resp[inde] = true;
+                            return false;
+                        }
+                    });
+
+                    // summary_answer_resp.push(true);
 
                 } else {
                     /* Show Summary */
@@ -950,16 +1131,7 @@ $(document).on('click', '#next', function() {
 
             }
         } else {
-            $('#exampleModalCenter').find('#exampleModalLongTitle').html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Note!');
-            $('#exampleModalCenter').find('.modal-body').html(`<label>Please choose any choice<label>`);
-            $('#exampleModalCenter').find('.modal-footer').html('<button type="button" class="btn btn-primary btn-sm" data-dismiss="modal">Continue</button>');
-            $('#exampleModalCenter').find('#save-changes').hide();
-            $('#exampleModalCenter').modal('show');
-
-            $("#exampleModalCenter").on("hidden.bs.modal", function() {
-                $('#next').attr('disabled', false);
-                // $('.card-box.card-border.card-bg:visible').find('input').prop('disabled', false);
-            });
+            $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Note! Please choose any choice</div>`);
         }
 
         if (pagination >= limit) {
@@ -1009,6 +1181,10 @@ $(document).on('click', '#next', function() {
 
 $(document).on('click', '#back', function() {
     console.log(`${pagination} <= 1`)
+
+    if ($('.error-msg').length > 0)
+        $('.error-msg').remove();
+
     if ($('#check').length > 0) {
         $('#check').text('Next').attr('id', 'next');
     }
@@ -1044,27 +1220,6 @@ let footer_section = `<div class="footer" style="display:none;">
                     <div class="col-12 text-right">
                         <button class="btn btn-primary btn-sm float-right submit-form">Submit</button>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-let modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
-        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title app-black-color" id="exampleModalLongTitle">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body app-black-color">
-                    ...
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Back</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="save-changes">Save changes</button>
                 </div>
             </div>
         </div>
