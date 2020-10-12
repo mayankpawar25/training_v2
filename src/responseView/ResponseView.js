@@ -362,14 +362,6 @@ $(document).on('click', '.submit-form', function() {
     submitForm();
 })
 
-function isJson(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
 
 function createQuestionView(index_num) {
     let count = 1;

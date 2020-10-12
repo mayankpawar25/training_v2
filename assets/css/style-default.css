@@ -1366,3 +1366,7 @@ body {
 .hr-danger {
     border-color: var(--danger-color);
 }
+
+p {
+    word-break: break-all;
+}

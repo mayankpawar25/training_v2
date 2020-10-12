@@ -422,12 +422,6 @@ $(document).on("click", "#question-done", function() {
 /***********************************  Add Text *********************************/
 /* Add Content */
 
-/* $(document).on("click", '#add-content', function() {
-    $(".slideup-content").slideToggle("slow", function() {
-
-    });
-}); */
-
 $(document).on("click", ".show-setting", function() {
     $(".section-1").hide();
     $(".section-1-footer").hide();
@@ -639,6 +633,9 @@ $(document).on("click", "#photo-done", function() {
         let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
         let attachment_request = '';
         let attachmentId = {};
+
+        $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
+
         for (let i = 0; i < image_counter; i++) {
             let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
             console.log('file_data: ');
@@ -651,12 +648,9 @@ $(document).on("click", "#photo-done", function() {
             actionSDK.executeApi(attachment_request)
                 .then(function(response) {
                     attachmentId[i] = response.attachmentId;
-
-                    if (i >= (image_counter - 1)) {
-                        console.log('attachmentId: ');
-                        console.log(attachmentId);
-                        $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" >' + JSON.stringify(attachmentId) + '</textarea>');
-                    }
+                    console.log('attachmentId: ');
+                    console.log(attachmentId);
+                    $("#section-" + text_number).find('textarea#attachment-id').val(JSON.stringify(attachmentId));
                 });
         }
 
@@ -758,6 +752,8 @@ $(document).on("click", "#video-done", function() {
     let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
     let attachment_request = '';
     let attachmentId = {};
+    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
+
     for (let i = 0; i < image_counter; i++) {
         let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
         console.log('file_data: ');
@@ -771,11 +767,9 @@ $(document).on("click", "#video-done", function() {
             .then(function(response) {
                 attachmentId[i] = response.attachmentId;
 
-                if (i >= (image_counter - 1)) {
-                    console.log('attachmentId: ');
-                    console.log(attachmentId);
-                    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" >' + JSON.stringify(attachmentId) + '</textarea>');
-                }
+                console.log('attachmentId: ');
+                console.log(attachmentId);
+                $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
             });
     }
 });
@@ -876,6 +870,7 @@ $(document).on("click", "#document-done", function() {
     let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
     let attachment_request = '';
     let attachmentId = {};
+    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
     for (let i = 0; i < image_counter; i++) {
         let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
         console.log('file_data: ');
@@ -889,11 +884,9 @@ $(document).on("click", "#document-done", function() {
             .then(function(response) {
                 attachmentId[i] = response.attachmentId;
 
-                if (i >= (image_counter - 1)) {
-                    console.log('attachmentId: ');
-                    console.log(attachmentId);
-                    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" >' + JSON.stringify(attachmentId) + '</textarea>');
-                }
+                console.log('attachmentId: ');
+                console.log(attachmentId);
+                $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
             });
     }
 });
@@ -913,11 +906,15 @@ let imagesPreview = function(input, placeToInsertImagePreview) {
         let filesAmount = input.files.length;
 
         if (filesAmount > 10) {
-            let svg = '<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg >';
-            let title = 'Notice!';
             let msg = 'Maximum 10 images allowed at a time';
-            showAlert(svg, title, msg);
+            $('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! ${msg}</div>`);
+            $('.photo-done').addClass('disabled');
+
+            // showAlert(svg, title, msg);
             return false;
+        } else {
+            $('.error-msg').remove();
+            $('.photo-done').removeClass('disabled');
         }
 
         $('.updated-img').html('');
@@ -1521,46 +1518,429 @@ async function getTheme() {
         });
 
     } else {
-
-        $('.form_date input').val(week_date_format);
-        $(".form_date").attr({ "data-date": week_date_format });
-
-        $('.form_time').datetimepicker({
-            language: 'en',
-            weekStart: 1,
-            todayBtn: 1,
-            autoclose: 1,
-            todayHighlight: 1,
-            startView: 1,
-            minView: 0,
-            maxView: 1,
-            forceParse: 0
-        });
-
-        $('.form_time input').val(current_time);
-
-
-        let date_input = $('input[name="expiry_date"]');
-        let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
-        let options = {
-            format: 'M dd, yyyy',
-            container: container,
-            todayHighlight: true,
-            autoclose: true,
-            orientation: 'top'
-        };
-        date_input.datepicker(options);
-
-        await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
-
         setTimeout(() => {
             $("form.sec1").show();
             $(".section-1").show();
             $(".section-1-footer").show()
         }, 1000);
     }
+    $('.form_date input').val(week_date_format);
+    $(".form_date").attr({ "data-date": week_date_format });
 
+    $('.form_time').datetimepicker({
+        language: 'en',
+        weekStart: 1,
+        todayBtn: 1,
+        autoclose: 1,
+        todayHighlight: 1,
+        startView: 1,
+        minView: 0,
+        maxView: 1,
+        forceParse: 0
+    });
+
+    $('.form_time input').val(current_time);
+    let date_input = $('input[name="expiry_date"]');
+    let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
+    let options = {
+        format: 'M dd, yyyy',
+        container: container,
+        todayHighlight: true,
+        autoclose: true,
+        orientation: 'top'
+    };
+    date_input.datepicker(options);
+
+    await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
+
+    if (lastSession != null) {
+        $(".sec1").show();
+        $(".section-1").hide();
+        $(".section-1-footer").hide();
+        $('.section-2').show();
+        $('div.section-2-footer').show();
+        getStringKeys();
+
+        console.log('lastSession: ');
+        console.log(JSON.stringify(lastSession));
+        $('#training-title').val(lastSession.action.displayName);
+        $('#training-description').val(lastSession.action.customProperties[0].value);
+        $('#training-title-content').text(lastSession.action.displayName);
+        $('#training-description-content').text(lastSession.action.customProperties[0].value);
+
+        /* Check if image upload for training */
+        let req = new actionSDK.GetAttachmentInfo.Request(lastSession.action.customProperties[4].value);
+
+        actionSDK.executeApi(req)
+            .then(function(response) {
+                console.info("Attachment - Response: " + JSON.stringify(response));
+                $('#training-title-image').attr('src', `${response.attachmentInfo.downloadUrl}`);
+                $('#training-img-preview').attr('src', `${response.attachmentInfo.downloadUrl}`);
+                $('.section-1').find('.training-updated-img').show();
+                $('.section-1').find('.photo-box').hide();
+                $('.section-2').find('.img-thumbnail').show();
+                $('.section-2').find('#training-title-image').show();
+            })
+            /* .catch(function(error) {
+                console.error("AttachmentAction - Error: " + JSON.stringify(error));
+            }) */
+        ;
+        $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
+        $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+        $('#cover-image').after('<span name="is_edit" class="training-is_edit" >Edit</span>');
+
+        /* Create Text and Question summary */
+        lastSession.action.dataTables.forEach((dataTable) => {
+            dataTable.dataColumns.forEach((data, ind) => {
+                let counter = ind + 1;
+                if (data.valueType == 'LargeText') {
+                    /* Call Text Section 1 */
+                    // let counter = $('div.card-box').length;
+                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+
+                    if (data.name.indexOf("photo") >= 0) {
+                        let photo_sec = `<div class="card-box card-bg card-border training-card-section section-div photo-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                                            <div class="form-group">
+                                                <div class="row">
+                                                    <div class="col-12">
+                                                        <div class="hover-btn">
+                                                            <label class="mb-0">
+                                                                <strong><span class="counter">${counter}</span>. <span class="type">Photo</span></strong> 
+                                                            </label>
+                                                            <button type="button" class="close remove-text" data-dismiss="alert">
+                                                                <span aria-hidden="true">
+                                                                    <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                        <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                        <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                        <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                        <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    </svg>
+                                                                </span>
+                                                                <span class="sr-only">Close</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="clearfix"></div>
+                                                        <hr>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-9">
+                                                        <p class="mb0 photo-description-preview text-justify">${data.displayName}</p>
+                                                    </div>
+                                                    <div class="col-3">
+                                                        <div class="img-thumbnail">
+                                                            <img id="image-sec-${counter}" src="">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <textarea class="textarea-photo-description d-none"></textarea><textarea id="attachment-id" class="d-none"></textarea>
+                                            <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple="">
+                                        </div>`;
+
+                        $('div.section-2 div#root').append(photo_sec);
+                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                        if (attachment != undefined) {
+                            $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
+
+                            let attachment_img = '';
+                            $.each(attachment, function(ind, att) {
+                                attachment_img = att;
+                                return false;
+                            });
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
+                            let filesAmount = Object.keys(attachment).length;
+                            actionSDK.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: " + JSON.stringify(response));
+                                    $("img#image-sec-" + counter).attr('src', response.attachmentInfo.downloadUrl);
+                                    if (filesAmount > 1)
+                                        $("img#image-sec-" + counter).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                                })
+                                /* .catch(function(error) {
+                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                }) */
+                            ;
+
+                            console.log('filesAmount: ' + filesAmount);
+                        }
+                    } else if (data.name.indexOf("document") >= 0) {
+                        let document_section = `<div class="card-box card-bg card-border training-card-section section-div document-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                                                    <div class="form-group">
+                                                        <div class="hover-btn">
+                                                            <label class="mb-0">
+                                                                <strong><span class="counter">${counter}</span>. <span class="type">Document</span></strong> 
+                                                            </label>
+                                                            <button type="button" class="close remove-text" data-dismiss="alert">
+                                                                <span aria-hidden="true">
+                                                                    <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                        <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                        <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                        <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                        <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    </svg>
+                                                                </span>
+                                                                <span class="sr-only">Close</span>
+                                                            </button>
+                                                        </div>
+                                                        <div class="clearfix"></div>
+                                                        <hr>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-9">
+                                                            <p class="mb0 document-description-preview text-justify">${data.displayName}</p>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <div class="img-thumbnail">
+                                                                <img id="image-sec-${counter}" src="images/doc.png">                
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <textarea class="textarea-document" style="display:none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a052fa39-60f3-4bb0-964b-9236dc562852"}</textarea>
+                                                    <input type="file" id="upload-document" accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf" src="images/px-img.png" style="width:100%; height: 180px; display:none">
+                                                </div>`;
+                        $('div.section-2 div#root').append(document_section);
+                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                        if (attachment != undefined) {
+                            $('#section-' + counter + ' textarea#textarea-document').val(attachment);
+                        }
+
+                    } else if (data.name.indexOf("video") >= 0) {
+                        let video_section = `<div class="card-box card-bg card-border training-card-section section-div video-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                                                <div class="form-group">
+                                                    <div class="hover-btn">
+                                                        <label class="mb-0">
+                                                            <strong><span class="counter">${counter}</span>. <span class="type">Video</span></strong> 
+                                                        </label>
+                                                        <button type="button" class="close remove-text" data-dismiss="alert">
+                                                            <span aria-hidden="true">
+                                                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                    <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                    <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                </svg>
+                                                            </span>
+                                                            <span class="sr-only">Close</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="clearfix"></div>
+                                                    <hr>
+                                                    <div class="row">
+                                                        <div class="col-9">
+                                                            <p class="mb0 video-description-preview text-justify">${data.displayName}</p>
+                                                        </div>
+                                                        <div class="col-3">
+                                                            <div class="embed-responsive embed-responsive-21by9">
+                                                                <video controls="" class="video" id="video-sec-${counter}" src="">
+                                                                </video>
+                                                            </div>        
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <textarea class="textarea-video d-none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a367aca8-ef8d-4094-b256-4eb3707e911e"}</textarea>
+                                                <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
+                                            </div>`;
+                        $('div.section-2 div#root').append(video_section);
+                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                        if (attachment != undefined) {
+                            $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
+                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            actionSDK.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: " + JSON.stringify(response));
+                                    $(`#section-${counter}`).find(`#video-sec-${counter}`).attr('src', response.attachmentInfo.downloadUrl);
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                });
+                        }
+                    } else {
+                        /* text */
+                        let text_section = `<div class="card-box card-bg card-border training-card-section section-div text-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                                                <div class="form-group">
+                                                    <div class="hover-btn">
+                                                        <label class="mb-0"><strong><span class="counter">${counter}</span>. <span class="type">Text</span></strong> </label>
+                                                        <button type="button" class="close remove-text" data-dismiss="alert">
+                                                            <span aria-hidden="true">
+                                                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                    <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                    <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                </svg>
+                                                            </span>
+                                                            <span class="sr-only">Close</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="clearfix"></div>
+                                                    <hr>
+                                                </div>
+                                                <p class="mb0 text-description-preview text-justify">${data.displayName}</p>
+                                                <textarea class="textarea-text d-none">${data.displayName}</textarea>
+                                                <textarea id="training-attachment-id" class="d-none"></textarea>
+                                            </div>`;
+                        $('div.section-2 div#root').append(text_section);
+                    }
+
+                } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
+                    /* Call Question Section 1 */
+                    let options_counter = numbertowords(data.options.length);
+                    let correct_opt = '';
+                    let opts = '';
+                    data.options.forEach((opt, inde) => {
+                        let ques_ans_arr = $.parseJSON(lastSession.action.customProperties[5].value)[0];
+                        ques_ans_arr.forEach((qo, indqo) => {
+                            console.log('qo: ');
+                            console.log(qo);
+                            console.log(opt.name);
+                            if (opt.name == qo) {
+                                opts += `<input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes" checked=true>
+                                <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>`;
+                                correct_opt += `<li>${opt.displayName}</li>`;
+                            } else {
+                                opts += `<input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes">
+                                <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>`;
+                            }
+                        });
+
+                    });
+                    let quest_section = `<div class="card-box card-bg card-border training-card-section section-div question-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                                            <div class="form-group">
+                                                <div class="hover-btn h-32">
+                                                    <label><strong><span class="counter">5</span>. Question with <span class="option-counter"> ${options_counter} </span> option </strong> </label>
+                                                    <button type="button" class="close remove-text" data-dismiss="alert">
+                                                        <span aria-hidden="true">
+                                                            <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                            </svg>
+                                                        </span>
+                                                        <span class="sr-only">Close</span>
+                                                    </button>
+                                                </div>
+                                                <div class="clearfix"></div>
+                                                <hr>
+                                            </div>
+                                            <label><strong class="question">${data.displayName}</strong></label>
+                                            <p class="mb0">Correct Answer: 
+                                                <span class="correct-answer">
+                                                    <ul>
+                                                        ${correct_opt}
+                                                    </ul>
+                                                </span>
+                                            </p>
+    
+                                            <div class="question-inputs" id="quest-text-${counter}" style="display:none">
+                                                <input type="text" class="form-control in-t" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title" value="${data.displayName}">
+                                                ${opts}                 
+                                            </div>
+                                        </div>`;
+                    $('div.section-2 div#root').append(quest_section);
+
+                }
+            });
+        });
+
+
+
+        /* setTimeout(() => {
+            let option = $("div#option-section .option-div").clone();
+
+            lastSession.action.dataTables[0].dataColumns.forEach((e, ind) => {
+                let correct_ans_arr = JSON.parse(lastSession.action.customProperties[4].value);
+
+                if (ind == 0) {
+                    $('#question1').find('#question-title').val(e.displayName);
+                    e.options.forEach((opt, i) => {
+                        let counter = i + 1;
+                        if (i <= 1) {
+                            $('#question1').find('#option' + counter).val(opt.displayName);
+                        } else {
+                            $('#question1').find("div.option-div:last").after(option.clone());
+
+                            Localizer.getString('option', counter).then(function(result) {
+
+                                $('#question1').find("div.option-div:last input[type='text']").attr({
+                                    placeholder: result,
+                                });
+                                $('#question1').find("div.option-div:last input[type='text']").attr({ id: "option" + counter }).val(opt.displayName);
+                                $('#question1').find("div.option-div:last input[type='text']")
+                                    .parents(".option-div")
+                                    .find("input.form-check-input")
+                                    .attr({ id: "check" + counter });
+                            });
+                        }
+                        $.each(correct_ans_arr, function(cindex, c_ans) {
+                            if ($.inArray("question1option" + counter, c_ans) != -1) {
+                                $('#question1').find('#check' + counter).prop('checked', true);
+                                $('#question1').find('#option' + counter).parents('div.input-group.input-group-tpt.mb-2').find('.check-opt span.input-group-text.input-tpt').addClass('text-success');
+                                $('#question1').find('#option' + counter).parents('div.input-group.input-group-tpt.mb-2').find(' .checked-status').text('Correct Answer');
+                            }
+                        });
+                    });
+                } else {
+                    let qcounter = ind + 1;
+                    let ocounter = 0;
+                    $('#add-questions').parents("div.container").before(question_section.clone());
+
+                    $("div.container.question-container:visible:last").attr('id', 'question' + qcounter);
+                    $("#question" + qcounter).find("span.question-number").text(qcounter + ".");
+                    $('#question' + qcounter).find('#question-title').val(e.displayName);
+
+                    Localizer.getString('enterTheQuestion').then(function(result) {
+                        $("div.container.question-container:visible:last").find('input[type="text"]').attr({
+                            placeholder: result,
+                        });
+                    });
+                    e.options.forEach((opt, i) => {
+                        ocounter = i + 1;
+                        if (i <= 1) {
+                            $('#question' + qcounter).find('#option' + ocounter).val(opt.displayName);
+                        } else {
+                            $('#question' + qcounter).find("div.option-div:last").after(option.clone());
+
+                            Localizer.getString('option', ocounter).then(function(result) {
+
+                                $('#question' + qcounter).find("div.option-div:visible:last input[type='text']").attr({
+                                    placeholder: result,
+                                });
+                                $('#question' + qcounter).find("div.option-div:last input[type='text']").attr({ id: "option" + ocounter }).val(opt.displayName);
+                                $('#question' + qcounter).find("div.option-div:last input[type='text']")
+                                    .parents(".option-div")
+                                    .find("input.form-check-input")
+                                    .attr({ id: "check" + ocounter });
+                            });
+                        }
+                        $.each(correct_ans_arr, (cindex, c_ans) => {
+                            if ($.inArray("question" + qcounter + "option" + ocounter, c_ans) != -1) {
+                                $('#question' + qcounter).find('#check' + ocounter).prop('checked', true);
+                                $('#question' + qcounter).find('#option' + ocounter).parents('div.input-group.input-group-tpt.mb-2').find('.check-opt span.input-group-text.input-tpt').addClass('text-success');
+                                $('#question' + qcounter).find('#option' + ocounter).parents('div.input-group.input-group-tpt.mb-2').find(' .checked-status').text('Correct Answer');
+                            }
+                        });
+                    });
+                }
+            });
+        }, 1000);
+     */
+    }
 }
+
+function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 /***********************************  Other Actions *******************************/
 
 $(document).on("click", "#back", function() {
@@ -1579,7 +1959,6 @@ $(document).on("click", "#back-setting", function() {
     console.log('setting_text ' + setting_text);
     $('#due').text(setting_text);
 });
-
 
 $(document).on('click', '#next1', function() {
     $("input[type='text']").removeClass("danger");
@@ -1602,10 +1981,10 @@ $(document).on('click', '#next1', function() {
                     $("#training-title").addClass("danger");
                     $("#training-title").before(`<label class="label-alert d-block"><small>Required</small></label>`);
                 }
-                if (element.attr("id") == "training-description") {
+                /* if (element.attr("id") == "training-description") {
                     $("#training-description").addClass("danger");
                     $("#training-description").before(`<label class="label-alert d-block"><small>Required</small></label>`);
-                }
+                } */
             } else {
                 $('.section-1').hide();
                 $('div.section-1-footer').hide();
@@ -1637,7 +2016,6 @@ $(document).on('click', '#next1', function() {
             });
     }
 });
-
 
 $(document).on('change', '#cover-image', function() {
     readURL(this, '#training-img-preview, #training-title-image');
@@ -1673,24 +2051,8 @@ $(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], 
     let days = calc_date_diff(start, end);
     $(this).parents('div.row').find('.error-msg').remove();
     if (days == undefined) {
-        $(this).parents('div.row').find('div.col-sm-12:first').prepend(`<div class="alert alert-danger error-msg">Alert! Invalid Date or Time!<p>It must be greater than current date and time.</p></div>`);
+        $(this).parents('div.row').find('div.col-sm-12:first').prepend(`<div class="alert alert-danger error-msg">Alert! Invalid Date or Time!<p class="mb-0">It must be greater than current date and time.</p></div>`);
         $('#back-setting').parents('a.cursur-pointer').addClass('disabled');
-
-        /* 
-        $("#exampleModalCenter")
-            .find("#exampleModalLongTitle")
-            .html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Notice!');
-        $("#exampleModalCenter")
-            .find(".modal-body")
-            .html("<p><strong>Invalid Date or Time!</strong></p><p>It must be greater than current date and time.</p>");
-        $("#exampleModalCenter")
-            .find(".modal-footer")
-            .html(
-                '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
-            );
-        $("#exampleModalCenter").modal("show"); 
-        */
-
     } else {
         $('#back-setting').parents('a.cursur-pointer').removeClass('disabled');
         let result_visible = $('.visible-to:checked').val() == 'Everyone' ? resultEveryoneKey : resultMeKey;
@@ -1797,20 +2159,6 @@ function readURL(input, elem) {
     }
 }
 
-function showAlert(svg, title, message) {
-    $("#exampleModalCenter")
-        .find("#exampleModalLongTitle")
-        .html(`${svg} ${title}`);
-    $("#exampleModalCenter")
-        .find(".modal-body")
-        .html(`${message}`);
-    $("#exampleModalCenter")
-        .find(".modal-footer")
-        .html(
-            `<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>`
-        );
-    $("#exampleModalCenter").modal("show");
-}
 /***********************************  Methods Ends ***************************/
 
 
@@ -1941,7 +2289,7 @@ let questions_section = `<div class="question-section">
                         <div class="input-group-append">
                             <span class="question-number input-group-text input-tpt pl-0 strong" style="cursor: pointer;">1.</span>
                         </div>
-                        <input type="text" class="form-control in-t" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
+                        <input type="text" class="form-control in-t pr-35" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
                         <div class="input-group-append">
                             <span class="input-group-text remove-question remove-option-q input-tpt" style="cursor: pointer;" aria-hidden="true">
                                 <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
