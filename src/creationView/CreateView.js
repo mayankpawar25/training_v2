@@ -1,21 +1,15 @@
-import * as actionSDK from "@microsoft/m365-action-sdk";
-import { Localizer } from '../common/ActionSdkHelper';
+import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
 
-// let question_counter = 1
-let questionCount = 0;
 let questions = new Array();
 let validate = true;
 let setting_text = '';
 
-let question_section = '';
 let opt = '';
 let request;
-let lastSession = '';
+let lastSession = null;
 
-let optionKey = '';
 let addMoreOptionsKey = '';
 let choicesKey = '';
-let questionTitleKey = '';
 let checkMeKey = '';
 let nextKey = '';
 let backKey = '';
@@ -32,6 +26,7 @@ let answerCannotChangeKey = '';
 
 /***********************************  Manage Questions *********************************/
 $(document).on("click", "#add-questions", function() {
+    $('.error-msg').remove();
     $('.section-2').hide();
     $('.section-2-footer').hide();
 
@@ -108,34 +103,10 @@ $(document).on("click", ".remove-question", function() {
 
         $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
         $(this).parents("div.question-container").find('div.d-flex').after(confirm_box);
-        /* $("#exampleModalCenter")
-            .find("#exampleModalLongTitle")
-            .html('<svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs mt--4">< path d = "m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" ></path ><path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path><path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path><path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path></svg > Delete?');
-        $("#exampleModalCenter")
-            .find(".modal-body")
-            .html("Are you sure you want to delete?");
-        $("#exampleModalCenter")
-            .find(".modal-footer")
-            .html(
-                '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button><button type="button" data-id="' + data_id + '" class="btn btn-primary" id="delete-question">Ok</button>'
-            );
-        $("#exampleModalCenter").modal("show"); */
-
     } else {
-        $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! For quiz atleast one question is required.</div>`);
-
-        /* $("#exampleModalCenter")
-            .find("#exampleModalLongTitle")
-            .html('<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4"><g><g><g><path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434C482.61,446.047,481.748,448.32,481.101,449.441z"/><rect x="240.987" y="166.095" width="30.037" height="160.197" /><circle cx="256.005" cy="376.354" r="20.025" /></g></g></g > <g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg > Notice!');
-        $("#exampleModalCenter")
-            .find(".modal-body")
-            .html("For quiz atleast one question is required.");
-        $("#exampleModalCenter")
-            .find(".modal-footer")
-            .html(
-                '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
-            );
-        $("#exampleModalCenter").modal("show"); */
+        Localizer.getString('atleast_one_question').then(function(result) {
+            $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
+        });
     }
 });
 
@@ -144,10 +115,8 @@ $(document).on('click', '#cancel-confirm', function() {
     $(this).parents('.confirm-box').remove();
 })
 
-
 $(document).on("click", "#delete-question", function() {
     let element = $(this).attr('data-id');
-    // $("#exampleModalCenter").modal("hide");
     $('#' + element).parents('div.question-section').remove();
     let question_counter;
     $('div.question-section').find('div.error-msg').remove();
@@ -163,12 +132,12 @@ $(document).on("click", "#delete-question", function() {
 $(document).on("click", ".add-options", function() {
     $(this).parents('div.card-box:visible').find('.error-msg').remove();
     if ($(this).parents("div.container").find("div.option-div input[type='text']").length >= 10) {
-        $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! Maximum 10 options allowed for a question.</div>`);
+        Localizer.getString('maximum_ten_options').then(function(result) {
+            $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
+        })
         return false;
     } else {
         $(this).parents(".container").find("div.option-div:last").after(opt.clone());
-        // $("div.input-group.mb-2.option-div").last().find("input");
-
         let selector = $(this).parents("div.container");
         $(selector)
             .find('div.option-div div.input-group input[type="text"]')
@@ -210,34 +179,9 @@ $(document).on("click", ".remove-option", function(eve) {
             });
 
     } else {
-        $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! At least 2 options required for a Question.</div>`);
-
-        /* $("#exampleModalCenter")
-            .find("#exampleModalLongTitle")
-            .html(`<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512;" xml:space="preserve" class="gt gs mt--4">
-<g>
-	<g>
-		<g>
-			<path d="M507.113,428.415L287.215,47.541c-6.515-11.285-18.184-18.022-31.215-18.022c-13.031,0-24.7,6.737-31.215,18.022
-				L4.887,428.415c-6.516,11.285-6.516,24.76,0,36.044c6.515,11.285,18.184,18.022,31.215,18.022h439.796
-				c13.031,0,24.7-6.737,31.215-18.022C513.629,453.175,513.629,439.7,507.113,428.415z M481.101,449.441
-				c-0.647,1.122-2.186,3.004-5.202,3.004H36.102c-3.018,0-4.556-1.881-5.202-3.004c-0.647-1.121-1.509-3.394,0-6.007
-				L250.797,62.559c1.509-2.613,3.907-3.004,5.202-3.004c1.296,0,3.694,0.39,5.202,3.004L481.1,443.434
-				C482.61,446.047,481.748,448.32,481.101,449.441z"/>
-			<rect x="240.987" y="166.095" width="30.037" height="160.197"/>
-			<circle cx="256.005" cy="376.354" r="20.025"/>
-		</g>
-	</g>
-</g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g><g></g></svg> Notice!`);
-        $("#exampleModalCenter")
-            .find(".modal-body")
-            .html("At least 2 options required for a Question.");
-        $("#exampleModalCenter")
-            .find(".modal-footer")
-            .html(
-                '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
-            );
-        $("#exampleModalCenter").modal("show"); */
+        Localizer.getString('two_option_error').then(function(result) {
+            $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
+        });
     }
 });
 
@@ -269,24 +213,13 @@ $(document).on("click", "#question-done", function() {
 
                 if (element.attr("id").startsWith("question-title")) {
                     $(this).addClass("danger");
-                    $(this)
-                        .parents("div.input-group")
-                        .before(
-                            '<label class="label-alert d-block"><small>Required</small></label>'
-                        );
+                    $(this).parents("div.input-group").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
 
                 } else if (element.attr("id").startsWith("option")) {
                     $(this).addClass("danger");
-                    $(this)
-                        .parents("div.input-group")
-                        .before(
-                            '<label class="label-alert d-block"><small>Required</small></label>'
-                        );
+                    $(this).parents("div.input-group").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
 
-                    error_text +=
-                        "<p>Blank option not allowed for " +
-                        element.attr("placeholder") +
-                        ".</p>";
+                    error_text += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
                 }
             }
         });
@@ -312,11 +245,10 @@ $(document).on("click", "#question-done", function() {
             });
         if (is_selected == 0) {
             validate = false;
-            $("#question" + i)
-                .find("div.input-group:first")
-                .before(
-                    '<label class="label-alert d-block"><small>Please select correct choice for the question</small></label>'
-                );
+
+            Localizer.getString('correct_choice').then(function(result) {
+                $("#question" + i).find("div.input-group:first").before(`<label class="label-alert d-block"><small>${result}</small></label>`);
+            });
 
             $("#submit").prop('disabled', false);
 
@@ -346,7 +278,7 @@ $(document).on("click", "#question-done", function() {
 
             let text_number = parseInt($("div.training-card-section").length);
 
-            console.log(`text_number: ${text_number}`);
+
 
             /*  Get selected Answer */
             let correct = [];
@@ -441,10 +373,10 @@ $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", 
 
 /* Add Text */
 $(document).on("click", "#add-text", function() {
+    $('.error-msg').remove();
+    $('#submit').attr('disabled', false);
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
-
-    // $("#exampleModalCenter").modal("hide");
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -485,18 +417,18 @@ $(document).on("click", "#add-text", function() {
 /* Submit Text */
 $(document).on("click", "#text-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
-    console.log('text_number: ' + text_number);
+
 
     let error_text = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
     if ($("textarea#training-text").val().length <= 0) {
-        $("textarea#training-text").before(`<label class="label-alert d-block">Required</label>`);
+        $("textarea#training-text").before(`<label class="label-alert d-block">${requiredKey}</label>`);
         $("textarea#training-text").focus();
         $("textarea#training-text").addClass('danger');
     } else {
-        console.log(`text_number: ${text_number}`);
+
         let text_desc = $('textarea#training-text').val();
         $('.text-section').hide();
         $('.text-footer').hide();
@@ -519,8 +451,8 @@ $(document).on("click", "#text-done", function() {
 $(document).on('click', '#add-photo', function() {
     let text_data = '';
     let text_number = parseInt($("div.training-card-section").length);
-
-    // $("#exampleModalCenter").modal("hide");
+    $('.error-msg').remove();
+    $('#submit').attr('disabled', false);
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -578,16 +510,13 @@ $(document).on('click', '#add-photo', function() {
 /* Submit Photo */
 $(document).on("click", "#photo-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
-
-    console.log('text_number: ' + text_number);
-
     let error_text = "";
     $("input[type='file']#upload-photo").removeClass('danger');
     $("label.label-alert").remove();
 
     if ($("input[type='file']#upload-photo").val().length <= 0) {
         if ($("input[type='file']#upload-photo").val().length <= 0) {
-            $("input[type='file']#upload-photo").before(`<label class="label-alert d-block">Required</label>`);
+            $("input[type='file']#upload-photo").before(`<label class="label-alert d-block">${requiredKey}</label>`);
             $("input[type='file']#upload-photo").focus();
             $("input[type='file']#upload-photo").addClass('danger');
         }
@@ -609,6 +538,8 @@ $(document).on("click", "#photo-done", function() {
         /* File reader */
         let input = $("input[type='file']#upload-photo")[0];
         if (input.files) {
+            $('#submit').attr('disabled', true);
+
             let filesAmount = input.files.length;
 
             let count = 0;
@@ -616,7 +547,7 @@ $(document).on("click", "#photo-done", function() {
                 let reader = new FileReader();
                 reader.onload = function(event) {
                     if (count == 0) {
-                        console.log("#section-" + text_number);
+
                         $("#section-" + text_number).find("#image-sec-" + text_number).attr({ "src": event.target.result });
 
                         if (filesAmount > 1)
@@ -638,19 +569,19 @@ $(document).on("click", "#photo-done", function() {
 
         for (let i = 0; i < image_counter; i++) {
             let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
-            console.log('file_data: ');
-            console.log(file_data);
-            let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
-            attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
-                console.log("Status: " + status);
-            });
 
-            actionSDK.executeApi(attachment_request)
+
+            let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
+            attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+
+            ActionHelper.executeApi(attachment_request)
                 .then(function(response) {
                     attachmentId[i] = response.attachmentId;
-                    console.log('attachmentId: ');
-                    console.log(attachmentId);
                     $("#section-" + text_number).find('textarea#attachment-id').val(JSON.stringify(attachmentId));
+
+                    if (Object.keys(attachmentId).length == image_counter) {
+                        $('#submit').attr('disabled', false);
+                    }
                 });
         }
 
@@ -661,8 +592,8 @@ $(document).on("click", "#photo-done", function() {
 $(document).on('click', '#add-video', function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
-
-    // $("#exampleModalCenter").modal("hide");
+    $('.error-msg').remove();
+    $('#submit').attr('disabled', false);
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -719,17 +650,17 @@ $(document).on('click', '#add-video', function() {
 $(document).on("click", "#video-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
     let video_desc = $('textarea#video-description').val();
-    console.log('text_number: ' + text_number);
+
 
     let error_text = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
-    if ($("input[type='file']#upload-video")[0].files[0].name.length <= 0) {
-        $("input[type='file']#upload-video").before(`<label class="label-alert d-block">Required</label>`);
-        $("input[type='file']#upload-video").focus();
-        $("input[type='file']#upload-video").addClass('danger');
+    if ($("input[type='file']#upload-video").val() == '') {
+        $('div.card-box:visible').find('.form-group:first').prepend(`<label class="label-alert d-block">${requiredKey}</label>`);
+        $('div.card-box:visible').find(".video-box").focus().addClass('danger');
     } else {
+        $('.label-alert').remove();
         $('.text-section').hide();
         $('.text-footer').hide();
 
@@ -741,36 +672,39 @@ $(document).on("click", "#video-done", function() {
             $(this).attr({ 'id': 'section-' + index });
             $(this).find('span.counter').text(index);
         });
-        // readURL($("input[type='file']#upload-video")[0], "#image-sec-" + text_number);
-
         let fileInput = document.getElementById('upload-video');
         let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
         $("#section-" + text_number).find("#video-sec-" + text_number).attr("src", fileUrl);
         $("#section-" + text_number).find('textarea.textarea-video').val(video_desc);
         $("#section-" + text_number).find('.video-description-preview').text(video_desc);
-    }
-    let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
-    let attachment_request = '';
-    let attachmentId = {};
-    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
 
-    for (let i = 0; i < image_counter; i++) {
-        let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
-        console.log('file_data: ');
-        console.log(file_data);
-        let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
-        attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
-            console.log("Status: " + status);
-        });
+        let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
+        let attachment_request = '';
+        let attachmentId = {};
+        $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
 
-        actionSDK.executeApi(attachment_request)
-            .then(function(response) {
-                attachmentId[i] = response.attachmentId;
+        for (let i = 0; i < image_counter; i++) {
+            $('#submit').attr('disabled', true);
 
-                console.log('attachmentId: ');
-                console.log(attachmentId);
-                $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
-            });
+            let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+
+
+            let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
+            attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+
+            ActionHelper.executeApi(attachment_request)
+                .then(function(response) {
+                    attachmentId[i] = response.attachmentId;
+
+
+
+                    $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
+
+                    if (Object.keys(attachmentId).length == image_counter) {
+                        $('#submit').attr('disabled', false);
+                    }
+                });
+        }
     }
 });
 
@@ -778,7 +712,8 @@ $(document).on("click", "#video-done", function() {
 $(document).on('click', '#add-document', function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
-    // $("#exampleModalCenter").modal("hide");
+    $('.error-msg').remove();
+    $('#submit').attr('disabled', false);
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -832,7 +767,7 @@ $(document).on('click', '#add-document', function() {
 /* Submit Document */
 $(document).on("click", "#document-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
-    console.log('text_number: ' + text_number);
+
 
     let error_text = "";
     $("textarea").removeClass('danger');
@@ -840,12 +775,12 @@ $(document).on("click", "#document-done", function() {
 
     if ($("input[type='file']#upload-document").val().length <= 0) {
         if ($("input[type='file']#upload-document").val().length <= 0) {
-            $("input[type='file']#upload-document").before(`<label class="label-alert d-block">Required</label>`);
+            $("input[type='file']#upload-document").before(`<label class="label-alert d-block">${requiredKey}</label>`);
             $("input[type='file']#upload-document").focus();
             $("input[type='file']#upload-document").addClass('danger');
         }
     } else {
-        console.log(`text_number: ${text_number}`);
+
 
         $('.text-section').hide();
         $('.text-footer').hide();
@@ -862,8 +797,6 @@ $(document).on("click", "#document-done", function() {
 
         $('#section-' + text_number).find('textarea.textarea-document').val($('#document-description').val());
         $('#section-' + text_number).find('.document-description-preview').text($('#document-description').val());
-
-        // readURL($("input[type='file']#upload-photo")[0], "#image-sec-" + text_number);
         $("#section-" + text_number).find("#image-sec-" + text_number).attr('src', 'images/doc.png');
         $("#section-" + text_number).find("#image-sec-" + text_number).parents('div.row').find('p.document-description-preview').after('<hr><p>File name: <span class="doc-name">' + $("input[type='file']#upload-document")[0].files[0].name + '</span></p>');
     }
@@ -872,27 +805,28 @@ $(document).on("click", "#document-done", function() {
     let attachmentId = {};
     $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
     for (let i = 0; i < image_counter; i++) {
-        let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
-        console.log('file_data: ');
-        console.log(file_data);
-        let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
-        attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
-            console.log("Status: " + status);
-        });
+        $('#submit').attr('disabled', true);
 
-        actionSDK.executeApi(attachment_request)
+        let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+
+
+        let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
+        attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+        ActionHelper.executeApi(attachment_request)
             .then(function(response) {
                 attachmentId[i] = response.attachmentId;
 
-                console.log('attachmentId: ');
-                console.log(attachmentId);
+
+
                 $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
+                if (Object.keys(attachmentId).length == image_counter) {
+                    $('#submit').attr('disabled', false);
+                }
             });
     }
 });
 
 $(document).on('change', '#upload-photo', function() {
-    // readURL(this, '#photo-image-preview');
     if (imagesPreview(this, '.updated-img')) {
         $('.photo-box').hide();
         $('.change-link').show();
@@ -906,11 +840,14 @@ let imagesPreview = function(input, placeToInsertImagePreview) {
         let filesAmount = input.files.length;
 
         if (filesAmount > 10) {
-            let msg = 'Maximum 10 images allowed at a time';
-            $('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Alert! ${msg}</div>`);
+            Localizer.getString('maximum_images_allowed').then(function(result) {
+                let msg = result;
+                Localizer.getString('alert').then(function(result) {
+                    $('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${alert} ${msg}</div>`);
+                })
+            })
             $('.photo-done').addClass('disabled');
 
-            // showAlert(svg, title, msg);
             return false;
         } else {
             $('.error-msg').remove();
@@ -938,7 +875,6 @@ let imagesPreview = function(input, placeToInsertImagePreview) {
                                 </div>`);
                 $carousel_inner.append($img_div);
                 count++;
-                // $($.parseHTML('<img>')).attr('src', event.target.result).appendTo(placeToInsertImagePreview);
             }
 
             reader.readAsDataURL(input.files[i]);
@@ -969,7 +905,6 @@ $(document).on('click', '.carousel-control-next', function() {
 });
 
 $(document).on('change', '#upload-video', function() {
-    // readURL(this, '#video-section-preview');
     let fileInput = document.getElementById('upload-video');
     let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
     $('.updated-video').show();
@@ -982,11 +917,9 @@ $(document).on('change', '#upload-document', function() {
     if ($(this)[0].files[0].name != undefined || $(this)[0].files[0].name != null)
         $('.doc-name').html('');
     $('.doc-name').append(`<a>${$(this)[0].files[0].name}</a>`);
-    // readURL(this, '#document-section-preview');
 });
 
 $(document).on("click", ".remove-text", function() {
-    // let element = '';
     let data_id = $(this).parents('.card-box').attr('data-id');
     let confirm_box = `
             <div class="confirm-box">
@@ -1002,22 +935,6 @@ $(document).on("click", ".remove-text", function() {
         `;
     $(this).parents("div.card-box").find('p:last').after(confirm_box);
     $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
-
-    /* $("#exampleModalCenter")
-        .find("#exampleModalLongTitle")
-        .html('<svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs mt--4">< path d = "m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" ></path ><path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path><path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path><path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path></svg > Delete?');
-    $("#exampleModalCenter")
-        .find(".modal-body")
-        .html("Are you sure you want to delete?");
-    $("#exampleModalCenter")
-        .find(".modal-footer")
-        .html(
-            `<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>
-            <button data-id="${data_id}" type="button" class="btn btn-primary" id="confirm-delete-text">Ok</button>`
-        );
-    $("#exampleModalCenter").modal("show");
-
-    element = $(this); */
 
 });
 
@@ -1035,7 +952,6 @@ $(document).on("click", "#confirm-delete-text", function() {
     });
 });
 
-
 $(document).on("click", "#next", function() {
     /* Validate */
     let error_text = "";
@@ -1046,7 +962,7 @@ $(document).on("click", "#next", function() {
         if (element.val() == "") {
             validate = false;
             if (element.attr("id").startsWith("question-title")) {
-                console.log("question_number.length" + question_number.length);
+
                 if (question_number != element.parents("div.form-group").find("span.question-number").text()) {
                     question_number = element.parents("div.form-group").find("span.question-number").text();
                     error_text += "<h6><u>Question " + question_number + "</u> </h6>";
@@ -1065,13 +981,12 @@ $(document).on("click", "#next", function() {
         }
     });
 
-    console.log("error_text.length: " + error_text.length);
+
     if ($.trim(error_text).length <= 0) {
         $(".section-1").hide();
         $("form").append($("#setting").clone());
         $("form #setting").show();
     } else {
-        // alert(error_text);
         $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
             .html('<img src="images/error.png"/> Error!');
@@ -1195,17 +1110,97 @@ async function getStringKeys() {
         answerCannotChangeKey = result;
         $('.answer-cannot-change-key').text(answerCannotChangeKey);
     });
+
+    Localizer.getString('training_title').then(function(result) {
+        $('#training-title').attr('placeholder', result)
+    });
+
+    Localizer.getString('training_description').then(function(result) {
+        $('#training-description').attr('placeholder', result);
+    });
+
+    Localizer.getString('cover_image').then(function(result) {
+        $('.cover-image-label').text(result)
+    });
+
+    Localizer.getString('tap_upload_image').then(function(result) {
+        $('.tap-upload-label').text(result);
+    });
+
+    Localizer.getString('tap_upload_file').then(function(result) {
+        $('.tap-upload-files-label').text(result);
+    });
+
+    Localizer.getString('tap_upload_video').then(function(result) {
+        $('.tap-upload-video-label').text(result);
+    });
+
+    Localizer.getString('dueBy').then(function(result) {
+        $('.due-by-label').text(result);
+    });
+
+    Localizer.getString('add_content').then(function(result) {
+        $('.add-content-label').text(result);
+    });
+
+    Localizer.getString('photo').then(function(result) {
+        $('.photo-label').text(result);
+    });
+
+    Localizer.getString('video').then(function(result) {
+        $('.video-label').text(result);
+    });
+
+    Localizer.getString('document').then(function(result) {
+        $('.document-label').text(result);
+    });
+
+    Localizer.getString('text').then(function(result) {
+        $('.text-label').text(result);
+        $('.text-label-placeholder').text(result);
+    });
+
+    Localizer.getString('quiz').then(function(result) {
+        $('.quiz-label').text(result);
+    });
+
+    Localizer.getString('done').then(function(result) {
+        $('.done-label').text(result);
+    });
+
+    Localizer.getString('tap_upload_photo').then(function(result) {
+        $('.tap-upload-label').text(result);
+    });
+
+    Localizer.getString('upload_photo').then(function(result) {
+        $('.upload-photo-label').text(result);
+    });
+
+    Localizer.getString('description_content_about').then(function(result) {
+        $('.desc-content-about-placeholder').attr('placeholder', result);
+    });
+
+    Localizer.getString('add_questions').then(function(result) {
+        $('.add-question-label').text(result);
+    })
 }
 
 function submitForm() {
-    actionSDK
+    ActionHelper
         .executeApi(request)
         .then(function(response) {
             console.info("GetContext - Response: " + JSON.stringify(response));
-            createAction(response.context.actionPackageId);
+            if ($('.section-2').find('div.card-box:visible').length > 1) {
+                createAction(response.context.actionPackageId);
+            } else {
+                $('#submit').attr('disabled', true);
+                Localizer.getString('atleast_one_conent').then(function(result) {
+                    $('.section-2').find('div.card-box:visible').before(`<div class="alert alert-danger error-msg">${result}</div>`);
+                });
+            }
         })
         .catch(function(error) {
-            console.error("GetContext - Error: " + JSON.stringify(error));
+            console.error("GetContext - Error123: " + JSON.stringify(error));
         });
 }
 
@@ -1215,7 +1210,7 @@ function getQuestionSet() {
     $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
         if ($(elem).hasClass("question-section-div") == true) {
             /* Get Questions */
-            let option_type = actionSDK.ActionDataColumnValueType.SingleOption;
+            let option_type = ActionHelper.ActionDataColumnValueType.SingleOption;
             let question_id = $(elem).find('span.counter').text();
             let option = [];
 
@@ -1225,11 +1220,9 @@ function getQuestionSet() {
                 let opt_title = $("div.section-2 #quest-text-" + question_id).find("#option" + count).val();
 
                 if ($("div.section-2 #quest-text-" + question_id).find("input[type=checkbox]:checked").length > 1) {
-                    console.log("multiselect");
-                    option_type = actionSDK.ActionDataColumnValueType.MultiOption;
+                    option_type = ActionHelper.getColumnType('multiselect');
                 } else {
-                    console.log("singleselect");
-                    option_type = actionSDK.ActionDataColumnValueType.SingleOption;
+                    option_type = ActionHelper.getColumnType('singleselect');
                 }
                 option.push({ name: opt_id, displayName: opt_title });
             });
@@ -1248,11 +1241,11 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("text-section-div") == true) {
 
             /*  Get Text  */
-            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option_type = ActionHelper.getColumnType('largetext');
             let option = [];
             let opt_id = $(elem).find('span.counter').text();
             let opt_title = $(elem).find('textarea').val();
-            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+
             option.push({ name: opt_id, displayName: opt_title });
 
             let val = {
@@ -1266,11 +1259,11 @@ function getQuestionSet() {
             questions.push(val);
         } else if ($(elem).hasClass("photo-section-div") == true) {
             /* Photo */
-            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option_type = ActionHelper.getColumnType('largetext');
             let option = [];
             let opt_id = $(elem).find('span.counter').text();
             let opt_title = $(elem).find('textarea').val();
-            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+
             let display_name_arr = { 'description': opt_title, 'attachmentId': $(elem).find('textarea#attachment-id').val() };
             option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
 
@@ -1286,11 +1279,11 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("document-section-div") == true) {
             /* Document */
             let attachmentId = $(elem).find('textarea#attachment-id').val();
-            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option_type = ActionHelper.getColumnType('largetext');
             let option = [];
             let opt_id = $(elem).find('span.counter').text();
             let opt_title = $(elem).find('textarea').val();
-            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+
             let display_name_arr = { 'description': opt_title, 'attachmentId': (attachmentId) };
             option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
 
@@ -1306,11 +1299,11 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("video-section-div") == true) {
             /* Video */
             let attachmentId = $(elem).find('textarea#attachment-id').val();
-            let option_type = actionSDK.ActionDataColumnValueType.LargeText;
+            let option_type = ActionHelper.getColumnType('largetext');
             let option = [];
             let opt_id = $(elem).find('span.counter').text();
             let opt_title = $(elem).find('textarea').val();
-            console.log(`name: ${opt_id}, displayName: ${opt_title}`);
+
             let display_name_arr = { 'description': opt_title, 'attachmentId': (attachmentId) };
             option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
 
@@ -1364,7 +1357,7 @@ function getCorrectAnswer() {
 function createAction(actionPackageId) {
     let trainingTitle = $("#training-title").val();
     let trainingDescription = $("#training-description").val();
-    console.log(`trainingTitle: ${trainingTitle} : trainingDescription: ${trainingDescription}`);
+
     let trainingExpireDate = $("input[name='expiry_date']").val();
     let trainingExpireTime = $("input[name='expiry_time']").val();
     let resultVisible = $("input[name='visible_to']:checked").val();
@@ -1395,8 +1388,8 @@ function createAction(actionPackageId) {
     });
     properties.push(getcorrectanswers);
 
-    console.log('properties:');
-    console.log(properties);
+
+
 
     let action = {
         id: generateGUID(),
@@ -1408,18 +1401,18 @@ function createAction(actionPackageId) {
         customProperties: properties,
         dataTables: [{
             name: "TestDataSet",
-            itemsVisibility: actionSDK.Visibility.All,
-            rowsVisibility: resultVisible == "Everyone" ? actionSDK.Visibility.All : actionSDK.Visibility.All,
+            itemsVisibility: ActionHelper.visibility(),
+            rowsVisibility: resultVisible == "Everyone" ? ActionHelper.visibility() : ActionHelper.visibility(),
             itemsEditable: false,
             canUserAddMultipleItems: false,
             dataColumns: questionsSet
         }]
     };
-    console.log("action: ");
-    console.log(JSON.stringify(action));
 
-    let request = new actionSDK.CreateAction.Request(action);
-    actionSDK
+
+
+    let request = ActionHelper.createAction(action);
+    ActionHelper
         .executeApi(request)
         .then(function(response) {
             console.info("CreateAction - Response: " + JSON.stringify(response));
@@ -1441,165 +1434,158 @@ function generateGUID() {
 
 
 $(document).ready(function() {
-    request = new actionSDK.GetContext.Request();
+    request = ActionHelper.getContextRequest();
     getStringKeys();
     getTheme();
-    console.log('setting_text ' + setting_text);
     $('.training-clear').hide();
 });
 
 async function getTheme() {
-    let response = await actionSDK.executeApi(request);
-    let context = response.context;
-    lastSession = context.lastSessionData;
+    let response = '';
+    let context = '';
+    ActionHelper.executeApi(request).then(function(res) {
+        response = res;
+        context = response.context;
+        lastSession = context.lastSessionData;
 
-    let theme = context.theme;
-    $("link#theme").attr("href", "css/style-" + theme + ".css");
-
-
-    $('form.sec1').append(form_section);
-    $('form.sec1').append(setting_section);
-    $('form.sec1').append(training_section_view);
-    $('form.sec1').after(option_section);
-    $('form.sec1').after(modal_section);
-    $('form.sec1').after(toggle_section);
+        let theme = context.theme;
+        $("link#theme").attr("href", "css/style-" + theme + ".css");
 
 
-    // question_section = $("#question-section div.container").clone();
-    opt = $("div#option-section .option-div").clone();
+        $('form.sec1').append(form_section);
+        $('form.sec1').append(setting_section);
+        $('form.sec1').append(training_section_view);
+        $('form.sec1').after(option_section);
+        $('form.sec1').after(modal_section);
+        $('form.sec1').after(toggle_section);
+        opt = $("div#option-section .option-div").clone();
 
-    let week_date = new Date(new Date().setDate(new Date().getDate() + 7))
-        .toISOString()
-        .split("T")[0];
+        let week_date = new Date(new Date().setDate(new Date().getDate() + 7))
+            .toISOString()
+            .split("T")[0];
 
-    let week_month = new Date(week_date).toLocaleString('default', { month: 'short' });
-    let week_d = new Date(week_date).getDate();
-    let week_year = new Date(week_date).getFullYear();
-    let week_date_format = week_month + " " + week_d + ", " + week_year;
+        let week_month = new Date(week_date).toLocaleString('default', { month: 'short' });
+        let week_d = new Date(week_date).getDate();
+        let week_year = new Date(week_date).getFullYear();
+        let week_date_format = week_month + " " + week_d + ", " + week_year;
 
-    let current_time = (("0" + new Date().getHours()).substr(-2)) + ":" + (("0" + new Date().getMinutes()).substr(-2));
+        let current_time = (("0" + new Date().getHours()).substr(-2)) + ":" + (("0" + new Date().getMinutes()).substr(-2));
 
-    /* If Edit back the quiz */
-    if (lastSession != null) {
-        let ddtt = ((lastSession.action.customProperties[1].value).split('T'));
-        let dt = ddtt[0].split('-');
-        week_date_format = new Date(dt[1]).toLocaleString('default', { month: 'short' }) + " " + dt[2] + ", " + dt[0];
-        let tt_time = (ddtt[1].split('Z')[0]).split(':');
-        current_time = `${tt_time[0]}:${tt_time[1]}`;
 
-        if (lastSession.action.customProperties[2].value == 'Everyone') {
-            $('input[name="visible_to"][value="Everyone"]').prop("checked", true);
+        /* If Edit back the quiz */
+        if (lastSession != null) {
+            let ddtt = ((lastSession.action.customProperties[1].value).split('T'));
+            let dt = ddtt[0].split('-');
+            week_date_format = new Date(dt[1]).toLocaleString('default', { month: 'short' }) + " " + dt[2] + ", " + dt[0];
+            let tt_time = (ddtt[1].split('Z')[0]).split(':');
+            current_time = `${tt_time[0]}:${tt_time[1]}`;
+
+            if (lastSession.action.customProperties[2].value == 'Everyone') {
+                $('input[name="visible_to"][value="Everyone"]').prop("checked", true);
+            } else {
+                $('input[name="visible_to"][value="Only me"]').prop("checked", true);
+            }
+
+            if (lastSession.action.customProperties[3].value == 'Yes') {
+                $('#show-correct-answer').prop("checked", true);
+            } else {
+                $('#show-correct-answer').prop("checked", false);
+            }
+
+            /* Quiz Section */
+            $('#quiz-title').val(lastSession.action.displayName);
+            $('#quiz-description').val(lastSession.action.customProperties[0].value);
+
+
+            /* Due Setting String */
+            let end = new Date(week_date_format + ' ' + current_time);
+            let start = new Date();
+            let days = calc_date_diff(start, end);
+
+            let result_visible = lastSession.action.customProperties[2].value == 'Everyone' ? resultEveryoneKey : resultMeKey;
+            let correct_answer = lastSession.action.customProperties[3].value == 'Yes' ? correctAnswerKey : '';
+
+            Localizer.getString('dueIn', days, correct_answer).then(function(result) {
+                setting_text = result;
+                $('#due').text(setting_text);
+            });
+
         } else {
-            $('input[name="visible_to"][value="Only me"]').prop("checked", true);
-        }
-
-        if (lastSession.action.customProperties[3].value == 'Yes') {
-            $('#show-correct-answer').prop("checked", true);
-        } else {
-            $('#show-correct-answer').prop("checked", false);
-        }
-
-        /* Quiz Section */
-        $('#quiz-title').val(lastSession.action.displayName);
-        $('#quiz-description').val(lastSession.action.customProperties[0].value);
-
-
-        /* Due Setting String */
-        let end = new Date(week_date_format + ' ' + current_time);
-        let start = new Date();
-        let days = calc_date_diff(start, end);
-
-        let result_visible = lastSession.action.customProperties[2].value == 'Everyone' ? resultEveryoneKey : resultMeKey;
-        let correct_answer = lastSession.action.customProperties[3].value == 'Yes' ? correctAnswerKey : '';
-
-        Localizer.getString('dueIn', days, correct_answer).then(function(result) {
-            setting_text = result;
-            $('#due').text(setting_text);
-        });
-
-    } else {
-        setTimeout(() => {
             $("form.sec1").show();
             $(".section-1").show();
             $(".section-1-footer").show()
-        }, 1000);
-    }
-    $('.form_date input').val(week_date_format);
-    $(".form_date").attr({ "data-date": week_date_format });
+        }
+        $('.form_date input').val(week_date_format);
+        $(".form_date").attr({ "data-date": week_date_format });
 
-    $('.form_time').datetimepicker({
-        language: 'en',
-        weekStart: 1,
-        todayBtn: 1,
-        autoclose: 1,
-        todayHighlight: 1,
-        startView: 1,
-        minView: 0,
-        maxView: 1,
-        forceParse: 0
-    });
+        $('.form_time').datetimepicker({
+            language: 'en',
+            weekStart: 1,
+            todayBtn: 1,
+            autoclose: 1,
+            todayHighlight: 1,
+            startView: 1,
+            minView: 0,
+            maxView: 1,
+            forceParse: 0
+        });
 
-    $('.form_time input').val(current_time);
-    let date_input = $('input[name="expiry_date"]');
-    let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
-    let options = {
-        format: 'M dd, yyyy',
-        container: container,
-        todayHighlight: true,
-        autoclose: true,
-        orientation: 'top'
-    };
-    date_input.datepicker(options);
+        $('.form_time input').val(current_time);
+        let date_input = $('input[name="expiry_date"]');
+        let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
+        let options = {
+            format: 'M dd, yyyy',
+            container: container,
+            todayHighlight: true,
+            autoclose: true,
+            orientation: 'top'
+        };
 
-    await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
+        if (lastSession != null) {
+            $(".sec1").show();
+            $(".section-1").hide();
+            $(".section-1-footer").hide();
+            $('.section-2').show();
+            $('div.section-2-footer').show();
+            getStringKeys();
 
-    if (lastSession != null) {
-        $(".sec1").show();
-        $(".section-1").hide();
-        $(".section-1-footer").hide();
-        $('.section-2').show();
-        $('div.section-2-footer').show();
-        getStringKeys();
 
-        console.log('lastSession: ');
-        console.log(JSON.stringify(lastSession));
-        $('#training-title').val(lastSession.action.displayName);
-        $('#training-description').val(lastSession.action.customProperties[0].value);
-        $('#training-title-content').text(lastSession.action.displayName);
-        $('#training-description-content').text(lastSession.action.customProperties[0].value);
 
-        /* Check if image upload for training */
-        let req = new actionSDK.GetAttachmentInfo.Request(lastSession.action.customProperties[4].value);
+            $('#training-title').val(lastSession.action.displayName);
+            $('#training-description').val(lastSession.action.customProperties[0].value);
+            $('#training-title-content').text(lastSession.action.displayName);
+            $('#training-description-content').text(lastSession.action.customProperties[0].value);
 
-        actionSDK.executeApi(req)
-            .then(function(response) {
-                console.info("Attachment - Response: " + JSON.stringify(response));
-                $('#training-title-image').attr('src', `${response.attachmentInfo.downloadUrl}`);
-                $('#training-img-preview').attr('src', `${response.attachmentInfo.downloadUrl}`);
-                $('.section-1').find('.training-updated-img').show();
-                $('.section-1').find('.photo-box').hide();
-                $('.section-2').find('.img-thumbnail').show();
-                $('.section-2').find('#training-title-image').show();
-            })
-            /* .catch(function(error) {
-                console.error("AttachmentAction - Error: " + JSON.stringify(error));
-            }) */
-        ;
-        $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
-        $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
-        $('#cover-image').after('<span name="is_edit" class="training-is_edit" >Edit</span>');
+            /* Check if image upload for training */
+            let req = ActionHelper.getAttachmentInfo(lastSession.action.customProperties[4].value);
 
-        /* Create Text and Question summary */
-        lastSession.action.dataTables.forEach((dataTable) => {
-            dataTable.dataColumns.forEach((data, ind) => {
-                let counter = ind + 1;
-                if (data.valueType == 'LargeText') {
-                    /* Call Text Section 1 */
-                    // let counter = $('div.card-box').length;
-                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+            ActionHelper.executeApi(req)
+                .then(function(response) {
+                    console.info("Attachment - Response: " + JSON.stringify(response));
+                    $('#training-title-image').attr('src', `${response.attachmentInfo.downloadUrl}`);
+                    $('#training-img-preview').attr('src', `${response.attachmentInfo.downloadUrl}`);
+                    $('.section-1').find('.training-updated-img').show();
+                    $('.section-1').find('.photo-box').hide();
+                    $('.section-2').find('.img-thumbnail').show();
+                    $('.section-2').find('#training-title-image').show();
+                })
+                .catch(function(error) {
+                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                });
+            $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
+            $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+            $('#cover-image').after('<span name="is_edit" class="training-is_edit" >Edit</span>');
 
-                    if (data.name.indexOf("photo") >= 0) {
-                        let photo_sec = `<div class="card-box card-bg card-border training-card-section section-div photo-section-div" data-id="text-section-${counter}" id="section-${counter}">
+            /* Create Text and Question summary */
+            lastSession.action.dataTables.forEach((dataTable) => {
+                dataTable.dataColumns.forEach((data, ind) => {
+                    let counter = ind + 1;
+                    if (data.valueType == 'LargeText') {
+                        /* Call Text Section 1 */
+                        let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+
+                        if (data.name.indexOf("photo") >= 0) {
+                            let photo_sec = `<div class="card-box card-bg card-border training-card-section section-div photo-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                             <div class="form-group">
                                                 <div class="row">
                                                     <div class="col-12">
@@ -1638,35 +1624,34 @@ async function getTheme() {
                                             <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple="">
                                         </div>`;
 
-                        $('div.section-2 div#root').append(photo_sec);
-                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
-                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                        if (attachment != undefined) {
-                            $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
+                            $('div.section-2 div#root').append(photo_sec);
+                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            if (attachment != undefined) {
+                                $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
 
-                            let attachment_img = '';
-                            $.each(attachment, function(ind, att) {
-                                attachment_img = att;
-                                return false;
-                            });
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
-                            let filesAmount = Object.keys(attachment).length;
-                            actionSDK.executeApi(req)
-                                .then(function(response) {
-                                    console.info("Attachment - Response: " + JSON.stringify(response));
-                                    $("img#image-sec-" + counter).attr('src', response.attachmentInfo.downloadUrl);
-                                    if (filesAmount > 1)
-                                        $("img#image-sec-" + counter).after(`<span class="file-counter">+${filesAmount-1}</span>`);
-                                })
-                                /* .catch(function(error) {
-                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
-                                }) */
-                            ;
+                                let attachment_img = '';
+                                $.each(attachment, function(ind, att) {
+                                    attachment_img = att;
+                                    return false;
+                                });
+                                let req = ActionHelper.getAttachmentInfo(attachment_img);
+                                let filesAmount = Object.keys(attachment).length;
+                                ActionHelper.executeApi(req)
+                                    .then(function(response) {
+                                        console.info("Attachment - Response: " + JSON.stringify(response));
+                                        $("img#image-sec-" + counter).attr('src', response.attachmentInfo.downloadUrl);
+                                        if (filesAmount > 1)
+                                            $("img#image-sec-" + counter).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                                    })
+                                    .catch(function(error) {
+                                        console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                    });
 
-                            console.log('filesAmount: ' + filesAmount);
-                        }
-                    } else if (data.name.indexOf("document") >= 0) {
-                        let document_section = `<div class="card-box card-bg card-border training-card-section section-div document-section-div" data-id="text-section-${counter}" id="section-${counter}">
+
+                            }
+                        } else if (data.name.indexOf("document") >= 0) {
+                            let document_section = `<div class="card-box card-bg card-border training-card-section section-div document-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                                     <div class="form-group">
                                                         <div class="hover-btn">
                                                             <label class="mb-0">
@@ -1700,15 +1685,15 @@ async function getTheme() {
                                                     <textarea class="textarea-document" style="display:none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a052fa39-60f3-4bb0-964b-9236dc562852"}</textarea>
                                                     <input type="file" id="upload-document" accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf" src="images/px-img.png" style="width:100%; height: 180px; display:none">
                                                 </div>`;
-                        $('div.section-2 div#root').append(document_section);
-                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
-                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                        if (attachment != undefined) {
-                            $('#section-' + counter + ' textarea#textarea-document').val(attachment);
-                        }
+                            $('div.section-2 div#root').append(document_section);
+                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            if (attachment != undefined) {
+                                $('#section-' + counter + ' textarea#textarea-document').val(attachment);
+                            }
 
-                    } else if (data.name.indexOf("video") >= 0) {
-                        let video_section = `<div class="card-box card-bg card-border training-card-section section-div video-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                        } else if (data.name.indexOf("video") >= 0) {
+                            let video_section = `<div class="card-box card-bg card-border training-card-section section-div video-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                                 <div class="form-group">
                                                     <div class="hover-btn">
                                                         <label class="mb-0">
@@ -1743,24 +1728,24 @@ async function getTheme() {
                                                 <textarea class="textarea-video d-none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a367aca8-ef8d-4094-b256-4eb3707e911e"}</textarea>
                                                 <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
                                             </div>`;
-                        $('div.section-2 div#root').append(video_section);
-                        let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
-                        let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                        if (attachment != undefined) {
-                            $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
-                            actionSDK.executeApi(req)
-                                .then(function(response) {
-                                    console.info("Attachment - Response: " + JSON.stringify(response));
-                                    $(`#section-${counter}`).find(`#video-sec-${counter}`).attr('src', response.attachmentInfo.downloadUrl);
-                                })
-                                .catch(function(error) {
-                                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
-                                });
-                        }
-                    } else {
-                        /* text */
-                        let text_section = `<div class="card-box card-bg card-border training-card-section section-div text-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                            $('div.section-2 div#root').append(video_section);
+                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            if (attachment != undefined) {
+                                $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
+                                let req = ActionHelper.getAttachmentInfo(attachment[0]);
+                                ActionHelper.executeApi(req)
+                                    .then(function(response) {
+                                        console.info("Attachment - Response: " + JSON.stringify(response));
+                                        $(`#section-${counter}`).find(`#video-sec-${counter}`).attr('src', response.attachmentInfo.downloadUrl);
+                                    })
+                                    .catch(function(error) {
+                                        console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                    });
+                            }
+                        } else {
+                            /* text */
+                            let text_section = `<div class="card-box card-bg card-border training-card-section section-div text-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                                 <div class="form-group">
                                                     <div class="hover-btn">
                                                         <label class="mb-0"><strong><span class="counter">${counter}</span>. <span class="type">Text</span></strong> </label>
@@ -1783,35 +1768,77 @@ async function getTheme() {
                                                 <textarea class="textarea-text d-none">${data.displayName}</textarea>
                                                 <textarea id="training-attachment-id" class="d-none"></textarea>
                                             </div>`;
-                        $('div.section-2 div#root').append(text_section);
-                    }
+                            $('div.section-2 div#root').append(text_section);
+                        }
 
-                } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
-                    /* Call Question Section 1 */
-                    let options_counter = numbertowords(data.options.length);
-                    let correct_opt = '';
-                    let opts = '';
-                    data.options.forEach((opt, inde) => {
-                        let ques_ans_arr = $.parseJSON(lastSession.action.customProperties[5].value)[0];
-                        ques_ans_arr.forEach((qo, indqo) => {
-                            console.log('qo: ');
-                            console.log(qo);
-                            console.log(opt.name);
-                            if (opt.name == qo) {
-                                opts += `<input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes" checked=true>
-                                <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>`;
-                                correct_opt += `<li>${opt.displayName}</li>`;
+                    } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
+                        /* Call Question Section 1 */
+                        let options_counter = data.options.length != undefined ? numbertowords(data.options.length) : "";
+                        let correct_opt = '';
+                        let opts = '';
+                        data.options.forEach((opt, inde) => {
+                            let ques_ans_arr = $.parseJSON(lastSession.action.customProperties[5].value);
+
+                            if ($.inArray(opt.name, ques_ans_arr[ind]) != -1) {
+                                opts += `
+                                        <div class="option-div">
+                                            <div class="form-group">
+                                                <div class="input-group mb-2"> 
+                                                    <div class="input-group-append">
+                                                        <div class="custom-check-outer mt-04">
+                                                            <label class="custom-check  ">
+                                                                <input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes" checked=true>
+                                                                <span class="checkmark"></span>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>
+                                                    <div class="input-group-append">
+                                                        <span class="input-group-text remove-option input-tpt" style="cursor: pointer;"><svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                            </svg>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                correct_opt += `<p class="mb0">${opt.displayName}</li>`;
                             } else {
-                                opts += `<input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes">
-                                <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>`;
+                                opts += `<div class="option-div">
+                                        <div class="form-group">
+                                            <div class="input-group mb-2"> 
+                                                <div class="input-group-append">
+                                                    <div class="custom-check-outer mt-04">
+                                                        <label class="custom-check  ">
+                                                        <input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes">
+                                                        <span class="checkmark"></span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
+                                                        <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                            <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                            <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                            <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                            <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                        </svg>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>`;
                             }
                         });
-
-                    });
-                    let quest_section = `<div class="card-box card-bg card-border training-card-section section-div question-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                        let quest_section = `<div class="card-box card-bg card-border training-card-section section-div question-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                             <div class="form-group">
                                                 <div class="hover-btn h-32">
-                                                    <label><strong><span class="counter">5</span>. Question with <span class="option-counter"> ${options_counter} </span> option </strong> </label>
+                                                    <label><strong><span class="counter">${counter}</span>. Question with <span class="option-counter"> ${options_counter} </span> option </strong> </label>
                                                     <button type="button" class="close remove-text" data-dismiss="alert">
                                                         <span aria-hidden="true">
                                                             <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -1830,106 +1857,49 @@ async function getTheme() {
                                             <label><strong class="question">${data.displayName}</strong></label>
                                             <p class="mb0">Correct Answer: 
                                                 <span class="correct-answer">
-                                                    <ul>
-                                                        ${correct_opt}
-                                                    </ul>
+                                                    ${correct_opt}
                                                 </span>
                                             </p>
     
                                             <div class="question-inputs" id="quest-text-${counter}" style="display:none">
-                                                <input type="text" class="form-control in-t" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title" value="${data.displayName}">
-                                                ${opts}                 
+                                                <div class="card-box card-border card-bg">
+                                                    <div class="form-group">
+                                                        <div class="input-group mb-2">
+                                                            <div class="input-group-append">
+                                                                <span class="question-number input-group-text input-tpt pl-0 strong" style="cursor: pointer;">2.</span>
+                                                            </div>
+                                                            <input type="text" class="form-control in-t question-title" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title" value="${data.displayName}">
+                                                            <div class="input-group-append">
+                                                                <span class="input-group-text remove-question remove-option-q input-tpt" style="cursor: pointer;" aria-hidden="true">
+                                                                    <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
+                                                                        <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                        <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                        <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
+                                                                        <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
+                                                                    </svg>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex">
+                                                        <div class="ext-flex"></div>
+                                                        <div class="form-group" id="options">
+                                                            <label><strong>Choices</strong></label>
+                                                            ${opts}
+                                                        </div>                 
+                                                    </div>                 
+                                                </div>
                                             </div>
                                         </div>`;
-                    $('div.section-2 div#root').append(quest_section);
 
-                }
+                        $('div.section-2 div#root').append(quest_section);
+                    }
+                });
             });
-        });
-
-
-
-        /* setTimeout(() => {
-            let option = $("div#option-section .option-div").clone();
-
-            lastSession.action.dataTables[0].dataColumns.forEach((e, ind) => {
-                let correct_ans_arr = JSON.parse(lastSession.action.customProperties[4].value);
-
-                if (ind == 0) {
-                    $('#question1').find('#question-title').val(e.displayName);
-                    e.options.forEach((opt, i) => {
-                        let counter = i + 1;
-                        if (i <= 1) {
-                            $('#question1').find('#option' + counter).val(opt.displayName);
-                        } else {
-                            $('#question1').find("div.option-div:last").after(option.clone());
-
-                            Localizer.getString('option', counter).then(function(result) {
-
-                                $('#question1').find("div.option-div:last input[type='text']").attr({
-                                    placeholder: result,
-                                });
-                                $('#question1').find("div.option-div:last input[type='text']").attr({ id: "option" + counter }).val(opt.displayName);
-                                $('#question1').find("div.option-div:last input[type='text']")
-                                    .parents(".option-div")
-                                    .find("input.form-check-input")
-                                    .attr({ id: "check" + counter });
-                            });
-                        }
-                        $.each(correct_ans_arr, function(cindex, c_ans) {
-                            if ($.inArray("question1option" + counter, c_ans) != -1) {
-                                $('#question1').find('#check' + counter).prop('checked', true);
-                                $('#question1').find('#option' + counter).parents('div.input-group.input-group-tpt.mb-2').find('.check-opt span.input-group-text.input-tpt').addClass('text-success');
-                                $('#question1').find('#option' + counter).parents('div.input-group.input-group-tpt.mb-2').find(' .checked-status').text('Correct Answer');
-                            }
-                        });
-                    });
-                } else {
-                    let qcounter = ind + 1;
-                    let ocounter = 0;
-                    $('#add-questions').parents("div.container").before(question_section.clone());
-
-                    $("div.container.question-container:visible:last").attr('id', 'question' + qcounter);
-                    $("#question" + qcounter).find("span.question-number").text(qcounter + ".");
-                    $('#question' + qcounter).find('#question-title').val(e.displayName);
-
-                    Localizer.getString('enterTheQuestion').then(function(result) {
-                        $("div.container.question-container:visible:last").find('input[type="text"]').attr({
-                            placeholder: result,
-                        });
-                    });
-                    e.options.forEach((opt, i) => {
-                        ocounter = i + 1;
-                        if (i <= 1) {
-                            $('#question' + qcounter).find('#option' + ocounter).val(opt.displayName);
-                        } else {
-                            $('#question' + qcounter).find("div.option-div:last").after(option.clone());
-
-                            Localizer.getString('option', ocounter).then(function(result) {
-
-                                $('#question' + qcounter).find("div.option-div:visible:last input[type='text']").attr({
-                                    placeholder: result,
-                                });
-                                $('#question' + qcounter).find("div.option-div:last input[type='text']").attr({ id: "option" + ocounter }).val(opt.displayName);
-                                $('#question' + qcounter).find("div.option-div:last input[type='text']")
-                                    .parents(".option-div")
-                                    .find("input.form-check-input")
-                                    .attr({ id: "check" + ocounter });
-                            });
-                        }
-                        $.each(correct_ans_arr, (cindex, c_ans) => {
-                            if ($.inArray("question" + qcounter + "option" + ocounter, c_ans) != -1) {
-                                $('#question' + qcounter).find('#check' + ocounter).prop('checked', true);
-                                $('#question' + qcounter).find('#option' + ocounter).parents('div.input-group.input-group-tpt.mb-2').find('.check-opt span.input-group-text.input-tpt').addClass('text-success');
-                                $('#question' + qcounter).find('#option' + ocounter).parents('div.input-group.input-group-tpt.mb-2').find(' .checked-status').text('Correct Answer');
-                            }
-                        });
-                    });
-                }
-            });
-        }, 1000);
-     */
-    }
+        }
+        date_input.datepicker(options);
+        ActionHelper.hideLoader();
+    });
 }
 
 function isJson(str) {
@@ -1949,18 +1919,21 @@ $(document).on("click", "#back", function() {
 
     $(".section-1").show();
     $(".section-1-footer").show();
+    $('.error-msg').remove();
 });
 
 $(document).on("click", "#back-setting", function() {
+    $('.error-msg').remove();
     $(".section-1").show();
     $(".section-1-footer").show();
 
     $("form #setting").hide();
-    console.log('setting_text ' + setting_text);
+
     $('#due').text(setting_text);
 });
 
 $(document).on('click', '#next1', function() {
+    $('.error-msg').remove();
     $("input[type='text']").removeClass("danger");
     $("label.label-alert").remove();
     $("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
@@ -1979,12 +1952,8 @@ $(document).on('click', '#next1', function() {
 
                 if (element.attr("id") == "training-title") {
                     $("#training-title").addClass("danger");
-                    $("#training-title").before(`<label class="label-alert d-block"><small>Required</small></label>`);
+                    $("#training-title").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
                 }
-                /* if (element.attr("id") == "training-description") {
-                    $("#training-description").addClass("danger");
-                    $("#training-description").before(`<label class="label-alert d-block"><small>Required</small></label>`);
-                } */
             } else {
                 $('.section-1').hide();
                 $('div.section-1-footer').hide();
@@ -1994,30 +1963,45 @@ $(document).on('click', '#next1', function() {
 
                 $('#training-title-content').text($('#training-title').val());
                 $('#training-description-content').text($('#training-description').val());
-                $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
-                $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+                if ($('.training-title').length > 0) {
+                    $('.training-title').val($('#training-title').val());
+                } else {
+                    $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
+                }
+                if ($('.training-description').length > 0) {
+                    $('.training-description').val($('#training-description').val());
+                    $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+                } else {
+                    $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+                }
             }
         });
 
     let image_counter = $(".training-card-section").find('input[type="file"]').get(0).files.length;
     let attachment_request = '';
-    for (let i = 0; i < image_counter; i++) {
-        let file_data = $(".training-card-section").find('input[type="file"]').get(0).files[i];
-        let attachment = actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_data['type']);
-        attachment_request = new actionSDK.UploadAttachment.Request(attachment, function(status) {
-            console.log("Status: " + status);
-        });
-        actionSDK.executeApi(attachment_request)
-            .then(function(response) {
-                $('.training-card-section').find('textarea:last').after('<textarea id="training-attachment-id" class="d-none" >' + response.attachmentId + '</textarea>');
-            })
-            .catch(function(error) {
-                console.log("GetContext - Error: " + JSON.stringify(error));
-            });
+    if (image_counter > 0) {
+        for (let i = 0; i < image_counter; i++) {
+            let file_data = $(".training-card-section").find('input[type="file"]').get(0).files[i];
+            let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
+            attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+
+            ActionHelper.executeApi(attachment_request)
+                .then(function(response) {
+                    if ($('#training-attachment-id').length > 0) {
+                        $('#training-attachment-id').val(response.attachmentId);
+                    } else {
+                        $('.training-card-section').find('textarea:last').after('<textarea id="training-attachment-id" class="d-none" >' + response.attachmentId + '</textarea>');
+                    }
+                })
+                .catch(function(error) {
+                    console.log("GetContext - Error: " + JSON.stringify(error));
+                });
+        }
     }
 });
 
 $(document).on('change', '#cover-image', function() {
+    $('.error-msg').remove();
     readURL(this, '#training-img-preview, #training-title-image');
     $('.photo-box').hide();
     $('.img-thumbnail').show();
@@ -2027,6 +2011,7 @@ $(document).on('change', '#cover-image', function() {
 });
 
 $(document).on('click', '.training-clear', function() {
+    $('.error-msg').remove();
     $('.photo-box').show();
     $('.training-updated-img').hide();
     $('.training-clear').hide();
@@ -2051,14 +2036,19 @@ $(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], 
     let days = calc_date_diff(start, end);
     $(this).parents('div.row').find('.error-msg').remove();
     if (days == undefined) {
-        $(this).parents('div.row').find('div.col-sm-12:first').prepend(`<div class="alert alert-danger error-msg">Alert! Invalid Date or Time!<p class="mb-0">It must be greater than current date and time.</p></div>`);
+        let $err_sec = $('<div class="alert alert-danger error-msg"></div>');
+        Localizer.getString('alert_invalid_date_time').then(function(result) {
+            $err_sec.append(result);
+        });
+        Localizer.getString('greater_current_date').then(function(result) {
+            $err_sec.append(`<p class="mb-0">${result}</p>`);
+        });
+        $(this).parents('div.row').find('div.col-sm-12:first').prepend($err_sec);
         $('#back-setting').parents('a.cursur-pointer').addClass('disabled');
     } else {
         $('#back-setting').parents('a.cursur-pointer').removeClass('disabled');
         let result_visible = $('.visible-to:checked').val() == 'Everyone' ? resultEveryoneKey : resultMeKey;
         let correct_answer = $('#show-correct-answer:eq(0)').is(":checked") == true ? correctAnswerKey : '';
-        console.log('due: ' + days + ', ' + result_visible);
-        // setting_text = ' Due in ' + days + ', ' + result_visible;
         Localizer.getString('dueIn', days, correct_answer).then(function(result) {
             setting_text = result;
         });
@@ -2074,7 +2064,7 @@ function calc_date_diff(start, end) {
     let days = (end - start) / (1000 * 60 * 60 * 24);
     let hourText = '';
     let minuteText = '';
-    console.log('days: ' + days);
+
     if (days > 6) {
         let weeks = Math.ceil(days) / 7;
         return Math.floor(weeks) + ' week';
@@ -2154,7 +2144,6 @@ function readURL(input, elem) {
         reader.onload = function(e) {
             $(elem).attr('src', e.target.result);
         }
-
         reader.readAsDataURL(input.files[0]); // convert to base64 string
     }
 }
@@ -2174,16 +2163,16 @@ let form_section = `<div class="section-1" style="display:none">
                             id="training-title" />
                     </div>
                     <div class="form-group">
-                        <input type="Text" placeholder="Training Description" class="in-t form-control"
-                            id="training-description" />
+                        <textarea placeholder="Training Description" class="in-t form-control"
+                        id="training-description"></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Cover Image (Optional)</label>
+                        <label class="cover-image-label">Cover Image (Optional)</label>
                         <label class="training-clear cursur-pointer pull-right theme-color">Clear</label>
                         <div class="relative">
                             <!-- hide this div after img added -->
                             <div class="photo-box card card-bg card-border max-min-220 upvj cursur-pointer" >
-                                <span>Tap to upload training cover image</span>
+                                <span class="tap-upload-label">Tap to upload training cover image</span>
                             </div>
                             <!-- show this div after img added -->
                             <div class="training-updated-img card card-bg card-border max-min-220 upvj cursur-pointer" style="display:none">
@@ -2237,7 +2226,7 @@ let training_section_view = `<div class="section-2" style="display:none">
                     <div class="col-6">
                         <div class="dropdown">
                             <button type="button" class="btn btn-primary btn-sm  dropdown-toggle dd-btn" id="add-content" data-toggle="dropdown">
-                                <span class="span1">
+                                <span class="span1 add-content-label">
                                     Add Content
                                 </span>
                                 <span class="span2">
@@ -2245,11 +2234,11 @@ let training_section_view = `<div class="section-2" style="display:none">
                                 </span>    
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a id="add-text"><i data-icon-name="InsertTextBox" aria-hidden="true" class="ms-Icon root-43"></i> Text</a></li>
-                                <li><a id="add-photo"><i data-icon-name="PictureFill" aria-hidden="true" class="ms-Icon root-43"></i> Photo</a></li>
-                                <li><a id="add-document"><i data-icon-name="TextDocument" aria-hidden="true" class="ms-Icon root-43"></i> Document</a></li>
-                                <li><a id="add-video"><i data-icon-name="Video" aria-hidden="true" class="ms-Icon root-43"></i> Video</a></li>
-                                <li><a id="add-questions"><i data-icon-name="BulletedList" aria-hidden="true" class="ms-Icon root-43"></i> Quiz</a></li>
+                                <li class="cursur-pointer"><a id="add-text"><i data-icon-name="InsertTextBox" aria-hidden="true" class="ms-Icon root-43"></i> <span class="text-label">Text</span></a></li>
+                                <li class="cursur-pointer"><a id="add-photo"><i data-icon-name="PictureFill" aria-hidden="true" class="ms-Icon root-43"></i> <span class="photo-label">Photo</span></a></li>
+                                <li class="cursur-pointer"><a id="add-document"><i data-icon-name="TextDocument" aria-hidden="true" class="ms-Icon root-43"></i> <span class="document-label">Document</span></a></li>
+                                <li class="cursur-pointer"><a id="add-video"><i data-icon-name="Video" aria-hidden="true" class="ms-Icon root-43"></i> <span class="video-label">Video</span></a></li>
+                                <li class="cursur-pointer"><a id="add-questions"><i data-icon-name="BulletedList" aria-hidden="true" class="ms-Icon root-43"></i> <span class="quiz-label">Quiz</span></a></li>
                             </ul>
                         </div>
                     </div>
@@ -2289,7 +2278,7 @@ let questions_section = `<div class="question-section">
                         <div class="input-group-append">
                             <span class="question-number input-group-text input-tpt pl-0 strong" style="cursor: pointer;">1.</span>
                         </div>
-                        <input type="text" class="form-control in-t pr-35" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
+                        <input type="text" class="form-control in-t pr-35 question-title" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
                         <div class="input-group-append">
                             <span class="input-group-text remove-question remove-option-q input-tpt" style="cursor: pointer;" aria-hidden="true">
                                 <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -2397,7 +2386,7 @@ let add_question_button = `<div class="container pb-5 question_button">
                             <path class="ui-icon__filled gr"
                                 d="M23.5 15.969a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078H17v5.5a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078.965.965 0 0 1-.387-.079.983.983 0 0 1-.535-.535.97.97 0 0 1-.078-.386v-5.5H9.5a.965.965 0 0 1-.387-.078.983.983 0 0 1-.535-.535.972.972 0 0 1-.078-.387 1.002 1.002 0 0 1 1-1H15v-5.5a1.002 1.002 0 0 1 1.387-.922c.122.052.228.124.32.215a.986.986 0 0 1 .293.707v5.5h5.5a.989.989 0 0 1 .707.293c.09.091.162.198.215.32a.984.984 0 0 1 .078.387z">
                             </path>
-                        </svg> Add Questions</button>
+                        </svg> <span class="add-question-label">Add Questions</span></button>
                 </div>
             </div>`;
 
@@ -2418,8 +2407,9 @@ let question_footer = `<div class="footer question-footer" >
                                 </svg> Back
                             </a>
                         </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
-                                id="question-done"> Done</button></div>
+                        <div class="col-3 text-right"> 
+                            <button type="button" class="btn btn-primary btn-sm pull-right done-label" id="question-done"> Done</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -2462,7 +2452,7 @@ let add_text_section = `<div class="text-section" >
                 <div id="root" class="">
                     <div class="card-box card-bg card-border">
                         <div class="form-group">
-                        <textarea class="in-t form-control" id="training-text" placeholder="Text"></textarea>
+                        <textarea class="in-t form-control text-label-placeholder" id="training-text" placeholder="Text"></textarea>
                     </div>
                     </div>
                 </div>
@@ -2485,7 +2475,7 @@ let add_text_footer = `<div class="footer text-footer" >
                                 </svg> Back
                             </a>
                         </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
+                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
                                 id="text-done"> Done</button></div>
                     </div>
                 </div>
@@ -2498,10 +2488,10 @@ let add_photo_section = `<div class="text-section" >
                 <div id="root" class="">
                     <div class="card-box card-bg card-border">
                         <div class="form-group">
-                            <label class="w-100">Upload Photo   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
+                            <label class="w-100"><span class="upload-photo-label">Upload Photo</span>   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
                             <div class="relative">
                                 <div class="photo-box card card-bg card-border max-min-220 upvj" >
-                                    <span>Tap to upload photos</span>
+                                    <span class="tap-upload-photo-label">Tap to upload photos</span>
                                 </div>
                                 
                                 <!-- show this div after img added -->
@@ -2511,7 +2501,7 @@ let add_photo_section = `<div class="text-section" >
                             </div>
                         </div>
                         <div class="form-group">
-                            <textarea class="in-t form-control" id="photo-description" placeholder="Description. What is the content about?"></textarea>
+                            <textarea class="in-t form-control desc-content-about-placeholder" id="photo-description" placeholder="Description. What is the content about?"></textarea>
                         </div>
                     </div>
                 </div>
@@ -2534,7 +2524,7 @@ let add_photo_footer = `<div class="footer text-footer" >
                                 </svg> Back
                             </a>
                         </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
+                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
                                 id="photo-done"> Done</button></div>
                     </div>
                 </div>
@@ -2551,7 +2541,7 @@ let add_video_section = `<div class="text-section" >
                 <label class="w-100">Upload Video   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
                 <div class="relative">
                     <div class="video-box card card-bg card-border max-min-220 upvj">
-                        <span>Tap to upload files</span>
+                        <span class="tap-upload-video-label">Tap to upload Video</span>
                     </div>
                     <div class="updated-video card card-bg card-border max-min-220 upvj" style="display:none">
                         <div class="embed-responsive embed-responsive-21by9">
@@ -2562,7 +2552,7 @@ let add_video_section = `<div class="text-section" >
                 </div>
             </div>
             <div class="form-group">
-                <textarea class="in-t form-control" id="video-description" placeholder="Description. What is the content about?"></textarea>
+                <textarea class="in-t form-control desc-content-about-placeholder" id="video-description" placeholder="Description. What is the content about?"></textarea>
             </div>
         </div>
     </div>
@@ -2585,8 +2575,7 @@ let add_video_footer = `<div class="footer text-footer" >
                     </svg> Back
                 </a>
             </div>
-            <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
-                    id="video-done"> Done</button></div>
+            <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label" id="video-done"> Done</button></div>
         </div>
     </div>
 </div>
@@ -2602,7 +2591,7 @@ let add_document_section = `<div class="text-section" >
                 <div class="relative">
                     <!-- hide this div afte img added -->
                     <div class="doc-box card card-bg card-border max-min-220 upvj">
-                        <span>Tap to upload files</span>
+                        <span class="tap-upload-files-label">Tap to upload files</span>
                     </div>
                     <!-- show this div afte img added -->
                     <div class="card-bg card-border p14 doc-name">
@@ -2613,7 +2602,7 @@ let add_document_section = `<div class="text-section" >
                 <!-- <img src="" id="document-image-preview"> -->
             </div>
             <div class="form-group">
-                <textarea class="in-t form-control" id="document-description" placeholder="Description. What is the content about?"></textarea>
+                <textarea class="in-t form-control desc-content-about-placeholder" id="document-description" placeholder="Description. What is the content about?"></textarea>
             </div>
         </div>
     </div>
@@ -2636,7 +2625,7 @@ let add_document_footer = `<div class="footer text-footer" >
                     </svg> Back
                 </a>
             </div>
-            <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
+            <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
                     id="document-done"> Done</button></div>
         </div>
     </div>
@@ -2649,7 +2638,7 @@ let setting_section1 = `<div class="" style="display: none;" id="setting">
         <div class="container pt-4 setting-section">
             <div class="row">
                 <div class="col-sm-12">
-                    <label><strong>Due by</strong></label>
+                    <label><strong class="due-by-label">Due by</strong></label>
                 </div>
                 <div class="clearfix"></div>
                 <div class="col-1"></div>
@@ -2689,7 +2678,7 @@ let setting_section1 = `<div class="" style="display: none;" id="setting">
                     <div class="clearfix"></div>
                 </div>
                 <div class="col-12">
-                    <label><strong>Show correct answer after each question</strong></label>
+                    <label><strong class="show-correct-key">Show correct answer after each question</strong></label>
                 </div>
                 <div class="clearfix"></div>
                 <div class="col-1"></div>
@@ -2701,7 +2690,7 @@ let setting_section1 = `<div class="" style="display: none;" id="setting">
                                     <input type="checkbox" name="show_correct_answer" id="show-correct-answer"
                                         value="Yes" checked/>
                                     <span class="checkmark"></span>
-                                    Answer cannot be changed if this option is selected
+                                    <span class="answer-cannot-change-key">Answer cannot be changed if this option is selected</span>
                                 </label>
                             </div>
                         </div>
@@ -2721,7 +2710,7 @@ let setting_section1 = `<div class="" style="display: none;" id="setting">
                                         <path class="ui-icon__filled"
                                             d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
                                         </path>
-                                    </svg> Back
+                                    </svg><span class="back-key"> Back</span>
                                 </a>
                             </div>
                             <div class="col-3">
@@ -2835,7 +2824,7 @@ let modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-
                     ...
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Back</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm back-key" data-dismiss="modal">Back</button>
                     <button type="button" class="btn btn-primary btn-sm" id="save-changes">Save changes</button>
                 </div>
             </div>
@@ -2873,5 +2862,4 @@ let toggle_section = `<div class="slideup-content">
     </div>
 </div>`;
 
-/***********************************  HTML Section Ends***************************/
 /***********************************  HTML Section Ends***************************/

@@ -1,5 +1,5 @@
-import * as actionSDK from "@microsoft/m365-action-sdk";
-import { Localizer } from '../common/ActionSdkHelper';
+import { result } from 'lodash';
+import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
 
 // ActionSDK.APIs.actionViewDidLoad(true /*success*/ );
 
@@ -25,6 +25,7 @@ let answerResponseKey = '';
 let correctKey = '';
 let yourAnswerKey = '';
 let incorrectKey = '';
+let correctAnswerIsKey = '';
 let correctAnswerKey = '';
 let yourAnswerRightKey = '';
 let yourAnswerIsKey = ''
@@ -117,10 +118,14 @@ async function getStringKeys() {
         $('#quiz-expired-key').text(backKey);
     });
 
+    Localizer.getString('correct_answer_is').then(function(result) {
+        correctAnswerIsKey = result;
+    });
+
 }
 
 async function getTheme(request) {
-    let response = await actionSDK.executeApi(request);
+    let response = await ActionHelper.executeApi(request); // actionSDK.executeApi(request);
     let context = response.context;
     console.log("getContext response: ");
     console.log(JSON.stringify(context));
@@ -136,7 +141,8 @@ async function getTheme(request) {
         $('div.section-1').show();
         $('div.footer').show();
     }, 1000);
-    await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
+
+    ActionHelper.hideLoader();
 
     OnPageLoad();
 }
@@ -146,8 +152,8 @@ async function getTheme(request) {
  * @param action context id
  */
 async function getResponderIds(actionId) {
-    actionSDK
-        .executeApi(new actionSDK.GetActionDataRows.Request(actionId))
+    ActionHelper
+        .executeApi(ActionHelper.requestDataRows(actionId))
         .then(function(batchResponse) {
             actionDataRows = batchResponse.dataRows;
             actionDataRowsLength = actionDataRows == null ? 0 : actionDataRows.length;
@@ -169,14 +175,13 @@ async function getResponderIds(actionId) {
 
 // *********************************************** HTML ELEMENT***********************************************
 $(document).ready(function() {
-    request = new actionSDK.GetContext.Request();
+    request = ActionHelper.getContextRequest(); // new actionSDK.GetContext.Request();
+    getStringKeys();
     getTheme(request);
 });
 
 function OnPageLoad() {
-    actionSDK
-        .executeApi(request)
-        .then(function(response) {
+    ActionHelper.executeApi(request).then(function(response) {
             console.info("GetContext - Response: " + JSON.stringify(response));
             myUserId = response.context.userId;
             contextActionId = response.context.actionId
@@ -189,8 +194,7 @@ function OnPageLoad() {
 }
 
 function getActionInstance(actionId) {
-    actionSDK
-        .executeApi(new actionSDK.GetAction.Request(actionId))
+    ActionHelper.executeApi(ActionHelper.getActionRequest(actionId))
         .then(function(response) {
             console.info("Response: " + JSON.stringify(response));
             actionInstance = response.action;
@@ -205,18 +209,9 @@ function createBody() {
 
     /* Check if already responded */
     if ($.inArray(myUserId, memberIds) > -1) {
-        getStringKeys();
-        // $('div.section-1').append('<hr>');
-
         Localizer.getString('alreadyTired').then(function(result) {
             $('div.section-1').append(`<div><b> ${result} </b></div>`);
         });
-        /* Localizer.getString('notConsideredFinalScore').then(function(result) {
-            $('div.section-1').append(`<div><small>${result}</small></div>`);
-        }); */
-        // $('div.ection-1').append('<div class="section-2"></div>');
-        // loadSummaryView();
-        // $('div.section-1').after(footer_section1);
         return;
     }
 
@@ -237,9 +232,9 @@ function createBody() {
         $('#section1-training-description').html(actionInstance.customProperties[0].value);
 
         /* Check if image upload for training */
-        let req = new actionSDK.GetAttachmentInfo.Request(actionInstance.customProperties[4].value);
+        let req = ActionHelper.getAttachmentInfo(actionInstance.customProperties[4].value); // new actionSDK.GetAttachmentInfo.Request(actionInstance.customProperties[4].value);
 
-        actionSDK.executeApi(req)
+        ActionHelper.executeApi(req)
             .then(function(response) {
                 console.info("Attachment - Response: " + JSON.stringify(response));
                 $('#section1-training-description').after(`<img src="${response.attachmentInfo.downloadUrl}" class="img-responsive w-100"/>`);
@@ -262,9 +257,10 @@ function createBody() {
                         $('div.card-box:last').find('span.counter').text(counter);
                         $('div.card-box:last').find('.text-description').text(text_title);
 
-
-                        $('div.card-box:last').find('span.training-type').text('Photo');
-                        $('div.card-box:last').find("img.image-sec").attr('id', data.name);
+                        Localizer.getString('photo').then(function(result) {
+                            $('div.card-box:last').find('span.training-type').text(result);
+                            $('div.card-box:last').find("img.image-sec").attr('id', data.name);
+                        });
                         let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                         let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                         if (attachment != undefined) {
@@ -273,9 +269,9 @@ function createBody() {
                                 attachment_img = att;
                                 return false;
                             });
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment_img);
+                            let req = ActionHelper.getAttachmentInfo(attachment_img); // new actionSDK.GetAttachmentInfo.Request(attachment_img);
                             let filesAmount = Object.keys(attachment).length;
-                            actionSDK.executeApi(req)
+                            ActionHelperexecuteApi(req)
                                 .then(function(response) {
                                     console.info("Attachment - Response: " + JSON.stringify(response));
                                     $("img#" + data.name).attr('src', response.attachmentInfo.downloadUrl);
@@ -293,36 +289,25 @@ function createBody() {
                         $('div.card-box:last').find('span.counter').text(counter);
                         $('div.card-box:last').find('.text-description').text(text_title);
                         $('div.card-box:last').find("img.image-sec").attr('id', data.name);
-                        $('div.card-box:last').find('span.training-type').text('Document');
-                        $("img#" + data.name).attr('src', 'images/doc.png');
-
-                        /* let dname = JSON.parse(data.options[0].displayName)
-                        let attachment = JSON.parse(dname.attachmentId);
-                        let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
-
-                        actionSDK.executeApi(req)
-                            .then(function(response) {
-                                console.info("Attachment - Response: " + JSON.stringify(response));
-                                $("img#" + data.name).attr('src', response.attachmentInfo.downloadUrl);
-                                
-                            })
-                            .catch(function(error) {
-                                console.error("AttachmentAction - Error: " + JSON.stringify(error));
-                            }); */
-
+                        Localizer.getString('document').then(function(result) {
+                            $('div.card-box:last').find('span.training-type').text(result);
+                            $("img#" + data.name).attr('src', 'images/doc.png');
+                        });
                     } else if (data.name.indexOf("video") >= 0) {
                         $('div.section-1').append(text_section3);
                         $('div.card-box:last').find('span.counter').text(counter);
                         $('div.card-box:last').find('.text-description').text(text_title);
-                        $('div.card-box:last').find('span.training-type').text('Video');
-                        $('div.card-box:last').find("img.image-sec").remove();
-                        $('div.card-box:last').attr("id", data.name);
+                        Localizer.getString('video').then(function(result) {
+                            $('div.card-box:last').find('span.training-type').text(result);
+                            $('div.card-box:last').find("img.image-sec").remove();
+                            $('div.card-box:last').attr("id", data.name);
+                        });
 
                         let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                         let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                         if (attachment != undefined) {
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
-                            actionSDK.executeApi(req)
+                            let req = ActionHelper.getAttachmentInfo(attachment[0]); // new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            ActionHelper.executeApi(req)
                                 .then(function(response) {
                                     console.info("Attachment - Response: " + JSON.stringify(response));
                                     $('#' + data.name).find(".img-thumbnail").append('<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="' + data.name + '" src="' + response.attachmentInfo.downloadUrl + '"></video></div>');
@@ -345,8 +330,10 @@ function createBody() {
                     let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
                     $('div.section-1').append(question_section1);
                     $('div.card-box:last').find('span.counter').text(counter);
-                    $('div.card-box:last').find('.question-title').text(`Question with ${numbertowords(Object.keys(data.options).length)} options`);
-                    $('div.card-box:last').find('.question-title-main').text(text_title);
+                    Localizer.getString('question_with', numbertowords(Object.keys(data.options).length)).then(function(result) {
+                        $('div.card-box:last').find('.question-title').text(result);
+                        $('div.card-box:last').find('.question-title-main').text(text_title);
+                    });
                 }
             });
         });
@@ -510,13 +497,17 @@ function loadSummaryView() {
                     $('div.card-box:last').find('.text-description').text(text_title);
 
                     if (data.name.indexOf("photo") >= 0) {
-                        $('div.card-box:last').find('.training-type').text('Photo');
+                        Localizer.getString('photo').then(function() {
+                            $('div.card-box:last').find('.training-type').text(result);
+                        });
                     } else if (data.name.indexOf("video") >= 0) {
-                        $('div.card-box:last').find('.training-type').text('Video');
-
+                        Localizer.getString('video').then(function() {
+                            $('div.card-box:last').find('.training-type').text(result);
+                        });
                     } else if (data.name.indexOf("document") >= 0) {
-                        $('div.card-box:last').find('.training-type').text('Document');
-
+                        Localizer.getString('document').then(function() {
+                            $('div.card-box:last').find('.training-type').text(result);
+                        });
                     }
                 } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                     /* Call Question Section 1 */
@@ -524,11 +515,13 @@ function loadSummaryView() {
                     let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
                     $('div.section-3 .container:first').append(question_section1);
                     $('div.card-box:last').find('span.counter').text(counter);
-                    $('div.card-box:last').find('.question-title').text(`Question with ${numbertowords(Object.keys(data.options).length)} options`);
-                    $('div.card-box:last').find('.question-title-main').text(text_title);
-                    if (actionInstance.customProperties[3].value == 'Yes') {
-                        $('div.card-box:last').find('.result').html(summary_answer_resp[ind] == true ? `<span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> Correct</span>` : `<span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> Incorrect</span>`);
-                    }
+                    Localizer.getString('question_with', numbertowords(Object.keys(data.options).length)).then(function(result) {
+                        $('div.card-box:last').find('.question-title').text(result);
+                        $('div.card-box:last').find('.question-title-main').text(text_title);
+                        if (actionInstance.customProperties[3].value == 'Yes') {
+                            $('div.card-box:last').find('.result').html(summary_answer_resp[ind] == true ? `<span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> ${correctKey}</span>` : `<span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> ${incorrectKey}</span>`);
+                        }
+                    });
                 }
             });
         });
@@ -543,8 +536,8 @@ function loadSummaryView() {
 // *********************************************** SUBMIT ACTION***********************************************
 
 function submitForm() {
-    actionSDK
-        .executeApi(new actionSDK.GetContext.Request())
+    ActionHelper
+        .executeApi(ActionHelper.getContextRequest())
         .then(function(response) {
             console.info("GetContext - Response: " + JSON.stringify(response));
             addDataRows(response.context.actionId);
@@ -553,33 +546,6 @@ function submitForm() {
             console.error("GetContext - Error: " + JSON.stringify(error));
         });
 }
-
-/* function radiobuttonclick(questionResponse, colomnId) {
-    let data = [];
-    row = {};
-    $.each($("input[type='checkbox']:checked"), function(ind, v) {
-        let col = $(this).parents("div.form-group").attr("columnid");
-        data.push($(this).attr("id"));
-
-        if (!row[col]) row[col] = [];
-        row[col] = JSON.stringify(data);
-
-        $('#next').prop('disabled', false);
-    });
-
-    $.each($("input[type='radio']:checked"), function() {
-        let col = $(this).parents("div.form-group").attr("columnid");
-
-        if (!row[col]) row[col] = [];
-        row[col] = $(this).attr("id");
-
-        $('#next').prop('disabled', false);
-
-    });
-
-
-    // console.log(row);
-} */
 
 function generateGUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
@@ -596,22 +562,14 @@ function getDataRow(actionId) {
         dataTableId: "TestDataSet",
         columnValues: row,
     };
-    console.log("data-:  " + JSON.stringify(data));
-    console.log(data);
     return data;
 }
 
 function addDataRows(actionId) {
-    let addDataRowRequest = new actionSDK.AddActionDataRow.Request(
-        getDataRow(actionId)
-    );
-    let closeViewRequest = new actionSDK.CloseView.Request();
-    let batchRequest = new actionSDK.BaseApi.BatchRequest([
-        addDataRowRequest,
-        closeViewRequest,
-    ]);
-    actionSDK
-        .executeBatchApi(batchRequest)
+    let addDataRowRequest = addDataRow(getDataRow(actionId)) // new actionSDK.AddActionDataRow.Request(getDataRow(actionId));
+    let closeViewRequest = ActionHelper.closeView(); // new actionSDK.CloseView.Request();
+    let batchRequest = ActionHelper.batchRequest([addDataRowRequest, closeViewRequest]); // new actionSDK.BaseApi.BatchRequest([addDataRowRequest,closeViewRequest]);
+    ActionHelper.executeBatchApi(batchRequest)
         .then(function(batchResponse) {
             console.info("BatchResponse: " + JSON.stringify(batchResponse));
         })
@@ -639,11 +597,11 @@ function createTrainingSection(index_num) {
                         let text_title = data.displayName;
                         $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
                         $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(text_title);
-                        console.log(`counter tet ${counter}`);
 
                         if (data.name.indexOf("photo") >= 0) {
-
-                            $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text('Photo');
+                            Localizer.getString('photo').then(function(result) {
+                                $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text(result);
+                            })
 
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
@@ -660,10 +618,10 @@ function createTrainingSection(index_num) {
 
                                 let count = 0;
                                 $.each(attachment, function(i, att) {
-                                    let req = new actionSDK.GetAttachmentInfo.Request(att);
+                                    let req = ActionHelper.getAttachmentInfo(att); // new actionSDK.GetAttachmentInfo.Request(att);
                                     console.log('count: ' + count);
 
-                                    actionSDK.executeApi(req)
+                                    ActionHelper.executeApi(req)
                                         .then(function(response) {
 
                                             let $img_div = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
@@ -699,14 +657,15 @@ function createTrainingSection(index_num) {
 
                             }
                         } else if (data.name.indexOf("document") >= 0) {
-                            $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text('Document');
-                            // $('div.section-2 > .container:first > div.card-box:last').find('.text-description').before("<img id='" + data.name + "' src='images/doc.png' >");
+                            Localizer.getString('document').then(function(result) {
+                                $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text(result);
+                            });
 
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            let req = ActionHelper.getAttachmentInfo(attachment[0]); // new actionSDK.GetAttachmentInfo.Request(attachment[0]);
 
-                            actionSDK.executeApi(req)
+                            ActionHelper.executeApi(req)
                                 .then(function(response) {
                                     console.info("Attachment - Response: " + JSON.stringify(response));
                                     $('div.section-2 > .container:first > div.card-box:last').find(".text-description").after('<hr><a href="' + response.attachmentInfo.downloadUrl + '" class="teams-link" download>View Document</a>');
@@ -719,14 +678,16 @@ function createTrainingSection(index_num) {
                             $('div.section-1').append(text_section3);
                             $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
                             $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(text_title);
-                            $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text('Video');
-                            $('div.section-2 > .container:first > div.card-box:last').find("img.image-sec").remove();
-                            $('div.section-2 > .container:first > div.card-box:last').attr("id", data.name);
+                            Localizer.getString('video').then(function(result) {
+                                $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text(result);
+                                $('div.section-2 > .container:first > div.card-box:last').find("img.image-sec").remove();
+                                $('div.section-2 > .container:first > div.card-box:last').attr("id", data.name);
+                            });
 
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                            let req = new actionSDK.GetAttachmentInfo.Request(attachment[0]);
-                            actionSDK.executeApi(req)
+                            let req = ActionHelper.getAttachmentInfo(attachment[0]); // new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            ActionHelper.executeApi(req)
                                 .then(function(response) {
                                     console.info("Attachment - Response: " + JSON.stringify(response));
                                     $('div.section-2 > .container:first > div.card-box:last').find(".text-description").before('<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="' + data.name + '" src="' + response.attachmentInfo.downloadUrl + '"></video></div><hr>');
@@ -755,6 +716,15 @@ function createTrainingSection(index_num) {
     });
 }
 
+function isJson(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}
+
 // *********************************************** SUBMIT ACTION END***********************************************
 // *********************************************** OTHER ACTION STARTS***********************************************
 let pagination = 0;
@@ -764,15 +734,11 @@ $(document).on('click', '#start', function() {
     $('div.section-1').after(`<div class="section-2"><div class="container pt-4"></div></div>`);
 
     /* Show first section */
-    // $('div.section-2 .container').html(text_section2);
     $('div.section-2').after(footer_section2);
     $('div.section-2').append(`<div class="container pb-100"></div>`);
 
     createTrainingSection(pagination);
     $('#back').prop('disabled', true);
-
-    console.log(pagination);
-
 });
 
 $(document).on('click', '#check', function() {
@@ -791,7 +757,6 @@ $(document).on('click', '#check', function() {
     $('div.card-box:visible').find("input[type='checkbox']:checked").each(function(ind, ele) {
         if ($(ele).is(':checked')) {
             check_counter++;
-            // selected_answer.push($.trim($(ele).parent('label').text()));
             selected_answer.push($.trim($(ele).attr('id')));
             attr_name = $(ele).attr('name');
             data.push($(this).attr("id"));
@@ -852,7 +817,6 @@ $(document).on('click', '#check', function() {
                 return false;
             }
         });
-        // summary_answer_resp.push(correct_answer);
 
         $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
             correct_ans_arr.push($.trim($('#' + subarr).text()));
@@ -869,7 +833,7 @@ $(document).on('click', '#check', function() {
                             <div class="form-group">
                                 <div class="hover-btn ">
                                     <label><strong><span class="question-title">Result</span></strong> </label>
-                                    <span class="float-right result"><span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> Correct</span></span>
+                                    <span class="float-right result"><span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> ${correctKey}</span></span>
                                     <button type="button" class="close remove-question" data-dismiss="alert">
                                         <span aria-hidden="true">
                                             
@@ -880,7 +844,7 @@ $(document).on('click', '#check', function() {
                                 <div class="clearfix"></div>
                                 <hr>
                             </div>
-                            <label><strong>Correct answer is: </strong> <span class="question-title-main">${correct_value}</span></label>
+                            <label><strong>${correctAnswerIsKey}: </strong> <span class="question-title-main">${correct_value}</span></label>
                         </div>`);
 
                 $('#check').text('Next').attr('id', 'next');
@@ -892,7 +856,7 @@ $(document).on('click', '#check', function() {
                         <hr>
                             <div class="form-group">
                                 <div class="hover-btn ">
-                                    <label><strong><span class="question-title">Result</span></strong> </label><span class="float-right result"><span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> Incorrect</span></span>
+                                    <label><strong><span class="question-title">Result</span></strong> </label><span class="float-right result"><span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> ${incorrectKey}</span></span>
                                     <button type="button" class="close remove-question" data-dismiss="alert">
                                         <span aria-hidden="true">
                                             
@@ -903,7 +867,7 @@ $(document).on('click', '#check', function() {
                                 <div class="clearfix"></div>
                                 <hr>
                             </div>
-                            <label><strong>Correct answer is: </strong> <span class="question-title-main">${correct_value}</span></label>
+                            <label><strong>${correctAnswerIsKey}: </strong> <span class="question-title-main">${correct_value}</span></label>
                         </div>`);
 
                 $('#check').text('Next').attr('id', 'next');
@@ -919,7 +883,9 @@ $(document).on('click', '#check', function() {
         }
 
     } else {
-        $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Note! Please choose any choice</div>`);
+        Localizer.getString('note_please_choose_choice').then(function(result) {
+            $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
+        });
     }
 
 });
@@ -941,19 +907,14 @@ $(document).on('click', '#next', function() {
         let check_counter = 0;
         let correct_answer = false;
         let attr_name = '';
-
         let is_checked = false;
-
-        console.log('Question: ');
 
         $('div.card-box:visible').find("input[type='checkbox']:checked").each(function(ind, ele) {
             if ($(ele).is(':checked')) {
                 check_counter++;
-                // selected_answer.push($.trim($(ele).parent('label').text()));
                 selected_answer.push($.trim($(ele).attr('id')));
                 attr_name = $(ele).attr('name');
-                data.push($(this).attr("id"));
-
+                data.push($(this).attr("id"))
                 is_checked = true;
             }
         });
@@ -1003,7 +964,6 @@ $(document).on('click', '#next', function() {
                     return false;
                 }
             });
-            // summary_answer_resp.push(correct_answer);
 
             $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
                 correct_ans_arr.push($.trim($('#' + subarr).text()));
@@ -1046,7 +1006,6 @@ $(document).on('click', '#next', function() {
                     /* If Incorrect */
                     let limit = $('#y').text();
                     pagination++;
-                    console.log(`${pagination} < ${limit}`);
 
                     if (pagination < limit) {
                         $('#next').prop('disabled', false);
@@ -1111,19 +1070,16 @@ $(document).on('click', '#next', function() {
                             return false;
                         }
                     });
-
-                    // summary_answer_resp.push(true);
-
                 } else {
                     /* Show Summary */
                     $('#next').prop('disabled', true);
                     loadSummaryView();
                 }
-
-
             }
         } else {
-            $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">Note! Please choose any choice</div>`);
+            Localizer.getString('note_please_choose_choice').then(function(result) {
+                $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${note_please_choose_choice}</div>`);
+            });
         }
 
         if (pagination >= limit) {
@@ -1133,11 +1089,9 @@ $(document).on('click', '#next', function() {
         /* Not Question Type */
         pagination++;
         limit = $('#y').text();
-        console.log(`${pagination} < ${limit}`);
         row[pagination] = 'question' + pagination;
 
         if (pagination < limit) {
-
             $('#next').prop('disabled', false);
             $('#back').prop('disabled', false);
 
@@ -1183,7 +1137,6 @@ $(document).on('click', '#back', function() {
     if (pagination < 1) {
         $('#back').prop('disabled', true);
     } else {
-
         $('#back').prop('disabled', false);
         $('#next').prop('disabled', false);
 
@@ -1203,19 +1156,6 @@ $(document).on('click', '#back', function() {
     }
 });
 // *********************************************** OTHER ACTION END***********************************************
-
-let footer_section = `<div class="footer" style="display:none;">
-        <div class="footer-padd bt">
-            <div class="container ">
-                <div class="row">
-
-                    <div class="col-12 text-right">
-                        <button class="btn btn-primary btn-sm float-right submit-form">Submit</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
 
 let head_section1 = `<div class="card-box card-bg card-border">
                             <h4 id="section1-training-title">My Training title</h4>
