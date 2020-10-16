@@ -1,15 +1,8 @@
 import * as actionSDK from "@microsoft/m365-action-sdk";
 export class Localizer {
     /**
-     * Get localized value of the given string id.
-     * If any id is not found the same will be returned.
-     * @param stringId id of the string to be localized
-     * @param args any arguments which needs to passed
-     */
-
-    /**
      * Method to get Local string and check contains argument to append or not
-     * @param id string identfier
+     * @param id string identifier
      * @param args additional string that want to append on response string to a position
      */
     static async getString(id, ...args) {
@@ -25,7 +18,7 @@ export class Localizer {
 
     /**
      * Method to get Local string from local file
-     * @param id string identfier
+     * @param id string identifier
      * @param args additional string that want to append on response string to a position
      */
     static getStringInternal(main, ...args) {
@@ -40,60 +33,73 @@ export class Localizer {
 
 export class ActionHelper {
     /**
-     * Hide Loader from the Canvas
+     * Method to hide loader from Canvas
      */
     static async hideLoader() {
         await actionSDK.executeApi(new actionSDK.HideLoadingIndicator.Request());
     }
 
-    /*
-     ** Get Context Request
+    /**
+     * Method to get context result
      */
     static getContextRequest() {
         return new actionSDK.GetContext.Request();
     }
 
-    /*
-     ** Execute API
+
+    /**
+     * Method to exceute api
+     * @param request object identifier
      */
     static async executeApi(request) {
         return await actionSDK.executeApi(request);
     }
 
-    /*
-     ** Get Action Request
+    /**
+     * Method to get action request
+     * @param actionId string identifier
      */
     static getActionRequest(actionId) {
         return new actionSDK.GetAction.Request(actionId);
     }
 
-    /*
-     ** Get Action Data Row Summary
+    /**
+     * Method to get summary data row
+     * @param actionId string identifier
+     * @param action object identifier
      */
     static getDataRowSummary(actionId, action) {
         return new actionSDK.GetActionDataRowsSummary.Request(actionId, action);
     }
 
-    /*
-     ** Get Action Data Row
+    /**
+     * Method to get action data row
+     * @param actionId string identifier
      */
     static requestDataRows(actionId) {
         return new actionSDK.GetActionDataRows.Request(actionId);
     }
 
+    /**
+     * Method to execute batch request
+     * @param args additional array that want to execute to perform in batch
+     */
     static batchRequest(args) {
         return new actionSDK.BaseApi.BatchRequest(args);
     }
 
     /**
-     ** Upload Attachment
+     * Method to upload attachment
+     * @param file_data blob file data
+     * @param file_type string identifier
      */
     static attachmentUpload(file_data, file_type) {
         return actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_type);
     }
 
-    /*
-     ** Request Upload Attachment
+    /**
+     * Method to request upload attachment
+     * @param attachment objet identifier
      */
     static requestAttachmentUplod(attachment) {
         return new actionSDK.UploadAttachment.Request(attachment, function(status) {
@@ -101,25 +107,49 @@ export class ActionHelper {
         });
     }
 
-    /*
-     ** Get Attachment Info
+    /**
+     * Method to get attachment information
+     * @param attachmentId string identifier
      */
-    static getAttachmentInfo(attachment_img) {
-        return new actionSDK.GetAttachmentInfo.Request(attachment_img);
+    static getAttachmentInfo(attachmentId) {
+        return new actionSDK.GetAttachmentInfo.Request(attachmentId);
     }
 
+    /**
+     * Method to get subscribed members counts
+     * @param subscription string identifier
+     */
     static getSubscriptionMemberCount(subscription) {
         return new actionSDK.GetSubscriptionMemberCount.Request(subscription);
     }
 
+    /**
+     * Method to get subscribed members details
+     * @param subscription string identifier
+     * @param creatorId string identifier
+     */
     static getSusbscriptionMembers(subscription, creatorId) {
         return new actionSDK.GetSubscriptionMembers.Request(subscription, creatorId);
     }
 
+    /**
+     * Method to get subscribed non participants details
+     * @param actionId string identfier
+     * @param subscriptionId string identifier
+     */
     static getSubscriptionNonParticipants(actionId, subscriptionId) {
         return new actionSDK.GetActionSubscriptionNonParticipants.Request(actionId, subscriptionId);
     }
 
+    /**
+     * Method to get set attachment preview in summary view
+     * @param request object identfier
+     * @param questionname string
+     * @param filesAmount Int 
+     * @param $img_thumbnail object contaains html object of image thumbnail
+     * @param $col3 object contains html object where preview gets append
+     * @param type string such as photo, document, video, question
+     */
     static setAttachmentPreview(request, questionName, filesAmount, $img_thumbnail, $col_3, type) {
         actionSDK.executeApi(request)
             .then(function(response) {
@@ -145,18 +175,33 @@ export class ActionHelper {
             });
     }
 
+    /**
+     * Method to execute the batch request
+     * @param batchRequest array object identifier
+     */
     static executeBatchApi(batchRequest) {
         return actionSDK.executeBatchApi(batchRequest);
     }
 
+    /**
+     * Method to add data row
+     * @param data object
+     */
     static addDataRow(data) {
         return new actionSDK.AddActionDataRow.Request(data);
     }
 
+    /**
+     * Method to close view data
+     */
     static closeView() {
         return new actionSDK.CloseView.Request();
     }
 
+    /**
+     * Method to get the column type
+     * @param type string identifer
+     */
     static getColumnType(type) {
         if (type == 'multiselect') {
             return actionSDK.ActionDataColumnValueType.MultiOption;
@@ -167,10 +212,17 @@ export class ActionHelper {
         }
     }
 
+    /**
+     * Method to set visibility
+     */
     static visibility() {
         return actionSDK.Visibility.All;
     }
 
+    /**
+     * Method to create Action
+     * @param action object
+     */
     static createAction(action) {
         return new actionSDK.CreateAction.Request(action);
     }

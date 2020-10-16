@@ -3,7 +3,6 @@ import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
 let questions = new Array();
 let validate = true;
 let setting_text = '';
-
 let opt = '';
 let request;
 let lastSession = null;
@@ -23,8 +22,14 @@ let everyoneKey = '';
 let onlyMeKey = '';
 let showCorrectAnswerKey = '';
 let answerCannotChangeKey = '';
+let questionCount = 0;
+let questionTitleKey = '';
+let optionKey = '';
 
 /***********************************  Manage Questions *********************************/
+/**
+ * Event to add question when click on add question button
+ */
 $(document).on("click", "#add-questions", function() {
     $('.error-msg').remove();
     $('.section-2').hide();
@@ -55,6 +60,9 @@ $(document).on("click", "#add-questions", function() {
 
 });
 
+/**
+ * Event to add question to same section when new question added
+ */
 $(document).on("click", "#add-questions-same-section", function() {
     let question_counter;
     $('form.sec1').append(questions_section);
@@ -72,6 +80,9 @@ $(document).on("click", "#add-questions-same-section", function() {
     $('form.sec1').append(add_question_button);
 });
 
+/**
+ * Event on back button on question area
+ */
 $(document).on("click", "#back-question", function() {
     $(".question-section").hide();
     $(".add_question_button").hide();
@@ -82,7 +93,9 @@ $(document).on("click", "#back-question", function() {
     $(".section-2-footer").show();
 });
 
-/* Remove Questions */
+/**
+ * Event to remove question
+ */
 $(document).on("click", ".remove-question", function() {
     let element = $(this);
     let data_id = $(this).parents('.question-container').attr('id');
@@ -110,11 +123,17 @@ $(document).on("click", ".remove-question", function() {
     }
 });
 
+/**
+ * Event to cancel the confirm box for delete question
+ */
 $(document).on('click', '#cancel-confirm', function() {
     $(this).parents("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
     $(this).parents('.confirm-box').remove();
 })
 
+/**
+ * Event to delete question when click on confirm area ok button
+ */
 $(document).on("click", "#delete-question", function() {
     let element = $(this).attr('data-id');
     $('#' + element).parents('div.question-section').remove();
@@ -128,7 +147,9 @@ $(document).on("click", "#delete-question", function() {
     });
 });
 
-/* Add Options */
+/**
+ * Event to add option when click on add more option button
+ */
 $(document).on("click", ".add-options", function() {
     $(this).parents('div.card-box:visible').find('.error-msg').remove();
     if ($(this).parents("div.container").find("div.option-div input[type='text']").length >= 10) {
@@ -155,13 +176,12 @@ $(document).on("click", ".add-options", function() {
     }
 });
 
-/* Remove Options */
+/**
+ * Event to remove option
+ */
 $(document).on("click", ".remove-option", function(eve) {
     $('div.question-section').find('div.error-msg').remove();
-
-    if (
-        $(this).parents("div.question-container").find("div.option-div").length > 2
-    ) {
+    if ($(this).parents("div.question-container").find("div.option-div").length > 2) {
         let selector = $(this).closest("div.container");
         $(this).parents("div.option-div").remove();
         $(selector)
@@ -185,6 +205,9 @@ $(document).on("click", ".remove-option", function(eve) {
     }
 });
 
+/**
+ * Event to submit question on click done button
+ */
 $(document).on("click", "#question-done", function() {
     $('#question-done').prop('disabled', true);
 
@@ -348,18 +371,24 @@ $(document).on("click", "#question-done", function() {
     $('#question-done').prop('disabled', false);
 
 });
+
 /****************************  Manage Questions Ends ***************************/
 
 
 /***********************************  Add Text *********************************/
-/* Add Content */
 
+/**
+ * Event to show setting section
+ */
 $(document).on("click", ".show-setting", function() {
     $(".section-1").hide();
     $(".section-1-footer").hide();
     $("form #setting").show();
 });
 
+/**
+ * Event to get on back button at content area
+ */
 $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", function() {
 
     $(".text-section").hide();
@@ -371,7 +400,9 @@ $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", 
     $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").remove();
 });
 
-/* Add Text */
+/**
+ * Event to add text when click on content area button
+ */
 $(document).on("click", "#add-text", function() {
     $('.error-msg').remove();
     $('#submit').attr('disabled', false);
@@ -414,7 +445,9 @@ $(document).on("click", "#add-text", function() {
             </div>`);
 });
 
-/* Submit Text */
+/**
+ * Event to submit text when click on done button
+ */
 $(document).on("click", "#text-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
 
@@ -447,7 +480,9 @@ $(document).on("click", "#text-done", function() {
     }
 });
 
-/* Add Photo */
+/**
+ * Event to show photo section when click on add content button
+ */
 $(document).on('click', '#add-photo', function() {
     let text_data = '';
     let text_number = parseInt($("div.training-card-section").length);
@@ -507,7 +542,9 @@ $(document).on('click', '#add-photo', function() {
     $('#upload-photo').click();
 });
 
-/* Submit Photo */
+/**
+ * Event to submit photo
+ */
 $(document).on("click", "#photo-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
     let error_text = "";
@@ -588,7 +625,9 @@ $(document).on("click", "#photo-done", function() {
     }
 });
 
-/* Add Video */
+/**
+ * Event to show video section
+ */
 $(document).on('click', '#add-video', function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
@@ -646,7 +685,9 @@ $(document).on('click', '#add-video', function() {
 
 });
 
-/* Submit Video */
+/**
+ * Event to submit video
+ */
 $(document).on("click", "#video-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
     let video_desc = $('textarea#video-description').val();
@@ -708,7 +749,9 @@ $(document).on("click", "#video-done", function() {
     }
 });
 
-/* Add Document */
+/**
+ * Even to shwo document upload section
+ */
 $(document).on('click', '#add-document', function() {
     let text_number = parseInt($("div.training-card-section").length);
     let text_data = '';
@@ -764,7 +807,9 @@ $(document).on('click', '#add-document', function() {
     $('#upload-document').click();
 });
 
-/* Submit Document */
+/**
+ * Event to submit the document area
+ */
 $(document).on("click", "#document-done", function() {
     let text_number = parseInt($("div.training-card-section").length) - 1;
 
@@ -826,6 +871,9 @@ $(document).on("click", "#document-done", function() {
     }
 });
 
+/**
+ * Event to submit photo 
+ */
 $(document).on('change', '#upload-photo', function() {
     if (imagesPreview(this, '.updated-img')) {
         $('.photo-box').hide();
@@ -834,6 +882,11 @@ $(document).on('change', '#upload-photo', function() {
     }
 })
 
+/**
+ * Method to show image preview  
+ * @param input object contain the input element data
+ * @param placeToInsertImagePreview object contains html element where image preview will be showed
+ */
 let imagesPreview = function(input, placeToInsertImagePreview) {
 
     if (input.files) {
@@ -894,16 +947,24 @@ let imagesPreview = function(input, placeToInsertImagePreview) {
     return false;
 };
 
+/**
+ * Event to show previous carousel slide
+ */
 $(document).on('click', '.carousel-control-prev', function() {
-
     $('.carousel').carousel('prev')
 });
 
+/**
+ * Event to show next carousel slide
+ */
 $(document).on('click', '.carousel-control-next', function() {
 
     $('.carousel').carousel('next')
 });
 
+/**
+ * Event to show video upload section
+ */
 $(document).on('change', '#upload-video', function() {
     let fileInput = document.getElementById('upload-video');
     let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
@@ -913,12 +974,18 @@ $(document).on('change', '#upload-video', function() {
     $(".video-section-preview").last().attr("src", fileUrl);
 });
 
+/**
+ * Event when upload document uploadedd
+ */
 $(document).on('change', '#upload-document', function() {
     if ($(this)[0].files[0].name != undefined || $(this)[0].files[0].name != null)
         $('.doc-name').html('');
     $('.doc-name').append(`<a>${$(this)[0].files[0].name}</a>`);
 });
 
+/**
+ * Event to remove the text from preview section
+ */
 $(document).on("click", ".remove-text", function() {
     let data_id = $(this).parents('.card-box').attr('data-id');
     let confirm_box = `
@@ -938,6 +1005,9 @@ $(document).on("click", ".remove-text", function() {
 
 });
 
+/**
+ * Event when click on confirm delete section
+ */
 $(document).on("click", "#confirm-delete-text", function() {
     let eve = $(this).attr('data-id');
 
@@ -952,6 +1022,9 @@ $(document).on("click", "#confirm-delete-text", function() {
     });
 });
 
+/**
+ * Event to get Local string and check contains argument to append or not
+ */
 $(document).on("click", "#next", function() {
     /* Validate */
     let error_text = "";
@@ -1005,12 +1078,17 @@ $(document).on("click", "#next", function() {
 
 
 /***********************************  Submit Training *********************************/
+/**
+ * Event to submit form
+ */
 $(document).on("click", "#submit", function() {
     $("#submit").prop('disabled', true);
     submitForm();
 });
 
-/* Async method for fetching localization strings */
+/**
+ * Method to fetch localization sting
+ */
 async function getStringKeys() {
     Localizer.getString('quizTitle').then(function(result) {
         $('#quiz-title').attr({ 'placeholder': result });
@@ -1185,6 +1263,9 @@ async function getStringKeys() {
     })
 }
 
+/**
+ * Method to submit form
+ */
 function submitForm() {
     ActionHelper
         .executeApi(request)
@@ -1204,13 +1285,16 @@ function submitForm() {
         });
 }
 
+/**
+ * Method to get question json
+ */
 function getQuestionSet() {
     questions = new Array();
 
     $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
         if ($(elem).hasClass("question-section-div") == true) {
             /* Get Questions */
-            let option_type = ActionHelper.ActionDataColumnValueType.SingleOption;
+            let option_type = ActionHelper.getColumnType('singleselect');
             let question_id = $(elem).find('span.counter').text();
             let option = [];
 
@@ -1321,6 +1405,9 @@ function getQuestionSet() {
 
 }
 
+/**
+ * Method to get correct answer from the training quiz
+ */
 function getCorrectAnswer() {
     let correct_option = [];
 
@@ -1354,6 +1441,10 @@ function getCorrectAnswer() {
     return property;
 }
 
+/**
+ * Method to create action creates json for store form data
+ * @param actionPackageId string identifier contains package id
+ */
 function createAction(actionPackageId) {
     let trainingTitle = $("#training-title").val();
     let trainingDescription = $("#training-description").val();
@@ -1388,9 +1479,6 @@ function createAction(actionPackageId) {
     });
     properties.push(getcorrectanswers);
 
-
-
-
     let action = {
         id: generateGUID(),
         actionPackageId: actionPackageId,
@@ -1422,6 +1510,9 @@ function createAction(actionPackageId) {
         });
 }
 
+/**
+ * Method to generate guid
+ */
 function generateGUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
         let r = (Math.random() * 16) | 0,
@@ -1432,7 +1523,9 @@ function generateGUID() {
 
 /***********************************  Submit Training Ends *******************************/
 
-
+/**
+ * Event when document load is ready
+ */
 $(document).ready(function() {
     request = ActionHelper.getContextRequest();
     getStringKeys();
@@ -1440,6 +1533,9 @@ $(document).ready(function() {
     $('.training-clear').hide();
 });
 
+/**
+ * Method to get theme color and localization
+ */
 async function getTheme() {
     let response = '';
     let context = '';
@@ -1456,7 +1552,6 @@ async function getTheme() {
         $('form.sec1').append(setting_section);
         $('form.sec1').append(training_section_view);
         $('form.sec1').after(option_section);
-        $('form.sec1').after(modal_section);
         $('form.sec1').after(toggle_section);
         opt = $("div#option-section .option-div").clone();
 
@@ -1899,9 +1994,14 @@ async function getTheme() {
         }
         date_input.datepicker(options);
         ActionHelper.hideLoader();
+        getStringKeys();
     });
 }
 
+/**
+ * Method to validate the string is json or not
+ * @param str string identifier
+ */
 function isJson(str) {
     try {
         JSON.parse(str);
@@ -1913,6 +2013,9 @@ function isJson(str) {
 
 /***********************************  Other Actions *******************************/
 
+/**
+ * Event to back button
+ */
 $(document).on("click", "#back", function() {
     $(".section-2").hide();
     $(".section-2-footer").hide();
@@ -1922,6 +2025,9 @@ $(document).on("click", "#back", function() {
     $('.error-msg').remove();
 });
 
+/**
+ * Event to back button click from setting page
+ */
 $(document).on("click", "#back-setting", function() {
     $('.error-msg').remove();
     $(".section-1").show();
@@ -1932,6 +2038,9 @@ $(document).on("click", "#back-setting", function() {
     $('#due').text(setting_text);
 });
 
+/**
+ * Event to next button
+ */
 $(document).on('click', '#next1', function() {
     $('.error-msg').remove();
     $("input[type='text']").removeClass("danger");
@@ -1989,6 +2098,8 @@ $(document).on('click', '#next1', function() {
                 .then(function(response) {
                     if ($('#training-attachment-id').length > 0) {
                         $('#training-attachment-id').val(response.attachmentId);
+                        $('#training-title-content').parent('div.col-12').addClass('col-9').removeClass('col-12');
+                        $('#training-title-content').parents('div.row').find('.col-3').show();
                     } else {
                         $('.training-card-section').find('textarea:last').after('<textarea id="training-attachment-id" class="d-none" >' + response.attachmentId + '</textarea>');
                     }
@@ -1997,9 +2108,15 @@ $(document).on('click', '#next1', function() {
                     console.log("GetContext - Error: " + JSON.stringify(error));
                 });
         }
+    } else {
+        $('#training-title-content').parent('div.col-9').addClass('col-12').removeClass('col-9');
+        $('#training-title-content').parents('div.row').find('div.col-3').hide();
     }
 });
 
+/**
+ * Event when training cover image changes
+ */
 $(document).on('change', '#cover-image', function() {
     $('.error-msg').remove();
     readURL(this, '#training-img-preview, #training-title-image');
@@ -2010,6 +2127,9 @@ $(document).on('change', '#cover-image', function() {
     $('.training-clear').show();
 });
 
+/**
+ * Event when click on clear button on training section
+ */
 $(document).on('click', '.training-clear', function() {
     $('.error-msg').remove();
     $('.photo-box').show();
@@ -2019,6 +2139,9 @@ $(document).on('click', '.training-clear', function() {
     $('.img-thumbnail').hide();
 });
 
+/**
+ * Event when click on class then open hidden file
+ */
 $(document).on('click', '.upvj', function(event) {
     event.preventDefault();
     $('.section-2').find('div.card-box:last').find('input[type="file"]').click();
@@ -2029,7 +2152,9 @@ $(document).on('click', '.upvj', function(event) {
 
 
 /***********************************  Settings ***************************/
-
+/**
+ * Event when change on setting inputs
+ */
 $(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], .visible-to, #show-correct-answer", function() {
     let end = new Date($('input[name="expiry_date"]').val() + ' ' + $('input[name="expiry_time"]').val());
     let start = new Date();
@@ -2059,7 +2184,11 @@ $(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], 
 
 
 /***********************************  Methods ***************************/
-
+/**
+ * Method to get date difference between two date
+ * @param start datetime start date
+ * @param end datetime end date
+ */
 function calc_date_diff(start, end) {
     let days = (end - start) / (1000 * 60 * 60 * 24);
     let hourText = '';
@@ -2100,6 +2229,10 @@ function calc_date_diff(start, end) {
     }
 }
 
+/**
+ * Method to get number to words
+ * @param num Integer
+ */
 function numbertowords(num) {
     switch (num) {
         case 1:
@@ -2137,6 +2270,11 @@ function numbertowords(num) {
     }
 }
 
+/**
+ * Method to get base64 data of file
+ * @param input object html file type input element
+ * @param elem object html elem where preview need to show
+ */
 function readURL(input, elem) {
     if (input.files && input.files[0]) {
         let reader = new FileReader();
@@ -2154,7 +2292,9 @@ function readURL(input, elem) {
 /***********************************  HTML Section ***************************/
 
 /*  HTML Sections  */
-// form
+/**
+ * Variable contains form section
+ */
 let form_section = `<div class="section-1" style="display:none">
             <div class="container pt-4">
                 <div id="root" class="card-box card-border card-bg">
@@ -2176,7 +2316,7 @@ let form_section = `<div class="section-1" style="display:none">
                             </div>
                             <!-- show this div after img added -->
                             <div class="training-updated-img card card-bg card-border max-min-220 upvj cursur-pointer" style="display:none">
-                                <img src="" id="training-img-preview">
+                                <img src="" id="training-img-preview" class="training-updated-img card card-bg card-border updated-img max-min-220 upvj cursur-pointer" >
                             </div>
                         </div> 
                     </div>
@@ -2202,6 +2342,9 @@ let form_section = `<div class="section-1" style="display:none">
             </div>
         </div>`;
 
+/**
+ * Variable contains training section
+ */
 let training_section_view = `<div class="section-2" style="display:none">
             <div class="container pt-4">
                 <div id="root" class="">
@@ -2269,7 +2412,9 @@ let training_section_view = `<div class="section-2" style="display:none">
             </div>
         </div>`;
 
-// Question
+/**
+ * Variable contains question section
+ */
 let questions_section = `<div class="question-section">
         <div class="container question-container pt-4">
             <div class="card-box card-border card-bg">
@@ -2375,7 +2520,9 @@ let questions_section = `<div class="question-section">
         </div>
     </div>`;
 
-// Add Question Button
+/**
+ * Variable contains add buttn section
+ */
 let add_question_button = `<div class="container pb-5 question_button">
                 <div class="form-group pb-5">
                     <button type="button" class="btn btn-primary btn-sm" id="add-questions-same-section"> <svg role="presentation"
@@ -2390,7 +2537,9 @@ let add_question_button = `<div class="container pb-5 question_button">
                 </div>
             </div>`;
 
-// Question Footer
+/**
+ * Variable contains question footer
+ */
 let question_footer = `<div class="footer question-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
@@ -2415,7 +2564,9 @@ let question_footer = `<div class="footer question-footer" >
             </div>
         </div>`;
 
-// Option
+/**
+ * Variable contains option section
+ */
 let option_section = `<div style="display: none;" id="option-section">
         <div class="option-div">
             <div class="input-group mb-2">
@@ -2446,7 +2597,9 @@ let option_section = `<div style="display: none;" id="option-section">
         </div>
     </div>`;
 
-// Text 
+/**
+ * Variable contains text section
+ */
 let add_text_section = `<div class="text-section" >
             <div class="container pt-4">
                 <div id="root" class="">
@@ -2459,6 +2612,9 @@ let add_text_section = `<div class="text-section" >
             </div>
         </div>`;
 
+/**
+ * Variable contains text footer section
+ */
 let add_text_footer = `<div class="footer text-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
@@ -2482,7 +2638,9 @@ let add_text_footer = `<div class="footer text-footer" >
             </div>
         </div>`;
 
-// Photo
+/**
+ * Variable contains photo section
+ */
 let add_photo_section = `<div class="text-section" >
             <div class="container pt-4">
                 <div id="root" class="">
@@ -2508,6 +2666,9 @@ let add_photo_section = `<div class="text-section" >
             </div>
         </div>`;
 
+/**
+ * Variable contains photo footer section
+ */
 let add_photo_footer = `<div class="footer text-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
@@ -2532,7 +2693,9 @@ let add_photo_footer = `<div class="footer text-footer" >
         </div>`;
 
 
-// Video
+/**
+ * Variable contains video section
+ */
 let add_video_section = `<div class="text-section" >
 <div class="container pt-4">
     <div id="root" class="">
@@ -2559,6 +2722,9 @@ let add_video_section = `<div class="text-section" >
 </div>
 </div>`;
 
+/**
+ * Variable contains video footer section
+ */
 let add_video_footer = `<div class="footer text-footer" >
 <div class="footer-padd bt">
     <div class="container ">
@@ -2582,7 +2748,9 @@ let add_video_footer = `<div class="footer text-footer" >
 </div>`;
 
 
-// Document
+/**
+ * Variable contains document section
+ */
 let add_document_section = `<div class="text-section" >
 <div class="container pt-4">
     <div id="root" class="">
@@ -2609,6 +2777,9 @@ let add_document_section = `<div class="text-section" >
 </div>
 </div>`;
 
+/**
+ * Variable contains document footer section
+ */
 let add_document_footer = `<div class="footer text-footer" >
 <div class="footer-padd bt">
     <div class="container ">
@@ -2633,97 +2804,9 @@ let add_document_footer = `<div class="footer text-footer" >
 </div>`;
 
 
-// Setting 
-let setting_section1 = `<div class="" style="display: none;" id="setting">
-        <div class="container pt-4 setting-section">
-            <div class="row">
-                <div class="col-sm-12">
-                    <label><strong class="due-by-label">Due by</strong></label>
-                </div>
-                <div class="clearfix"></div>
-                <div class="col-1"></div>
-                <div class="col-5">
-                    <div class="input-group input-group-tpt mb-2">
-                        <input type="date" name="expiry_date" class="form-control in-t" placeholder="Date"
-                            aria-label="Expiry Date" aria-describedby="basic-addon2" id="expiry-date">
-                    </div>
-                </div>
-                <div class="col-5">
-                    <div class="input-group input-group-tpt mb-2">
-                        <input type="time" name="expiry_time" class="form-control in-t" placeholder="Time"
-                            aria-label="Time" aria-describedby="basic-addon2" id="expiry-time" value="23:59">
-                    </div>
-                </div>
-                <div class="clearfix"></div>
-                <div class="d-none">
-                    <div class="col-12">
-                        <label><strong>Results visible to</strong></label>
-                    </div>
-                    <div class="clearfix"></div>
-                    <div class="col-1"></div>
-                    <div class="col-11">
-                        <div class="custom-radio-outer">
-                            <label class="custom-radio">
-                                <input type="radio" name="visible_to" class="visible-to" value="Everyone" checked>
-                                <span class="radio-block"></span> Everyone
-                            </label>
-                        </div>
-                        <div class="custom-radio-outer">
-                            <label class="custom-radio">
-                                <input type="radio" name="visible_to" class="visible-to" value="Only me"><span
-                                    class="radio-block"></span> Only Me
-                            </label>
-                        </div>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-                <div class="col-12">
-                    <label><strong class="show-correct-key">Show correct answer after each question</strong></label>
-                </div>
-                <div class="clearfix"></div>
-                <div class="col-1"></div>
-                <div class="col-11">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="custom-check-outer">
-                                <label class="custom-check form-check-label">
-                                    <input type="checkbox" name="show_correct_answer" id="show-correct-answer"
-                                        value="Yes" checked/>
-                                    <span class="checkmark"></span>
-                                    <span class="answer-cannot-change-key">Answer cannot be changed if this option is selected</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer">
-                <div class="footer-padd bt">
-                    <div class="container ">
-                        <div class="row">
-                            <div class="col-9">
-                                <a class=" cursur-pointer" id="back-setting">
-                                    <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                                        <path class="ui-icon__outline gr"
-                                            d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                                        </path>
-                                        <path class="ui-icon__filled"
-                                            d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                                        </path>
-                                    </svg><span class="back-key"> Back</span>
-                                </a>
-                            </div>
-                            <div class="col-3">
-                                <button type="button" class="btn btn-tpt">&nbsp;</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-// Setting Section
+/**
+ * Variable contains setting section
+ */
 let setting_section = `<div style="display:none" id="setting">
         <div class="container pt-4 setting-section">
             <div class="row">
@@ -2731,13 +2814,12 @@ let setting_section = `<div style="display:none" id="setting">
                     <label><strong class="due-by-key">${dueByKey}</strong></label>
                 </div>
                 <div class="clearfix"></div>
-                <div class="col-1"></div>
-                <div class="col-5">
+                <div class="col-6">
                     <div class="input-group date form_date" data-date="1979-09-16T05:25:07Z" data-date-format="M dd, yyyy" data-link-field="dtp_input1">
                         <input class="form-control in-t" size="16" name="expiry_date" type="text" value="" readonly>
                     </div>
                 </div>
-                <div class="col-5">
+                <div class="col-6">
                     <div class="input-group date form_time" data-date="" data-date-format="hh:ii" data-link-field="dtp_input3" data-link-format="hh:ii">
                         <input class="form-control in-t" name="expiry_time" size="16" type="text" value="" readonly>
                         <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
@@ -2767,22 +2849,18 @@ let setting_section = `<div style="display:none" id="setting">
                     </div>
                     <div class="clearfix"></div>
                 </div>
-                <div class="col-12">
+                <div class="col-12 mt-4">
                     <div class="input-group mb-2 form-check custom-check-outer">
                         <label class="custom-check form-check-label">
                             <input type="checkbox" name="show_correct_answer" id="show-correct-answer" value="Yes" checked/>
                             <span class="checkmark"></span>
+                            <strong class="show-correct-key">${showCorrectAnswerKey}</strong><br>
                         </label>
-                        <label><strong class="show-correct-key">${showCorrectAnswerKey}</strong></label>
+                        <br>
+                        <small><span class="answer-cannot-change-key">${answerCannotChangeKey}</span></small>
                     </div>
                 </div>
                 <div class="clearfix"></div>
-                <div class="col-1"></div>
-                <div class="col-11">
-                    <label>
-                        <span class="answer-cannot-change-key">${answerCannotChangeKey}</span>
-                    </label>
-                </div>
             </div>
             <div class="footer">
                 <div class="footer-padd bt">
@@ -2809,29 +2887,9 @@ let setting_section = `<div style="display:none" id="setting">
     </div>`;
 
 
-//  modal
-let modal_section = `<div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
-        aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title app-black-color" id="exampleModalLongTitle">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body app-black-color">
-                    ...
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary btn-sm back-key" data-dismiss="modal">Back</button>
-                    <button type="button" class="btn btn-primary btn-sm" id="save-changes">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-
+/**
+ * Variable contains toggle section
+ */
 let toggle_section = `<div class="slideup-content">
     <div class="row">
         <div class="col-3">

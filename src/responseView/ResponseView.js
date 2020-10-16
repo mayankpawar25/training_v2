@@ -1,9 +1,5 @@
-import { result } from 'lodash';
 import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
 
-// ActionSDK.APIs.actionViewDidLoad(true /*success*/ );
-
-// Fetching HTML Elements in Variables by ID.
 let $root = "";
 let row = {};
 let actionInstance = null;
@@ -19,24 +15,27 @@ let questionKey = '';
 let questionsKey = '';
 let startKey = '';
 let noteKey = '';
+let correctKey = '';
+let incorrectKey = '';
+let correctAnswerIsKey = '';
+let submitKey = '';
+let nextKey = '';
+let backKey = '';
+let pagination = 0;
 let choiceAnyChoiceKey = '';
 let continueKey = '';
 let answerResponseKey = '';
-let correctKey = '';
 let yourAnswerKey = '';
-let incorrectKey = '';
-let correctAnswerIsKey = '';
 let correctAnswerKey = '';
-let yourAnswerRightKey = '';
-let yourAnswerIsKey = ''
-let rightAnswerIsKey = '';
-let submitKey = '';
+let yourAnswerIsKey = '';
 let quizSummaryKey = '';
-let nextKey = '';
-let backKey = '';
 let quizExpiredKey = '';
+let rightAnswerIsKey = '';
 
 /* Async method for fetching localization strings */
+/**
+ * Method to get Local string
+ */
 async function getStringKeys() {
     Localizer.getString('question').then(function(result) {
         questionKey = result;
@@ -124,32 +123,30 @@ async function getStringKeys() {
 
 }
 
+/*
+ * Method to get theme and load page content 
+ * @param request object
+ */
 async function getTheme(request) {
-    let response = await ActionHelper.executeApi(request); // actionSDK.executeApi(request);
+    let response = await ActionHelper.executeApi(request);
     let context = response.context;
-    console.log("getContext response: ");
-    console.log(JSON.stringify(context));
     $("form.section-1").show();
     let theme = context.theme;
-    console.log(`theme: ${context.theme}`)
     $("link#theme").attr("href", "css/style-" + theme + ".css");
 
     $('div.section-1').append(`<div class="row"><div class="col-12"><div id="root"></div></div></div>`);
-    $root = $("#root")
-
+    $root = $("#root");
     setTimeout(() => {
         $('div.section-1').show();
         $('div.footer').show();
     }, 1000);
-
     ActionHelper.hideLoader();
-
     OnPageLoad();
 }
 
-/* 
- * @desc Method get Responder Details  
- * @param action context id
+/*
+ * Method to get responder ids who responded the app
+ * @param actionId string identifier
  */
 async function getResponderIds(actionId) {
     ActionHelper
@@ -163,23 +160,25 @@ async function getResponderIds(actionId) {
                     memberIds.push(actionDataRows[i].creatorId);
                 }
             }
-
-            console.log('memberIds: ');
-            console.log(memberIds);
         })
-        /* .catch(function(error) {
+        .catch(function(error) {
             console.error("Console log: Error: " + JSON.stringify(error));
-        }) */
-    ;
+        });
 }
 
 // *********************************************** HTML ELEMENT***********************************************
+/*
+ * Event when document is ready
+ */
 $(document).ready(function() {
-    request = ActionHelper.getContextRequest(); // new actionSDK.GetContext.Request();
+    request = ActionHelper.getContextRequest();
     getStringKeys();
     getTheme(request);
 });
 
+/*
+ * Method to create body when page load
+ */
 function OnPageLoad() {
     ActionHelper.executeApi(request).then(function(response) {
             console.info("GetContext - Response: " + JSON.stringify(response));
@@ -193,6 +192,10 @@ function OnPageLoad() {
         });
 }
 
+/*
+ * Method to create body of the app
+ * @param actionId string identifier
+ */
 function getActionInstance(actionId) {
     ActionHelper.executeApi(ActionHelper.getActionRequest(actionId))
         .then(function(response) {
@@ -200,13 +203,16 @@ function getActionInstance(actionId) {
             actionInstance = response.action;
             createBody();
         })
-        .catch(function(error) {
+        /* .catch(function(error) {
             console.log("Error: " + JSON.stringify(error));
-        });
+        }) */
+    ;
 }
 
+/*
+ * Method to create body
+ */
 function createBody() {
-
     /* Check if already responded */
     if ($.inArray(myUserId, memberIds) > -1) {
         Localizer.getString('alreadyTired').then(function(result) {
@@ -232,7 +238,7 @@ function createBody() {
         $('#section1-training-description').html(actionInstance.customProperties[0].value);
 
         /* Check if image upload for training */
-        let req = ActionHelper.getAttachmentInfo(actionInstance.customProperties[4].value); // new actionSDK.GetAttachmentInfo.Request(actionInstance.customProperties[4].value);
+        let req = ActionHelper.getAttachmentInfo(actionInstance.customProperties[4].value);
 
         ActionHelper.executeApi(req)
             .then(function(response) {
@@ -254,12 +260,12 @@ function createBody() {
 
                     if (data.name.indexOf("photo") >= 0) {
                         $('div.section-1').append(text_section3);
-                        $('div.card-box:last').find('span.counter').text(counter);
-                        $('div.card-box:last').find('.text-description').text(text_title);
-
+                        $('div.card-box:last').attr('id', 'contain-' + counter);
+                        $('div.card-box#contain-' + counter).find('span.counter').text(counter);
+                        $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
                         Localizer.getString('photo').then(function(result) {
-                            $('div.card-box:last').find('span.training-type').text(result);
-                            $('div.card-box:last').find("img.image-sec").attr('id', data.name);
+                            $('div.card-box#contain-' + counter).find('span.training-type').text(result);
+                            $('div.card-box#contain-' + counter).find("img.image-sec").attr('id', data.name);
                         });
                         let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                         let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
@@ -269,48 +275,47 @@ function createBody() {
                                 attachment_img = att;
                                 return false;
                             });
-                            let req = ActionHelper.getAttachmentInfo(attachment_img); // new actionSDK.GetAttachmentInfo.Request(attachment_img);
+                            let req = ActionHelper.getAttachmentInfo(attachment_img);
                             let filesAmount = Object.keys(attachment).length;
-                            ActionHelperexecuteApi(req)
-                                .then(function(response) {
-                                    console.info("Attachment - Response: " + JSON.stringify(response));
-                                    $("img#" + data.name).attr('src', response.attachmentInfo.downloadUrl);
+                            ActionHelper.executeApi(req).then(function(response) {
+                                    console.info("Attachment - Response photo:  " + JSON.stringify(response));
+                                    $('div.card-box#contain-' + counter).find("img#" + data.name).attr('src', response.attachmentInfo.downloadUrl);
                                     if (filesAmount > 1)
-                                        $("img#" + data.name).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                                        $('div.card-box#contain-' + counter).find("img#" + data.name).after(`<span class="file-counter">+${filesAmount-1}</span>`);
                                 })
                                 .catch(function(error) {
                                     console.error("AttachmentAction - Error: " + JSON.stringify(error));
                                 });
-
-                            console.log('filesAmount: ' + filesAmount);
                         }
                     } else if (data.name.indexOf("document") >= 0) {
                         $('div.section-1').append(text_section3);
-                        $('div.card-box:last').find('span.counter').text(counter);
-                        $('div.card-box:last').find('.text-description').text(text_title);
-                        $('div.card-box:last').find("img.image-sec").attr('id', data.name);
+                        $('div.card-box:last').attr('id', 'contain-' + counter);
+                        $('div.card-box#contain-' + counter).find('span.counter').text(counter);
+                        $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
+                        $('div.card-box#contain-' + counter).find("img.image-sec").attr('id', data.name);
                         Localizer.getString('document').then(function(result) {
-                            $('div.card-box:last').find('span.training-type').text(result);
+                            $('div.card-box#contain-' + counter).find('span.training-type').text(result);
                             $("img#" + data.name).attr('src', 'images/doc.png');
                         });
                     } else if (data.name.indexOf("video") >= 0) {
                         $('div.section-1').append(text_section3);
-                        $('div.card-box:last').find('span.counter').text(counter);
-                        $('div.card-box:last').find('.text-description').text(text_title);
+                        $('div.card-box:last').attr('id', 'contain-' + counter);
+                        $('div.card-box#contain-' + counter).find('span.counter').text(counter);
+                        $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
                         Localizer.getString('video').then(function(result) {
-                            $('div.card-box:last').find('span.training-type').text(result);
-                            $('div.card-box:last').find("img.image-sec").remove();
-                            $('div.card-box:last').attr("id", data.name);
+                            $('div.card-box#contain-' + counter).find('span.training-type').text(result);
+                            $('div.card-box#contain-' + counter).find("img.image-sec").remove();
+                            $('div.card-box#contain-' + counter).attr("id", data.name);
                         });
 
                         let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                         let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                         if (attachment != undefined) {
-                            let req = ActionHelper.getAttachmentInfo(attachment[0]); // new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            let req = ActionHelper.getAttachmentInfo(attachment[0]);
                             ActionHelper.executeApi(req)
                                 .then(function(response) {
                                     console.info("Attachment - Response: " + JSON.stringify(response));
-                                    $('#' + data.name).find(".img-thumbnail").append('<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="' + data.name + '" src="' + response.attachmentInfo.downloadUrl + '"></video></div>');
+                                    $('div.card-box#contain-' + counter).find('#' + data.name).find(".img-thumbnail").append('<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="' + data.name + '" src="' + response.attachmentInfo.downloadUrl + '"></video></div>');
                                 })
                                 .catch(function(error) {
                                     console.error("AttachmentAction - Error: " + JSON.stringify(error));
@@ -319,9 +324,12 @@ function createBody() {
                     } else {
                         /* text */
                         $('div.section-1').append(text_section1);
-                        $('div.card-box:last').find('span.counter').text(counter);
-                        $('div.card-box:last').find('.text-description').text(text_title);
-
+                        $('div.card-box:last').attr('id', 'contain-' + counter);
+                        $('div.card-box#contain-' + counter).find('span.counter').text(counter);
+                        Localizer.getString('text').then(function(result) {
+                            $('div.card-box#contain-' + counter).find('span.training-type').text(result);
+                            $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
+                        });
                     }
 
                 } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
@@ -329,10 +337,11 @@ function createBody() {
                     let counter = $('div.card-box').length;
                     let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
                     $('div.section-1').append(question_section1);
-                    $('div.card-box:last').find('span.counter').text(counter);
+                    $('div.card-box:last').attr('id', 'contain-' + counter);
+                    $('div.card-box#contain-' + counter).find('span.counter').text(counter);
                     Localizer.getString('question_with', numbertowords(Object.keys(data.options).length)).then(function(result) {
-                        $('div.card-box:last').find('.question-title').text(result);
-                        $('div.card-box:last').find('.question-title-main').text(text_title);
+                        $('div.card-box#contain-' + counter).find('.question-title').text(result);
+                        $('div.card-box#contain-' + counter).find('.question-title-main').text(text_title);
                     });
                 }
             });
@@ -345,11 +354,18 @@ function createBody() {
 
 }
 
+/*
+ * Event to submit form
+ */
 $(document).on('click', '.submit-form', function() {
     submitForm();
 })
 
 
+/*
+ * Method to create question view
+ * @param actionId string identifier
+ */
 function createQuestionView(index_num) {
     let count = 1;
     actionInstance.dataTables.forEach((dataTable) => {
@@ -376,9 +392,6 @@ function createQuestionView(index_num) {
                 } else {
                     choice_occurance = 2;
                 }
-
-                console.log("choice occurance" + choice_occurance);
-                console.log("question" + question.valueType);
 
                 //add radio button
                 if (choice_occurance > 1) {
@@ -413,28 +426,32 @@ function createQuestionView(index_num) {
     }
 }
 
+/*
+ * Method to create radio button
+ * @param text string
+ * @param name string
+ * @param id string identifier
+ */
 function getRadioButton(text, name, id) {
     let $div_data = $(`<div class="form-group radio-section custom-radio-outer" id="${id}" columnId="${name}" ><label class="custom-radio"><input type="radio" name="${name}" id="${id}"> <span class="radio-block"></span> ${text}</label></div>`)
     return $div_data;
 }
 
+/*
+ * Method to create checkbox button
+ * @param text string
+ * @param name string
+ * @param id string identifier
+ */
 function getCheckboxButton(text, name, id) {
-    /* let $oDiv = $('<div class="form-group radio-section custom-check-outer" id="' + id + '" columnId="' + name + '" ></div>');
-    let $soDiv = $('<label class="custom-check form-check-label"></label>');
-    let radiobox = '<input type="checkbox" class="form-check-input" name="' + name + '" id="' + id + '">';
-    let $lDiv = $(radiobox + ' <span class="checkmark"></span>' + text);
-    $oDiv.append($soDiv);
-    $soDiv.append($lDiv);
-    return $oDiv; */
     let div_data = $(`<div class="form-group radio-section custom-check-outer" id="${id}" columnId="${name}" ><label class="custom-check form-check-label"><input type="checkbox" class="form-check-input" name="${name}" id="${id}"><span class="checkmark"></span> ${text}</label></div>`)
     return div_data;
 }
 
-/* $(document).on('click', 'div.radio-section', function() {
-    radiobuttonclick($(this).id, $(this).attr('columnId'));
-}) */
-
-
+/*
+ * Method to get number to word
+ * @param num number
+ */
 function numbertowords(num) {
     switch (num) {
         case 1:
@@ -472,8 +489,10 @@ function numbertowords(num) {
     }
 }
 
+/*
+ * Method to show Result view if already attempted the quiz
+ */
 function loadSummaryView() {
-    console.log('call');
     $('div.section-2').hide();
     $('div.section-2-footer').hide();
 
@@ -497,15 +516,15 @@ function loadSummaryView() {
                     $('div.card-box:last').find('.text-description').text(text_title);
 
                     if (data.name.indexOf("photo") >= 0) {
-                        Localizer.getString('photo').then(function() {
+                        Localizer.getString('photo').then(function(result) {
                             $('div.card-box:last').find('.training-type').text(result);
                         });
                     } else if (data.name.indexOf("video") >= 0) {
-                        Localizer.getString('video').then(function() {
+                        Localizer.getString('video').then(function(result) {
                             $('div.card-box:last').find('.training-type').text(result);
                         });
                     } else if (data.name.indexOf("document") >= 0) {
-                        Localizer.getString('document').then(function() {
+                        Localizer.getString('document').then(function(result) {
                             $('div.card-box:last').find('.training-type').text(result);
                         });
                     }
@@ -527,14 +546,15 @@ function loadSummaryView() {
         });
     }
 
-    console.log(`summary_answer_resp ${summary_answer_resp}`);
 }
 
 
 // *********************************************** HTML ELEMENT END***********************************************
 
 // *********************************************** SUBMIT ACTION***********************************************
-
+/*
+ * Method to submit form
+ */
 function submitForm() {
     ActionHelper
         .executeApi(ActionHelper.getContextRequest())
@@ -547,6 +567,9 @@ function submitForm() {
         });
 }
 
+/*
+ * Method to generate guid
+ */
 function generateGUID() {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
         let r = (Math.random() * 16) | 0,
@@ -555,6 +578,10 @@ function generateGUID() {
     });
 }
 
+/*
+ * Method to get data row
+ * @param actioId string identifier
+ */
 function getDataRow(actionId) {
     let data = {
         id: generateGUID(),
@@ -565,10 +592,14 @@ function getDataRow(actionId) {
     return data;
 }
 
+/*
+ * Method to add data row 
+ * @param actionId string identifier
+ */
 function addDataRows(actionId) {
-    let addDataRowRequest = addDataRow(getDataRow(actionId)) // new actionSDK.AddActionDataRow.Request(getDataRow(actionId));
-    let closeViewRequest = ActionHelper.closeView(); // new actionSDK.CloseView.Request();
-    let batchRequest = ActionHelper.batchRequest([addDataRowRequest, closeViewRequest]); // new actionSDK.BaseApi.BatchRequest([addDataRowRequest,closeViewRequest]);
+    let addDataRowRequest = addDataRow(getDataRow(actionId))
+    let closeViewRequest = ActionHelper.closeView();
+    let batchRequest = ActionHelper.batchRequest([addDataRowRequest, closeViewRequest]);
     ActionHelper.executeBatchApi(batchRequest)
         .then(function(batchResponse) {
             console.info("BatchResponse: " + JSON.stringify(batchResponse));
@@ -578,6 +609,10 @@ function addDataRows(actionId) {
         });
 }
 
+/*
+ * Method to create training section with pagination
+ * @param index_num number identifier
+ */
 function createTrainingSection(index_num) {
     /* Create Text and Question summary */
     actionInstance.dataTables.forEach((dataTable, index) => {
@@ -614,12 +649,10 @@ function createTrainingSection(index_num) {
 
                                 $carousel.append($ol_section);
                                 $carousel.append($carousel_inner);
-                                console.log('filesAmount: ' + filesAmount);
 
                                 let count = 0;
                                 $.each(attachment, function(i, att) {
-                                    let req = ActionHelper.getAttachmentInfo(att); // new actionSDK.GetAttachmentInfo.Request(att);
-                                    console.log('count: ' + count);
+                                    let req = ActionHelper.getAttachmentInfo(att);
 
                                     ActionHelper.executeApi(req)
                                         .then(function(response) {
@@ -628,11 +661,8 @@ function createTrainingSection(index_num) {
                                                             <img class="d-block w-100" src="${response.attachmentInfo.downloadUrl}" alt="${count+1} slide">
                                                         </div>`);
                                             $carousel_inner.append($img_div);
-                                            console.log('count:' + count);
-                                            console.log('filesAmount:' + filesAmount);
 
                                             if (count == (filesAmount - 1)) {
-                                                console.log('start here:');
                                                 $carousel.append(`<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
                                                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                                     <span class="sr-only">Previous</span>
@@ -646,8 +676,6 @@ function createTrainingSection(index_num) {
                                                 $('.carousel').carousel();
                                                 $('.carousel').after('<hr>');
                                             }
-                                            console.log($carousel);
-                                            console.info("Attachment - Response: " + JSON.stringify(response));
                                             count++;
                                         })
                                         .catch(function(error) {
@@ -663,7 +691,7 @@ function createTrainingSection(index_num) {
 
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                            let req = ActionHelper.getAttachmentInfo(attachment[0]); // new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            let req = ActionHelper.getAttachmentInfo(attachment[0]);
 
                             ActionHelper.executeApi(req)
                                 .then(function(response) {
@@ -686,7 +714,7 @@ function createTrainingSection(index_num) {
 
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                            let req = ActionHelper.getAttachmentInfo(attachment[0]); // new actionSDK.GetAttachmentInfo.Request(attachment[0]);
+                            let req = ActionHelper.getAttachmentInfo(attachment[0]);
                             ActionHelper.executeApi(req)
                                 .then(function(response) {
                                     console.info("Attachment - Response: " + JSON.stringify(response));
@@ -708,7 +736,6 @@ function createTrainingSection(index_num) {
                         createQuestionView(index_num);
                         let counter = $('div.section-2 .container > div.card-box').length;
                         $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
-                        console.log(`counter  ${counter}`);
                     }
                 }
             });
@@ -716,6 +743,10 @@ function createTrainingSection(index_num) {
     });
 }
 
+/*
+ * Method to validate string is json
+ * @param str string
+ */
 function isJson(str) {
     try {
         JSON.parse(str);
@@ -727,7 +758,10 @@ function isJson(str) {
 
 // *********************************************** SUBMIT ACTION END***********************************************
 // *********************************************** OTHER ACTION STARTS***********************************************
-let pagination = 0;
+
+/*
+ * Event when click on start button on summary view of page
+ */
 $(document).on('click', '#start', function() {
     $('div.section-1').hide();
     $('div.section-1-footer').hide();
@@ -741,6 +775,9 @@ $(document).on('click', '#start', function() {
     $('#back').prop('disabled', true);
 });
 
+/*
+ * Event to click on check button for getting correct or incorrect answer
+ */
 $(document).on('click', '#check', function() {
     /* Question Validations */
     let data = [];
@@ -890,6 +927,9 @@ $(document).on('click', '#check', function() {
 
 });
 
+/*
+ * Event to click on next button to load next page or content
+ */
 $(document).on('click', '#next', function() {
     let data = [];
     let limit = $('#y').text();
@@ -977,19 +1017,15 @@ $(document).on('click', '#next', function() {
                     pagination++;
 
                     let limit = $('#y').text();
-                    console.log(`${pagination} < ${limit}`);
                     if (pagination < limit) {
                         $('#next').prop('disabled', false);
                         $('#back').prop('disabled', false);
 
                         $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-                        console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
                         if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
                             createTrainingSection(pagination);
                         } else {
-                            console.log(pagination);
                             $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                            console.log(pagination + 1);
                             setTimeout(
                                 function() {
                                     if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
@@ -1012,13 +1048,10 @@ $(document).on('click', '#next', function() {
                         $('#back').prop('disabled', false);
 
                         $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-                        console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
                         if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
                             createTrainingSection(pagination);
                         } else {
-                            console.log(pagination);
                             $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                            console.log(pagination + 1);
                             setTimeout(
                                 function() {
                                     if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
@@ -1038,21 +1071,16 @@ $(document).on('click', '#next', function() {
                 /* If Question is not answerable */
                 let limit = $('#y').text();
                 pagination++;
-                console.log(`${pagination} < ${limit}`);
-
 
                 if (pagination < limit) {
                     $('#next').prop('disabled', false);
                     $('#back').prop('disabled', false);
 
                     $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-                    console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
                     if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
                         createTrainingSection(pagination);
                     } else {
-                        console.log(pagination);
                         $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                        console.log(pagination + 1);
                         setTimeout(
                             function() {
                                 if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
@@ -1078,7 +1106,7 @@ $(document).on('click', '#next', function() {
             }
         } else {
             Localizer.getString('note_please_choose_choice').then(function(result) {
-                $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${note_please_choose_choice}</div>`);
+                $('div.section-2').find('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
             });
         }
 
@@ -1096,13 +1124,10 @@ $(document).on('click', '#next', function() {
             $('#back').prop('disabled', false);
 
             $('div.section-2 > .container:first > div.card-box:nth-child(' + pagination + ')').hide();
-            console.log(`next section ${$('div.section-2 > .container:first > div.card-box').length} <= ${pagination}`)
             if ($('div.section-2 > .container:first > div.card-box').length <= pagination) {
                 createTrainingSection(pagination);
             } else {
-                console.log(pagination);
                 $('div.section-2 > .container:first > div.card-box:nth-child(' + (pagination + 1) + ')').show();
-                console.log(pagination + 1);
                 setTimeout(
                     function() {
                         if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
@@ -1125,8 +1150,10 @@ $(document).on('click', '#next', function() {
 
 });
 
+/*
+ * Event to click on back button
+ */
 $(document).on('click', '#back', function() {
-    console.log(`${pagination} <= 1`)
 
     if ($('.error-msg').length > 0)
         $('.error-msg').remove();
@@ -1157,12 +1184,18 @@ $(document).on('click', '#back', function() {
 });
 // *********************************************** OTHER ACTION END***********************************************
 
+/**
+ * Variable contains head section  
+ */
 let head_section1 = `<div class="card-box card-bg card-border">
                             <h4 id="section1-training-title">My Training title</h4>
                             <p class="text-justify" id="section1-training-description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
                                 specimen book.</p>
                         </div>`;
 
+/**
+ * Variable contains text section
+ */
 let text_section1 = `<div class="card-box card-bg card-border">
                         <div class="form-group">
                             <div class="hover-btn ">
@@ -1175,12 +1208,15 @@ let text_section1 = `<div class="card-box card-bg card-border">
                             specimen book.</p>
                     </div>`;
 
+/**
+ * Variable contains text section for media file
+ */
 let text_section3 = `<div class="card-box card-bg card-border">
                     <div class="form-group">
                         <div class="row">
                             <div class="col-9">
                                 <div class="hover-btn ">
-                                    <label class="mb0"><strong><span class="counter">1</span>. <span class="training-type">Text</span></strong> </label><span class="float-right result"></span>
+                                    <label class="mb0"><strong><span class="counter">1</span>. <span class="training-type">P</span></strong> </label><span class="float-right result"></span>
                                     <hr>
                                     <p class="mb0 text-description text-justify">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
                         specimen book.</p>
@@ -1196,6 +1232,9 @@ let text_section3 = `<div class="card-box card-bg card-border">
                     </div>                
                 </div>`;
 
+/**
+ * Variable contains question section
+ */
 let question_section1 = `<div class="card-box card-bg card-border">
                             <div class="form-group">
                                 <div class="hover-btn ">
@@ -1213,6 +1252,9 @@ let question_section1 = `<div class="card-box card-bg card-border">
                             <label><strong><span class="question-title-main">My new Question</span></strong></label>
                         </div>`;
 
+/**
+ * Variable contains footer section
+ */
 let footer_section1 = `<div class="footer section-1-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
@@ -1225,6 +1267,9 @@ let footer_section1 = `<div class="footer section-1-footer">
                             </div>
                         </div>`;
 
+/**
+ * Variable contains text section
+ */
 let text_section2 = `<div class="card-box card-bg card-border">
                         <div class="form-group">
                             <div class="hover-btn ">
@@ -1243,6 +1288,9 @@ let text_section2 = `<div class="card-box card-bg card-border">
                             specimen book.</p>
                     </div>`;
 
+/**
+ * Variable contains footer section
+ */
 let footer_section2 = `<div class="footer section-2-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
@@ -1255,6 +1303,9 @@ let footer_section2 = `<div class="footer section-2-footer">
                             </div>
                         </div>`;
 
+/**
+ * Variable contains footer section
+ */
 let footer_section3 = `<div class="footer section-3-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
