@@ -2,7 +2,7 @@ import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
 
 let questions = new Array();
 let validate = true;
-let setting_text = '';
+let settingText = '';
 let opt = '';
 let request;
 let lastSession = null;
@@ -41,21 +41,21 @@ $(document).on("click", "#add-questions", function() {
         $('form.sec1 > div.question-footer').remove();
     }
 
-    $('form.sec1').append(questions_section);
-    $('form.sec1').append(add_question_button);
-    $('form.sec1').append(question_footer);
+    $('form.sec1').append(questionsSection);
+    $('form.sec1').append(addQuestionButton);
+    $('form.sec1').append(questionFooter);
 
     if ($('form.sec1 > div.question-section').length == 1) {
         $('form.sec1 > div.question-section').find('.container').addClass('pt-4');
     }
 
-    let question_counter = 0;
+    let questionCounter = 0;
     $("div.question-container:visible").each(function(index, elem) {
-        question_counter = index + 1;
+        questionCounter = index + 1;
         $(elem)
             .find("span.question-number")
-            .text(question_counter + ".");
-        $(elem).attr({ id: "question" + question_counter });
+            .text(questionCounter + ".");
+        $(elem).attr({ id: "question" + questionCounter });
     });
 
 });
@@ -64,20 +64,20 @@ $(document).on("click", "#add-questions", function() {
  * Event to add question to same section when new question added
  */
 $(document).on("click", "#add-questions-same-section", function() {
-    let question_counter;
-    $('form.sec1').append(questions_section);
+    let questionCounter;
+    $('form.sec1').append(questionsSection);
     $('form > .question_button').remove();
 
     $("div.question-container:visible").each(function(index, elem) {
-        question_counter = index + 1;
+        questionCounter = index + 1;
         $(elem)
             .find("span.question-number")
-            .text(question_counter + ".");
-        $(elem).attr({ id: "question" + question_counter });
+            .text(questionCounter + ".");
+        $(elem).attr({ id: "question" + questionCounter });
     });
     questionCount++;
 
-    $('form.sec1').append(add_question_button);
+    $('form.sec1').append(addQuestionButton);
 });
 
 /**
@@ -98,16 +98,16 @@ $(document).on("click", "#back-question", function() {
  */
 $(document).on("click", ".remove-question", function() {
     let element = $(this);
-    let data_id = $(this).parents('.question-container').attr('id');
+    let dataId = $(this).parents('.question-container').attr('id');
     $('div.question-section').find('div.error-msg').remove();
     if ($("div.question-container:visible").length > 1) {
-        let confirm_box = `
+        let confirmBox = `
             <div class="confirm-box">
                 <hr class="hr-danger">
                 <ul class="d-flex table-remove mb-0">
                     <li><span class="text-danger">Are you sure you want to delete?</span></li>
                     <li> 
-                        <button class="btn btn-primary btn-sm pull-right" data-id="${data_id}" id="delete-question">Ok</button> 
+                        <button class="btn btn-primary btn-sm pull-right" data-id="${dataId}" id="delete-question">Ok</button> 
                         <button class="btn btn-primary-outline btn-sm pull-right mr-1" id="cancel-confirm">Close</button>
                     </li>
                 </ul>
@@ -115,7 +115,7 @@ $(document).on("click", ".remove-question", function() {
         `;
 
         $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
-        $(this).parents("div.question-container").find('div.d-flex').after(confirm_box);
+        $(this).parents("div.question-container").find('div.d-flex').after(confirmBox);
     } else {
         Localizer.getString('atleast_one_question').then(function(result) {
             $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
@@ -137,13 +137,13 @@ $(document).on('click', '#cancel-confirm', function() {
 $(document).on("click", "#delete-question", function() {
     let element = $(this).attr('data-id');
     $('#' + element).parents('div.question-section').remove();
-    let question_counter;
+    let questionCounter;
     $('div.question-section').find('div.error-msg').remove();
 
     $("div.question-container:visible").each(function(index, elem) {
-        question_counter = index + 1;
-        $(elem).find("span.question-number").text(question_counter);
-        $(elem).attr({ id: "question" + question_counter });
+        questionCounter = index + 1;
+        $(elem).find("span.question-number").text(questionCounter);
+        $(elem).attr({ id: "question" + questionCounter });
     });
 });
 
@@ -212,8 +212,8 @@ $(document).on("click", "#question-done", function() {
     $('#question-done').prop('disabled', true);
 
     /* Validate */
-    let error_text = "";
-    let question_number = 0;
+    let errorText = "";
+    let questionNumber = 0;
     let error = false;
     validate = true;
     $("input[type='text']").removeClass("danger");
@@ -242,7 +242,7 @@ $(document).on("click", "#question-done", function() {
                     $(this).addClass("danger");
                     $(this).parents("div.input-group").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
 
-                    error_text += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
+                    errorText += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
                 }
             }
         });
@@ -251,7 +251,7 @@ $(document).on("click", "#question-done", function() {
     questions = new Array();
 
     for (let i = 1; i <= questionCount; i++) {
-        let is_selected = 0;
+        let isSelected = 0;
 
         $(".question-section > #question" + i)
             .find("div.option-div")
@@ -263,10 +263,10 @@ $(document).on("click", "#question-done", function() {
                     .is(":checked")
                 ) {
                     // if it is checked
-                    is_selected++;
+                    isSelected++;
                 }
             });
-        if (is_selected == 0) {
+        if (isSelected == 0) {
             validate = false;
 
             Localizer.getString('correct_choice').then(function(result) {
@@ -299,7 +299,7 @@ $(document).on("click", "#question-done", function() {
         /* Create Question Section Here */
         for (let j = 1; j <= questionCount; j++) {
 
-            let text_number = parseInt($("div.training-card-section").length);
+            let textNumber = parseInt($("div.training-card-section").length);
 
 
 
@@ -317,26 +317,26 @@ $(document).on("click", "#question-done", function() {
                         .find("#check" + count)
                         .is(":checked")
                     ) {
-                        let opt_data = $(elem).find('input[id^="option"]').val();;
+                        let optData = $(elem).find('input[id^="option"]').val();;
 
                         // if it is checked
-                        correct.push(opt_data);
+                        correct.push(optData);
                     }
                 });
 
 
 
 
-            let question_inputs = $("#question" + j).find('div.card-box').clone();
-            let question_text = $("#question" + j).find('#question-title').val();
-            let correct_answer = correct.join(', ');
+            let questionInputs = $("#question" + j).find('div.card-box').clone();
+            let questionText = $("#question" + j).find('#question-title').val();
+            let correctAnswer = correct.join(', ');
 
-            let options_counter = numbertowords($('#question' + j).find('input[id^="option"]').length);
+            let optionsCounter = numbertowords($('#question' + j).find('input[id^="option"]').length);
 
             $("form.sec1 div.section-2:visible div#root .card-box.training-card-section:last").after(`<div class="card-box card-bg card-border training-card-section section-div question-section-div">
                 <div class="form-group">
                     <div class="hover-btn h-32">
-                        <label><strong><span class="counter">${text_number}</span>. Question with <span class="option-counter"> ${options_counter} </span> option </strong> </label>
+                        <label><strong><span class="counter">${textNumber}</span>. Question with <span class="option-counter"> ${optionsCounter} </span> option </strong> </label>
                         <button type="button" class="close remove-text" data-dismiss="alert">
                             <span aria-hidden="true">
                                 <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -352,13 +352,13 @@ $(document).on("click", "#question-done", function() {
                     <div class="clearfix"></div>
                     <hr>
                 </div>
-                <label class="text-justify"><strong class="question">${question_text}</strong></label>
-                <p class="mb0 text-justify">Correct Answer: <span class="correct-answer">${correct_answer}</span></p>
-                <div class="question-inputs" id="quest-text-${text_number}" style="display:none">
+                <label class="text-justify"><strong class="question">${questionText}</strong></label>
+                <p class="mb0 text-justify">Correct Answer: <span class="correct-answer">${correctAnswer}</span></p>
+                <div class="question-inputs" id="quest-text-${textNumber}" style="display:none">
                 
                 </div>
             </div>`);
-            $('#quest-text-' + text_number).html(question_inputs);
+            $('#quest-text-' + textNumber).html(questionInputs);
 
             $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
                 $(this).attr({ 'data-id': 'text-section-' + index });
@@ -406,8 +406,8 @@ $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", 
 $(document).on("click", "#add-text", function() {
     $('.error-msg').remove();
     $('#submit').attr('disabled', false);
-    let text_number = parseInt($("div.training-card-section").length);
-    let text_data = '';
+    let textNumber = parseInt($("div.training-card-section").length);
+    let textData = '';
 
     $('.section-2').hide();
     $('.section-2-footer').hide();
@@ -417,14 +417,14 @@ $(document).on("click", "#add-text", function() {
         $('form.sec1 > div.text-footer').remove();
     }
 
-    $('form.sec1').append(add_text_section);
-    $('form.sec1').append(add_text_footer);
+    $('form.sec1').append(addTextSection);
+    $('form.sec1').append(addTextFooter);
 
     $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
             <div class="card-box card-bg card-border training-card-section section-div text-section-div">
                 <div class="form-group">
                     <div class="hover-btn">
-                        <label class="mb-0"><strong><span class="counter">${text_number}</span>. <span class="type">Text</span></strong> </label>
+                        <label class="mb-0"><strong><span class="counter">${textNumber}</span>. <span class="type">Text</span></strong> </label>
                         <button type="button" class="close remove-text" data-dismiss="alert">
                             <span aria-hidden="true">
                                 <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -440,8 +440,8 @@ $(document).on("click", "#add-text", function() {
                     <div class="clearfix"></div>
                     <hr>
                 </div>
-                <p class="mb0 text-description-preview text-justify">${text_data}</p>
-                <textarea class="textarea-text d-none" >${text_data}</textarea>
+                <p class="mb0 text-description-preview text-justify">${textData}</p>
+                <textarea class="textarea-text d-none" >${textData}</textarea>
             </div>`);
 });
 
@@ -449,10 +449,10 @@ $(document).on("click", "#add-text", function() {
  * Event to submit text when click on done button
  */
 $(document).on("click", "#text-done", function() {
-    let text_number = parseInt($("div.training-card-section").length) - 1;
+    let textNumber = parseInt($("div.training-card-section").length) - 1;
 
 
-    let error_text = "";
+    let errorText = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -462,7 +462,7 @@ $(document).on("click", "#text-done", function() {
         $("textarea#training-text").addClass('danger');
     } else {
 
-        let text_desc = $('textarea#training-text').val();
+        let textDesc = $('textarea#training-text').val();
         $('.text-section').hide();
         $('.text-footer').hide();
 
@@ -475,8 +475,8 @@ $(document).on("click", "#text-done", function() {
             $(this).find('span.counter').text(index);
         });
 
-        $("#section-" + text_number).find('.textarea-text').val(text_desc);
-        $("#section-" + text_number).find('.text-description-preview').text(text_desc);
+        $("#section-" + textNumber).find('.textarea-text').val(textDesc);
+        $("#section-" + textNumber).find('.text-description-preview').text(textDesc);
     }
 });
 
@@ -484,8 +484,8 @@ $(document).on("click", "#text-done", function() {
  * Event to show photo section when click on add content button
  */
 $(document).on('click', '#add-photo', function() {
-    let text_data = '';
-    let text_number = parseInt($("div.training-card-section").length);
+    let textData = '';
+    let textNumber = parseInt($("div.training-card-section").length);
     $('.error-msg').remove();
     $('#submit').attr('disabled', false);
 
@@ -504,7 +504,7 @@ $(document).on('click', '#add-photo', function() {
                         <div class="col-12">
                             <div class="hover-btn">
                                 <label class="mb-0">
-                                    <strong><span class="counter">${text_number}</span>. <span class="type">Photo</span></strong> 
+                                    <strong><span class="counter">${textNumber}</span>. <span class="type">Photo</span></strong> 
                                 </label>
                                 <button type="button" class="close remove-text" data-dismiss="alert">
                                     <span aria-hidden="true">
@@ -524,21 +524,21 @@ $(document).on('click', '#add-photo', function() {
                     </div>
                     <div class="row">
                         <div class="col-9">
-                            <p class="mb0 photo-description-preview text-justify">${text_data}</p>                    
+                            <p class="mb0 photo-description-preview text-justify">${textData}</p>                    
                         </div>
                         <div class="col-3">
                             <div class="img-thumbnail">
-                                <img id="image-sec-${text_number}">                
+                                <img id="image-sec-${textNumber}">                
                             </div>
                         </div>
                     </div>
                 </div>
-                <textarea class="textarea-photo-description d-none" >${text_data}</textarea>
+                <textarea class="textarea-photo-description d-none" >${textData}</textarea>
                 <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple>
             </div>`);
 
-    $('form.sec1').append(add_photo_section);
-    $('form.sec1').append(add_photo_footer);
+    $('form.sec1').append(addPhotoSection);
+    $('form.sec1').append(addPhotoFooter);
     $('#upload-photo').click();
 });
 
@@ -546,8 +546,8 @@ $(document).on('click', '#add-photo', function() {
  * Event to submit photo
  */
 $(document).on("click", "#photo-done", function() {
-    let text_number = parseInt($("div.training-card-section").length) - 1;
-    let error_text = "";
+    let textNumber = parseInt($("div.training-card-section").length) - 1;
+    let errorText = "";
     $("input[type='file']#upload-photo").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -558,7 +558,7 @@ $(document).on("click", "#photo-done", function() {
             $("input[type='file']#upload-photo").addClass('danger');
         }
     } else {
-        let photo_desc = $('textarea#photo-description').val();
+        let photoDesc = $('textarea#photo-description').val();
         $('.text-section').hide();
         $('.text-footer').hide();
 
@@ -585,38 +585,38 @@ $(document).on("click", "#photo-done", function() {
                 reader.onload = function(event) {
                     if (count == 0) {
 
-                        $("#section-" + text_number).find("#image-sec-" + text_number).attr({ "src": event.target.result });
+                        $("#section-" + textNumber).find("#image-sec-" + textNumber).attr({ "src": event.target.result });
 
                         if (filesAmount > 1)
-                            $("#section-" + text_number).find("#image-sec-" + text_number).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                            $("#section-" + textNumber).find("#image-sec-" + textNumber).after(`<span class="file-counter">+${filesAmount-1}</span>`);
                     }
                     count++;
                 }
                 reader.readAsDataURL(input.files[j]);
             }
         }
-        $("#section-" + text_number).find('.textarea-photo-description').val(photo_desc);
-        $("#section-" + text_number).find('.photo-description-preview').text(photo_desc);
+        $("#section-" + textNumber).find('.textarea-photo-description').val(photoDesc);
+        $("#section-" + textNumber).find('.photo-description-preview').text(photoDesc);
 
-        let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
-        let attachment_request = '';
+        let imageCounter = $("#section-" + textNumber).find('input[type="file"]').get(0).files.length;
+        let attachmentRequest = '';
         let attachmentId = {};
 
-        $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
+        $("#section-" + textNumber).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
 
-        for (let i = 0; i < image_counter; i++) {
-            let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+        for (let i = 0; i < imageCounter; i++) {
+            let fileData = $("#section-" + textNumber).find('input[type="file"]').get(0).files[i];
 
 
-            let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
-            attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+            let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
+            attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
 
-            ActionHelper.executeApi(attachment_request)
+            ActionHelper.executeApi(attachmentRequest)
                 .then(function(response) {
                     attachmentId[i] = response.attachmentId;
-                    $("#section-" + text_number).find('textarea#attachment-id').val(JSON.stringify(attachmentId));
+                    $("#section-" + textNumber).find('textarea#attachment-id').val(JSON.stringify(attachmentId));
 
-                    if (Object.keys(attachmentId).length == image_counter) {
+                    if (Object.keys(attachmentId).length == imageCounter) {
                         $('#submit').attr('disabled', false);
                     }
                 });
@@ -629,8 +629,8 @@ $(document).on("click", "#photo-done", function() {
  * Event to show video section
  */
 $(document).on('click', '#add-video', function() {
-    let text_number = parseInt($("div.training-card-section").length);
-    let text_data = '';
+    let textNumber = parseInt($("div.training-card-section").length);
+    let textData = '';
     $('.error-msg').remove();
     $('#submit').attr('disabled', false);
 
@@ -642,8 +642,8 @@ $(document).on('click', '#add-video', function() {
         $('form.sec1 > div.text-footer').remove();
     }
 
-    $('form.sec1').append(add_video_section);
-    $('form.sec1').append(add_video_footer);
+    $('form.sec1').append(addVideoSection);
+    $('form.sec1').append(addVideoFooter);
     $('#upload-video').click();
 
     $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
@@ -651,7 +651,7 @@ $(document).on('click', '#add-video', function() {
             <div class="form-group">
                 <div class="hover-btn">
                     <label class="mb-0">
-                        <strong><span class="counter">${text_number}</span>. <span class="type">Video</span></strong> 
+                        <strong><span class="counter">${textNumber}</span>. <span class="type">Video</span></strong> 
                     </label>
                     <button type="button" class="close remove-text" data-dismiss="alert">
                         <span aria-hidden="true">
@@ -669,17 +669,17 @@ $(document).on('click', '#add-video', function() {
                 <hr>
                 <div class="row">
                     <div class="col-9">
-                        <p class="mb0 video-description-preview text-justify">${text_data}</p>
+                        <p class="mb0 video-description-preview text-justify">${textData}</p>
                     </div>
                     <div class="col-3">
                         <div class="embed-responsive embed-responsive-21by9">
-                            <video controls class="video" id="video-sec-${text_number}">
+                            <video controls class="video" id="video-sec-${textNumber}">
                             </video>
                         </div>        
                     </div>
                 </div>
             </div>
-            <textarea class="textarea-video d-none">${text_data}</textarea>
+            <textarea class="textarea-video d-none">${textData}</textarea>
             <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
         </div>`);
 
@@ -689,11 +689,11 @@ $(document).on('click', '#add-video', function() {
  * Event to submit video
  */
 $(document).on("click", "#video-done", function() {
-    let text_number = parseInt($("div.training-card-section").length) - 1;
-    let video_desc = $('textarea#video-description').val();
+    let textNumber = parseInt($("div.training-card-section").length) - 1;
+    let videoDesc = $('textarea#video-description').val();
 
 
-    let error_text = "";
+    let errorText = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -715,33 +715,33 @@ $(document).on("click", "#video-done", function() {
         });
         let fileInput = document.getElementById('upload-video');
         let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
-        $("#section-" + text_number).find("#video-sec-" + text_number).attr("src", fileUrl);
-        $("#section-" + text_number).find('textarea.textarea-video').val(video_desc);
-        $("#section-" + text_number).find('.video-description-preview').text(video_desc);
+        $("#section-" + textNumber).find("#video-sec-" + textNumber).attr("src", fileUrl);
+        $("#section-" + textNumber).find('textarea.textarea-video').val(videoDesc);
+        $("#section-" + textNumber).find('.video-description-preview').text(videoDesc);
 
-        let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
-        let attachment_request = '';
+        let imageCounter = $("#section-" + textNumber).find('input[type="file"]').get(0).files.length;
+        let attachmentRequest = '';
         let attachmentId = {};
-        $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
+        $("#section-" + textNumber).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
 
-        for (let i = 0; i < image_counter; i++) {
+        for (let i = 0; i < imageCounter; i++) {
             $('#submit').attr('disabled', true);
 
-            let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+            let fileData = $("#section-" + textNumber).find('input[type="file"]').get(0).files[i];
 
 
-            let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
-            attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+            let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
+            attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
 
-            ActionHelper.executeApi(attachment_request)
+            ActionHelper.executeApi(attachmentRequest)
                 .then(function(response) {
                     attachmentId[i] = response.attachmentId;
 
 
 
-                    $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
+                    $("#section-" + textNumber).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
 
-                    if (Object.keys(attachmentId).length == image_counter) {
+                    if (Object.keys(attachmentId).length == imageCounter) {
                         $('#submit').attr('disabled', false);
                     }
                 });
@@ -753,8 +753,8 @@ $(document).on("click", "#video-done", function() {
  * Even to shwo document upload section
  */
 $(document).on('click', '#add-document', function() {
-    let text_number = parseInt($("div.training-card-section").length);
-    let text_data = '';
+    let textNumber = parseInt($("div.training-card-section").length);
+    let textData = '';
     $('.error-msg').remove();
     $('#submit').attr('disabled', false);
 
@@ -771,7 +771,7 @@ $(document).on('click', '#add-document', function() {
         <div class="form-group">
             <div class="hover-btn">
                 <label class="mb-0">
-                    <strong><span class="counter">${text_number}</span>. <span class="type">Document</span></strong> 
+                    <strong><span class="counter">${textNumber}</span>. <span class="type">Document</span></strong> 
                 </label>
                 <button type="button" class="close remove-text" data-dismiss="alert">
                     <span aria-hidden="true">
@@ -790,20 +790,20 @@ $(document).on('click', '#add-document', function() {
         </div>
         <div class="row">
             <div class="col-9">
-                <p class="mb0 document-description-preview text-justify">${text_data}</p>
+                <p class="mb0 document-description-preview text-justify">${textData}</p>
             </div>
             <div class="col-3">
                 <div class="img-thumbnail">
-                    <img id="image-sec-${text_number}">                
+                    <img id="image-sec-${textNumber}">                
                 </div>
             </div>
         </div>
-        <textarea class="textarea-document" style="display:none">${text_data}</textarea>
+        <textarea class="textarea-document" style="display:none">${textData}</textarea>
         <input type="file" id="upload-document" accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf" src="images/px-img.png" style="width:100%; height: 180px; display:none">
     </div>`);
 
-    $('form.sec1').append(add_document_section);
-    $('form.sec1').append(add_document_footer);
+    $('form.sec1').append(addDocumentSection);
+    $('form.sec1').append(addDocumentFooter);
     $('#upload-document').click();
 });
 
@@ -811,10 +811,10 @@ $(document).on('click', '#add-document', function() {
  * Event to submit the document area
  */
 $(document).on("click", "#document-done", function() {
-    let text_number = parseInt($("div.training-card-section").length) - 1;
+    let textNumber = parseInt($("div.training-card-section").length) - 1;
 
 
-    let error_text = "";
+    let errorText = "";
     $("textarea").removeClass('danger');
     $("label.label-alert").remove();
 
@@ -840,31 +840,31 @@ $(document).on("click", "#document-done", function() {
             $(this).find('span.counter').text(index);
         });
 
-        $('#section-' + text_number).find('textarea.textarea-document').val($('#document-description').val());
-        $('#section-' + text_number).find('.document-description-preview').text($('#document-description').val());
-        $("#section-" + text_number).find("#image-sec-" + text_number).attr('src', 'images/doc.png');
-        $("#section-" + text_number).find("#image-sec-" + text_number).parents('div.row').find('p.document-description-preview').after('<hr><p>File name: <span class="doc-name">' + $("input[type='file']#upload-document")[0].files[0].name + '</span></p>');
+        $('#section-' + textNumber).find('textarea.textarea-document').val($('#document-description').val());
+        $('#section-' + textNumber).find('.document-description-preview').text($('#document-description').val());
+        $("#section-" + textNumber).find("#image-sec-" + textNumber).attr('src', 'images/doc.png');
+        $("#section-" + textNumber).find("#image-sec-" + textNumber).parents('div.row').find('p.document-description-preview').after('<hr><p>File name: <span class="doc-name">' + $("input[type='file']#upload-document")[0].files[0].name + '</span></p>');
     }
-    let image_counter = $("#section-" + text_number).find('input[type="file"]').get(0).files.length;
-    let attachment_request = '';
+    let imageCounter = $("#section-" + textNumber).find('input[type="file"]').get(0).files.length;
+    let attachmentRequest = '';
     let attachmentId = {};
-    $("#section-" + text_number).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
-    for (let i = 0; i < image_counter; i++) {
+    $("#section-" + textNumber).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
+    for (let i = 0; i < imageCounter; i++) {
         $('#submit').attr('disabled', true);
 
-        let file_data = $("#section-" + text_number).find('input[type="file"]').get(0).files[i];
+        let fileData = $("#section-" + textNumber).find('input[type="file"]').get(0).files[i];
 
 
-        let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
-        attachment_request = ActionHelper.requestAttachmentUplod(attachment);
-        ActionHelper.executeApi(attachment_request)
+        let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
+        attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
+        ActionHelper.executeApi(attachmentRequest)
             .then(function(response) {
                 attachmentId[i] = response.attachmentId;
 
 
 
-                $("#section-" + text_number).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
-                if (Object.keys(attachmentId).length == image_counter) {
+                $("#section-" + textNumber).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
+                if (Object.keys(attachmentId).length == imageCounter) {
                     $('#submit').attr('disabled', false);
                 }
             });
@@ -909,24 +909,24 @@ let imagesPreview = function(input, placeToInsertImagePreview) {
 
         $('.updated-img').html('');
         let $carousel = $('<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel"></div>');
-        let $ol_section = $('<ol class="carousel-indicators"></ol>');
-        let $carousel_inner = $('<div class="carousel-inner"></div>');
+        let $olSection = $('<ol class="carousel-indicators"></ol>');
+        let $carouselInner = $('<div class="carousel-inner"></div>');
 
-        $carousel.append($ol_section);
-        $carousel.append($carousel_inner);
+        $carousel.append($olSection);
+        $carousel.append($carouselInner);
 
         let count = 0;
         for (let i = 0; i < filesAmount; i++) {
             let reader = new FileReader();
-            let $li_list = $(`<li data-target="#carouselExampleIndicators" data-slide-to="${i}" class="${i == 0 ? 'active': ''}"></li>`);
-            $ol_section.append($li_list);
+            let $liList = $(`<li data-target="#carouselExampleIndicators" data-slide-to="${i}" class="${i == 0 ? 'active': ''}"></li>`);
+            $olSection.append($liList);
 
             reader.onload = function(event) {
 
-                let $img_div = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
+                let $imgDiv = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
                                     <img class="d-block w-100" src="${event.target.result}" alt="${count+1} slide">
                                 </div>`);
-                $carousel_inner.append($img_div);
+                $carouselInner.append($imgDiv);
                 count++;
             }
 
@@ -987,20 +987,20 @@ $(document).on('change', '#upload-document', function() {
  * Event to remove the text from preview section
  */
 $(document).on("click", ".remove-text", function() {
-    let data_id = $(this).parents('.card-box').attr('data-id');
-    let confirm_box = `
+    let dataId = $(this).parents('.card-box').attr('data-id');
+    let confirmBox = `
             <div class="confirm-box">
                 <hr class="hr-danger">
                 <ul class="d-flex table-remove mb-0">
                     <li><span class="text-danger">Are you sure you want to delete?</span></li>
                     <li> 
-                        <button class="btn btn-primary btn-sm pull-right" data-id="${data_id}" id="confirm-delete-text">Ok</button> 
+                        <button class="btn btn-primary btn-sm pull-right" data-id="${dataId}" id="confirm-delete-text">Ok</button> 
                         <button class="btn btn-primary-outline btn-sm pull-right mr-1" id="cancel-confirm">Close</button>
                     </li>
                 </ul>
             </div>
         `;
-    $(this).parents("div.card-box").find('p:last').after(confirm_box);
+    $(this).parents("div.card-box").find('p:last').after(confirmBox);
     $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
 
 });
@@ -1027,8 +1027,8 @@ $(document).on("click", "#confirm-delete-text", function() {
  */
 $(document).on("click", "#next", function() {
     /* Validate */
-    let error_text = "";
-    let question_number = 0;
+    let errorText = "";
+    let questionNumber = 0;
 
     $("form").find("input[type='text']").each(function() {
         let element = $(this);
@@ -1036,26 +1036,26 @@ $(document).on("click", "#next", function() {
             validate = false;
             if (element.attr("id").startsWith("question-title")) {
 
-                if (question_number != element.parents("div.form-group").find("span.question-number").text()) {
-                    question_number = element.parents("div.form-group").find("span.question-number").text();
-                    error_text += "<h6><u>Question " + question_number + "</u> </h6>";
+                if (questionNumber != element.parents("div.form-group").find("span.question-number").text()) {
+                    questionNumber = element.parents("div.form-group").find("span.question-number").text();
+                    errorText += "<h6><u>Question " + questionNumber + "</u> </h6>";
                 }
-                error_text += "<p>Question is required. </p>";
+                errorText += "<p>Question is required. </p>";
             } else if (element.attr("id").startsWith("option")) {
-                if (question_number != element.parents("div.card").find("span.question-number").text()) {
-                    question_number = element
+                if (questionNumber != element.parents("div.card").find("span.question-number").text()) {
+                    questionNumber = element
                         .parents("div.card")
                         .find("span.question-number")
                         .text();
-                    error_text += "<h6><u>Question " + question_number + "</u> </h6>";
+                    errorText += "<h6><u>Question " + questionNumber + "</u> </h6>";
                 }
-                error_text += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
+                errorText += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
             }
         }
     });
 
 
-    if ($.trim(error_text).length <= 0) {
+    if ($.trim(errorText).length <= 0) {
         $(".section-1").hide();
         $("form").append($("#setting").clone());
         $("form #setting").show();
@@ -1063,7 +1063,7 @@ $(document).on("click", "#next", function() {
         $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
             .html('<img src="images/error.png"/> Error!');
-        $("#exampleModalCenter").find(".modal-body").html(error_text);
+        $("#exampleModalCenter").find(".modal-body").html(errorText);
         $("#exampleModalCenter")
             .find(".modal-footer")
             .html(
@@ -1107,8 +1107,8 @@ async function getStringKeys() {
         optionKey = result;
     });
     Localizer.getString('dueIn', ' 1 week, ', 'Correct answer shown after every question').then(function(result) {
-        setting_text = result;
-        $('#due').text(setting_text);
+        settingText = result;
+        $('#due').text(settingText);
     });
 
     Localizer.getString('addMoreOptions').then(function(result) {
@@ -1294,27 +1294,27 @@ function getQuestionSet() {
     $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
         if ($(elem).hasClass("question-section-div") == true) {
             /* Get Questions */
-            let option_type = ActionHelper.getColumnType('singleselect');
-            let question_id = $(elem).find('span.counter').text();
+            let optionType = ActionHelper.getColumnType('singleselect');
+            let questionId = $(elem).find('span.counter').text();
             let option = [];
 
             $(elem).find("div.option-div").each(function(ind, e) {
                 let count = ind + 1;
-                let opt_id = "question" + question_id + "option" + count;
-                let opt_title = $("div.section-2 #quest-text-" + question_id).find("#option" + count).val();
+                let optId = "question" + questionId + "option" + count;
+                let optTitle = $("div.section-2 #quest-text-" + questionId).find("#option" + count).val();
 
-                if ($("div.section-2 #quest-text-" + question_id).find("input[type=checkbox]:checked").length > 1) {
-                    option_type = ActionHelper.getColumnType('multiselect');
+                if ($("div.section-2 #quest-text-" + questionId).find("input[type=checkbox]:checked").length > 1) {
+                    optionType = ActionHelper.getColumnType('multiselect');
                 } else {
-                    option_type = ActionHelper.getColumnType('singleselect');
+                    optionType = ActionHelper.getColumnType('singleselect');
                 }
-                option.push({ name: opt_id, displayName: opt_title });
+                option.push({ name: optId, displayName: optTitle });
             });
 
             let val = {
-                name: question_id.toString(),
-                displayName: $("div.section-2 #quest-text-" + question_id).find("#question-title").val(),
-                valueType: option_type,
+                name: questionId.toString(),
+                displayName: $("div.section-2 #quest-text-" + questionId).find("#question-title").val(),
+                valueType: optionType,
                 allowNullValue: false,
                 options: option,
             };
@@ -1325,17 +1325,17 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("text-section-div") == true) {
 
             /*  Get Text  */
-            let option_type = ActionHelper.getColumnType('largetext');
+            let optionType = ActionHelper.getColumnType('largetext');
             let option = [];
-            let opt_id = $(elem).find('span.counter').text();
-            let opt_title = $(elem).find('textarea').val();
+            let optId = $(elem).find('span.counter').text();
+            let optTitle = $(elem).find('textarea').val();
 
-            option.push({ name: opt_id, displayName: opt_title });
+            option.push({ name: optId, displayName: optTitle });
 
             let val = {
-                name: opt_id.toString(),
-                displayName: opt_title,
-                valueType: option_type,
+                name: optId.toString(),
+                displayName: optTitle,
+                valueType: optionType,
                 allowNullValue: false,
                 options: option,
             };
@@ -1343,18 +1343,18 @@ function getQuestionSet() {
             questions.push(val);
         } else if ($(elem).hasClass("photo-section-div") == true) {
             /* Photo */
-            let option_type = ActionHelper.getColumnType('largetext');
+            let optionType = ActionHelper.getColumnType('largetext');
             let option = [];
-            let opt_id = $(elem).find('span.counter').text();
-            let opt_title = $(elem).find('textarea').val();
+            let optId = $(elem).find('span.counter').text();
+            let optTitle = $(elem).find('textarea').val();
 
-            let display_name_arr = { 'description': opt_title, 'attachmentId': $(elem).find('textarea#attachment-id').val() };
-            option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
+            let displayNameArr = { 'description': optTitle, 'attachmentId': $(elem).find('textarea#attachment-id').val() };
+            option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
 
             let val = {
-                name: 'photo-' + opt_id.toString(),
-                displayName: opt_title,
-                valueType: option_type,
+                name: 'photo-' + optId.toString(),
+                displayName: optTitle,
+                valueType: optionType,
                 allowNullValue: false,
                 options: option,
             };
@@ -1363,18 +1363,18 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("document-section-div") == true) {
             /* Document */
             let attachmentId = $(elem).find('textarea#attachment-id').val();
-            let option_type = ActionHelper.getColumnType('largetext');
+            let optionType = ActionHelper.getColumnType('largetext');
             let option = [];
-            let opt_id = $(elem).find('span.counter').text();
-            let opt_title = $(elem).find('textarea').val();
+            let optId = $(elem).find('span.counter').text();
+            let optTitle = $(elem).find('textarea').val();
 
-            let display_name_arr = { 'description': opt_title, 'attachmentId': (attachmentId) };
-            option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
+            let displayNameArr = { 'description': optTitle, 'attachmentId': (attachmentId) };
+            option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
 
             let val = {
-                name: 'document-' + opt_id.toString(),
-                displayName: opt_title,
-                valueType: option_type,
+                name: 'document-' + optId.toString(),
+                displayName: optTitle,
+                valueType: optionType,
                 allowNullValue: false,
                 options: option,
             };
@@ -1383,18 +1383,18 @@ function getQuestionSet() {
         } else if ($(elem).hasClass("video-section-div") == true) {
             /* Video */
             let attachmentId = $(elem).find('textarea#attachment-id').val();
-            let option_type = ActionHelper.getColumnType('largetext');
+            let optionType = ActionHelper.getColumnType('largetext');
             let option = [];
-            let opt_id = $(elem).find('span.counter').text();
-            let opt_title = $(elem).find('textarea').val();
+            let optId = $(elem).find('span.counter').text();
+            let optTitle = $(elem).find('textarea').val();
 
-            let display_name_arr = { 'description': opt_title, 'attachmentId': (attachmentId) };
-            option.push({ name: opt_id, displayName: JSON.stringify(display_name_arr) });
+            let displayNameArr = { 'description': optTitle, 'attachmentId': (attachmentId) };
+            option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
 
             let val = {
-                name: 'video-' + opt_id.toString(),
-                displayName: opt_title,
-                valueType: option_type,
+                name: 'video-' + optId.toString(),
+                displayName: optTitle,
+                valueType: optionType,
                 allowNullValue: false,
                 options: option,
             };
@@ -1409,33 +1409,33 @@ function getQuestionSet() {
  * Method to get correct answer from the training quiz
  */
 function getCorrectAnswer() {
-    let correct_option = [];
+    let correctOption = [];
 
     $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
         let correct = [];
-        let question_id = $(elem).find('span.counter').text();
+        let questionId = $(elem).find('span.counter').text();
         if ($(elem).hasClass("question-section-div") == true) {
             $(elem).find("div.option-div").each(function(ind, e) {
                 let count = ind + 1;
 
-                if ($(elem).find("#quest-text-" + question_id + " #check" + count).is(":checked")) {
-                    let opt_id = "question" + question_id + "option" + count;
+                if ($(elem).find("#quest-text-" + questionId + " #check" + count).is(":checked")) {
+                    let optId = "question" + questionId + "option" + count;
 
                     // if it is checked
-                    correct.push(opt_id);
+                    correct.push(optId);
                 }
             });
         } else {
-            let opt_id = "question" + question_id;
-            correct.push(opt_id);
+            let optId = "question" + questionId;
+            correct.push(optId);
         }
-        correct_option[question_id - 1] = correct;
+        correctOption[questionId - 1] = correct;
     });
 
     let property = {
         name: "Question Answers",
         type: "LargeText",
-        value: JSON.stringify(correct_option),
+        value: JSON.stringify(correctOption),
     };
 
     return property;
@@ -1548,32 +1548,32 @@ async function getTheme() {
         $("link#theme").attr("href", "css/style-" + theme + ".css");
 
 
-        $('form.sec1').append(form_section);
-        $('form.sec1').append(setting_section);
-        $('form.sec1').append(training_section_view);
-        $('form.sec1').after(option_section);
-        $('form.sec1').after(toggle_section);
+        $('form.sec1').append(formSection);
+        $('form.sec1').append(settingSection);
+        $('form.sec1').append(trainingSectionView);
+        $('form.sec1').after(optionSection);
+        $('form.sec1').after(toggleSection);
         opt = $("div#option-section .option-div").clone();
 
-        let week_date = new Date(new Date().setDate(new Date().getDate() + 7))
+        let weekDate = new Date(new Date().setDate(new Date().getDate() + 7))
             .toISOString()
             .split("T")[0];
 
-        let week_month = new Date(week_date).toLocaleString('default', { month: 'short' });
-        let week_d = new Date(week_date).getDate();
-        let week_year = new Date(week_date).getFullYear();
-        let week_date_format = week_month + " " + week_d + ", " + week_year;
+        let weekMonth = new Date(weekDate).toLocaleString('default', { month: 'short' });
+        let weekD = new Date(weekDate).getDate();
+        let weekYear = new Date(weekDate).getFullYear();
+        let weekDateFormat = weekMonth + " " + weekD + ", " + weekYear;
 
-        let current_time = (("0" + new Date().getHours()).substr(-2)) + ":" + (("0" + new Date().getMinutes()).substr(-2));
+        let currentTime = (("0" + new Date().getHours()).substr(-2)) + ":" + (("0" + new Date().getMinutes()).substr(-2));
 
 
         /* If Edit back the quiz */
         if (lastSession != null) {
             let ddtt = ((lastSession.action.customProperties[1].value).split('T'));
             let dt = ddtt[0].split('-');
-            week_date_format = new Date(dt[1]).toLocaleString('default', { month: 'short' }) + " " + dt[2] + ", " + dt[0];
-            let tt_time = (ddtt[1].split('Z')[0]).split(':');
-            current_time = `${tt_time[0]}:${tt_time[1]}`;
+            weekDateFormat = new Date(dt[1]).toLocaleString('default', { month: 'short' }) + " " + dt[2] + ", " + dt[0];
+            let ttTime = (ddtt[1].split('Z')[0]).split(':');
+            currentTime = `${ttTime[0]}:${ttTime[1]}`;
 
             if (lastSession.action.customProperties[2].value == 'Everyone') {
                 $('input[name="visible_to"][value="Everyone"]').prop("checked", true);
@@ -1593,16 +1593,16 @@ async function getTheme() {
 
 
             /* Due Setting String */
-            let end = new Date(week_date_format + ' ' + current_time);
+            let end = new Date(weekDateFormat + ' ' + currentTime);
             let start = new Date();
             let days = calc_date_diff(start, end);
 
-            let result_visible = lastSession.action.customProperties[2].value == 'Everyone' ? resultEveryoneKey : resultMeKey;
-            let correct_answer = lastSession.action.customProperties[3].value == 'Yes' ? correctAnswerKey : '';
+            let resultVisible = lastSession.action.customProperties[2].value == 'Everyone' ? resultEveryoneKey : resultMeKey;
+            let correctAnswer = lastSession.action.customProperties[3].value == 'Yes' ? correctAnswerKey : '';
 
-            Localizer.getString('dueIn', days, correct_answer).then(function(result) {
-                setting_text = result;
-                $('#due').text(setting_text);
+            Localizer.getString('dueIn', days, correctAnswer).then(function(result) {
+                settingText = result;
+                $('#due').text(settingText);
             });
 
         } else {
@@ -1610,8 +1610,8 @@ async function getTheme() {
             $(".section-1").show();
             $(".section-1-footer").show()
         }
-        $('.form_date input').val(week_date_format);
-        $(".form_date").attr({ "data-date": week_date_format });
+        $('.form_date input').val(weekDateFormat);
+        $(".form_date").attr({ "data-date": weekDateFormat });
 
         $('.form_time').datetimepicker({
             language: 'en',
@@ -1625,8 +1625,8 @@ async function getTheme() {
             forceParse: 0
         });
 
-        $('.form_time input').val(current_time);
-        let date_input = $('input[name="expiry_date"]');
+        $('.form_time input').val(currentTime);
+        let dateInput = $('input[name="expiry_date"]');
         let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
         let options = {
             format: 'M dd, yyyy',
@@ -1677,10 +1677,10 @@ async function getTheme() {
                     let counter = ind + 1;
                     if (data.valueType == 'LargeText') {
                         /* Call Text Section 1 */
-                        let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                        let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
 
                         if (data.name.indexOf("photo") >= 0) {
-                            let photo_sec = `<div class="card-box card-bg card-border training-card-section section-div photo-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                            let photoSec = `<div class="card-box card-bg card-border training-card-section section-div photo-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                             <div class="form-group">
                                                 <div class="row">
                                                     <div class="col-12">
@@ -1719,18 +1719,18 @@ async function getTheme() {
                                             <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple="">
                                         </div>`;
 
-                            $('div.section-2 div#root').append(photo_sec);
+                            $('div.section-2 div#root').append(photoSec);
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                             if (attachment != undefined) {
                                 $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
 
-                                let attachment_img = '';
+                                let attachmentImg = '';
                                 $.each(attachment, function(ind, att) {
-                                    attachment_img = att;
+                                    attachmentImg = att;
                                     return false;
                                 });
-                                let req = ActionHelper.getAttachmentInfo(attachment_img);
+                                let req = ActionHelper.getAttachmentInfo(attachmentImg);
                                 let filesAmount = Object.keys(attachment).length;
                                 ActionHelper.executeApi(req)
                                     .then(function(response) {
@@ -1746,7 +1746,7 @@ async function getTheme() {
 
                             }
                         } else if (data.name.indexOf("document") >= 0) {
-                            let document_section = `<div class="card-box card-bg card-border training-card-section section-div document-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                            let documentSection = `<div class="card-box card-bg card-border training-card-section section-div document-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                                     <div class="form-group">
                                                         <div class="hover-btn">
                                                             <label class="mb-0">
@@ -1780,7 +1780,7 @@ async function getTheme() {
                                                     <textarea class="textarea-document" style="display:none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a052fa39-60f3-4bb0-964b-9236dc562852"}</textarea>
                                                     <input type="file" id="upload-document" accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf" src="images/px-img.png" style="width:100%; height: 180px; display:none">
                                                 </div>`;
-                            $('div.section-2 div#root').append(document_section);
+                            $('div.section-2 div#root').append(documentSection);
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                             if (attachment != undefined) {
@@ -1788,7 +1788,7 @@ async function getTheme() {
                             }
 
                         } else if (data.name.indexOf("video") >= 0) {
-                            let video_section = `<div class="card-box card-bg card-border training-card-section section-div video-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                            let videoSection = `<div class="card-box card-bg card-border training-card-section section-div video-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                                 <div class="form-group">
                                                     <div class="hover-btn">
                                                         <label class="mb-0">
@@ -1823,7 +1823,7 @@ async function getTheme() {
                                                 <textarea class="textarea-video d-none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a367aca8-ef8d-4094-b256-4eb3707e911e"}</textarea>
                                                 <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
                                             </div>`;
-                            $('div.section-2 div#root').append(video_section);
+                            $('div.section-2 div#root').append(videoSection);
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                             if (attachment != undefined) {
@@ -1840,7 +1840,7 @@ async function getTheme() {
                             }
                         } else {
                             /* text */
-                            let text_section = `<div class="card-box card-bg card-border training-card-section section-div text-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                            let textSection = `<div class="card-box card-bg card-border training-card-section section-div text-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                                 <div class="form-group">
                                                     <div class="hover-btn">
                                                         <label class="mb-0"><strong><span class="counter">${counter}</span>. <span class="type">Text</span></strong> </label>
@@ -1863,18 +1863,18 @@ async function getTheme() {
                                                 <textarea class="textarea-text d-none">${data.displayName}</textarea>
                                                 <textarea id="training-attachment-id" class="d-none"></textarea>
                                             </div>`;
-                            $('div.section-2 div#root').append(text_section);
+                            $('div.section-2 div#root').append(textSection);
                         }
 
                     } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                         /* Call Question Section 1 */
-                        let options_counter = data.options.length != undefined ? numbertowords(data.options.length) : "";
+                        let optionsCounter = data.options.length != undefined ? numbertowords(data.options.length) : "";
                         let correct_opt = '';
                         let opts = '';
                         data.options.forEach((opt, inde) => {
-                            let ques_ans_arr = $.parseJSON(lastSession.action.customProperties[5].value);
+                            let quesAnsArr = $.parseJSON(lastSession.action.customProperties[5].value);
 
-                            if ($.inArray(opt.name, ques_ans_arr[ind]) != -1) {
+                            if ($.inArray(opt.name, quesAnsArr[ind]) != -1) {
                                 opts += `
                                         <div class="option-div">
                                             <div class="form-group">
@@ -1930,10 +1930,10 @@ async function getTheme() {
                                     </div>`;
                             }
                         });
-                        let quest_section = `<div class="card-box card-bg card-border training-card-section section-div question-section-div" data-id="text-section-${counter}" id="section-${counter}">
+                        let questSection = `<div class="card-box card-bg card-border training-card-section section-div question-section-div" data-id="text-section-${counter}" id="section-${counter}">
                                             <div class="form-group">
                                                 <div class="hover-btn h-32">
-                                                    <label><strong><span class="counter">${counter}</span>. Question with <span class="option-counter"> ${options_counter} </span> option </strong> </label>
+                                                    <label><strong><span class="counter">${counter}</span>. Question with <span class="option-counter"> ${optionsCounter} </span> option </strong> </label>
                                                     <button type="button" class="close remove-text" data-dismiss="alert">
                                                         <span aria-hidden="true">
                                                             <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
@@ -1987,12 +1987,12 @@ async function getTheme() {
                                             </div>
                                         </div>`;
 
-                        $('div.section-2 div#root').append(quest_section);
+                        $('div.section-2 div#root').append(questSection);
                     }
                 });
             });
         }
-        date_input.datepicker(options);
+        dateInput.datepicker(options);
         ActionHelper.hideLoader();
         getStringKeys();
     });
@@ -2035,7 +2035,7 @@ $(document).on("click", "#back-setting", function() {
 
     $("form #setting").hide();
 
-    $('#due').text(setting_text);
+    $('#due').text(settingText);
 });
 
 /**
@@ -2086,15 +2086,15 @@ $(document).on('click', '#next1', function() {
             }
         });
 
-    let image_counter = $(".training-card-section").find('input[type="file"]').get(0).files.length;
-    let attachment_request = '';
-    if (image_counter > 0) {
-        for (let i = 0; i < image_counter; i++) {
-            let file_data = $(".training-card-section").find('input[type="file"]').get(0).files[i];
-            let attachment = ActionHelper.attachmentUpload(file_data, file_data['type']);
-            attachment_request = ActionHelper.requestAttachmentUplod(attachment);
+    let imageCounter = $(".training-card-section").find('input[type="file"]').get(0).files.length;
+    let attachmentRequest = '';
+    if (imageCounter > 0) {
+        for (let i = 0; i < imageCounter; i++) {
+            let fileData = $(".training-card-section").find('input[type="file"]').get(0).files[i];
+            let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
+            attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
 
-            ActionHelper.executeApi(attachment_request)
+            ActionHelper.executeApi(attachmentRequest)
                 .then(function(response) {
                     if ($('#training-attachment-id').length > 0) {
                         $('#training-attachment-id').val(response.attachmentId);
@@ -2161,21 +2161,21 @@ $(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], 
     let days = calc_date_diff(start, end);
     $(this).parents('div.row').find('.error-msg').remove();
     if (days == undefined) {
-        let $err_sec = $('<div class="alert alert-danger error-msg"></div>');
+        let $errSec = $('<div class="alert alert-danger error-msg"></div>');
         Localizer.getString('alert_invalid_date_time').then(function(result) {
-            $err_sec.append(result);
+            $errSec.append(result);
         });
         Localizer.getString('greater_current_date').then(function(result) {
-            $err_sec.append(`<p class="mb-0">${result}</p>`);
+            $errSec.append(`<p class="mb-0">${result}</p>`);
         });
-        $(this).parents('div.row').find('div.col-sm-12:first').prepend($err_sec);
+        $(this).parents('div.row').find('div.col-sm-12:first').prepend($errSec);
         $('#back-setting').parents('a.cursur-pointer').addClass('disabled');
     } else {
         $('#back-setting').parents('a.cursur-pointer').removeClass('disabled');
-        let result_visible = $('.visible-to:checked').val() == 'Everyone' ? resultEveryoneKey : resultMeKey;
-        let correct_answer = $('#show-correct-answer:eq(0)').is(":checked") == true ? correctAnswerKey : '';
-        Localizer.getString('dueIn', days, correct_answer).then(function(result) {
-            setting_text = result;
+        let resultVisible = $('.visible-to:checked').val() == 'Everyone' ? resultEveryoneKey : resultMeKey;
+        let correctAnswer = $('#show-correct-answer:eq(0)').is(":checked") == true ? correctAnswerKey : '';
+        Localizer.getString('dueIn', days, correctAnswer).then(function(result) {
+            settingText = result;
         });
     }
 });
@@ -2295,7 +2295,7 @@ function readURL(input, elem) {
 /**
  * Variable contains form section
  */
-let form_section = `<div class="section-1" style="display:none">
+let formSection = `<div class="section-1" style="display:none">
             <div class="container pt-4">
                 <div id="root" class="card-box card-border card-bg">
                     <div class="form-group">
@@ -2332,7 +2332,7 @@ let form_section = `<div class="section-1" style="display:none">
                         <div class="col-9">
                             <a class="theme-color cursur-pointer show-setting" id="hide1">
                                 <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="cc gs gt ha gv"><path class="ui-icon__outline cc" d="M13.82,8.07a.735.735,0,0,1,.5.188l1.438,1.3c.2-.008.4,0,.594.007l1.21-1.25a.724.724,0,0,1,.532-.226,3.117,3.117,0,0,1,.867.226c.469.172,1.3.438,1.328,1.032l.094,1.929a5.5,5.5,0,0,1,.414.422c.594-.007,1.187-.023,1.781-.023a.658.658,0,0,1,.352.117,4.122,4.122,0,0,1,1,2.031.735.735,0,0,1-.188.5l-1.3,1.438c.008.2,0,.4-.007.594l1.25,1.21a.724.724,0,0,1,.226.532,3.117,3.117,0,0,1-.226.867c-.172.461-.438,1.3-1.024,1.328l-1.937.094a5.5,5.5,0,0,1-.422.414c.007.594.023,1.187.023,1.781a.611.611,0,0,1-.117.344A4.1,4.1,0,0,1,18.18,23.93a.735.735,0,0,1-.5-.188l-1.438-1.3c-.2.008-.4,0-.594-.007l-1.21,1.25a.724.724,0,0,1-.532.226,3.117,3.117,0,0,1-.867-.226c-.469-.172-1.3-.438-1.328-1.032l-.094-1.929a5.5,5.5,0,0,1-.414-.422c-.594.007-1.187.023-1.781.023a.611.611,0,0,1-.344-.117A4.1,4.1,0,0,1,8.07,18.18a.735.735,0,0,1,.188-.5l1.3-1.438c-.008-.2,0-.4.007-.594l-1.25-1.21a.724.724,0,0,1-.226-.532,3.117,3.117,0,0,1,.226-.867c.172-.461.446-1.3,1.024-1.328l1.937-.094A5.5,5.5,0,0,1,11.7,11.2c-.007-.594-.023-1.187-.023-1.781a.658.658,0,0,1,.117-.352A4.122,4.122,0,0,1,13.82,8.07ZM12.672,9.617l.023,1.8c.008.312-.859,1.164-1.164,1.18l-1.976.1-.422,1.133,1.289,1.258c.2.2.164.562.164.82a1.781,1.781,0,0,1-.148.844L9.117,18.227l.5,1.1c.6-.008,1.211-.023,1.813-.023.312,0,1.156.859,1.172,1.164l.1,1.976,1.133.422,1.258-1.289c.2-.2.562-.164.82-.164a1.7,1.7,0,0,1,.844.148l1.469,1.321,1.1-.5-.023-1.8c-.008-.312.859-1.164,1.164-1.18l1.976-.1.422-1.133-1.289-1.258c-.2-.2-.164-.562-.164-.82a1.781,1.781,0,0,1,.148-.844l1.321-1.469-.5-1.1c-.6.008-1.211.023-1.813.023-.312,0-1.156-.859-1.172-1.164l-.1-1.976-1.133-.422-1.258,1.289c-.2.2-.562.164-.82.164a1.781,1.781,0,0,1-.844-.148L13.773,9.117ZM16.008,13.5A2.5,2.5,0,1,1,13.5,16,2.531,2.531,0,0,1,16.008,13.5ZM16,14.5a1.5,1.5,0,1,0,1.5,1.461A1.513,1.513,0,0,0,16,14.5Z"></path></svg>
-                                <span id="due"> ${setting_text}</span>
+                                <span id="due"> ${settingText}</span>
                             </a>
                         </div>
                         <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
@@ -2345,7 +2345,7 @@ let form_section = `<div class="section-1" style="display:none">
 /**
  * Variable contains training section
  */
-let training_section_view = `<div class="section-2" style="display:none">
+let trainingSectionView = `<div class="section-2" style="display:none">
             <div class="container pt-4">
                 <div id="root" class="">
                     <div class="card-box card-bg card-border training-card-section">
@@ -2415,7 +2415,7 @@ let training_section_view = `<div class="section-2" style="display:none">
 /**
  * Variable contains question section
  */
-let questions_section = `<div class="question-section">
+let questionsSection = `<div class="question-section">
         <div class="container question-container pt-4">
             <div class="card-box card-border card-bg">
                 <div class="form-group">
@@ -2523,7 +2523,7 @@ let questions_section = `<div class="question-section">
 /**
  * Variable contains add buttn section
  */
-let add_question_button = `<div class="container pb-5 question_button">
+let addQuestionButton = `<div class="container pb-5 question_button">
                 <div class="form-group pb-5">
                     <button type="button" class="btn btn-primary btn-sm" id="add-questions-same-section"> <svg role="presentation"
                             focusable="false" viewBox="8 8 16 16" class="cc gs gt wh gv">
@@ -2540,7 +2540,7 @@ let add_question_button = `<div class="container pb-5 question_button">
 /**
  * Variable contains question footer
  */
-let question_footer = `<div class="footer question-footer" >
+let questionFooter = `<div class="footer question-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
                     <div class="row">
@@ -2567,7 +2567,7 @@ let question_footer = `<div class="footer question-footer" >
 /**
  * Variable contains option section
  */
-let option_section = `<div style="display: none;" id="option-section">
+let optionSection = `<div style="display: none;" id="option-section">
         <div class="option-div">
             <div class="input-group mb-2">
                 <div class="input-group-append">
@@ -2600,7 +2600,7 @@ let option_section = `<div style="display: none;" id="option-section">
 /**
  * Variable contains text section
  */
-let add_text_section = `<div class="text-section" >
+let addTextSection = `<div class="text-section" >
             <div class="container pt-4">
                 <div id="root" class="">
                     <div class="card-box card-bg card-border">
@@ -2615,7 +2615,7 @@ let add_text_section = `<div class="text-section" >
 /**
  * Variable contains text footer section
  */
-let add_text_footer = `<div class="footer text-footer" >
+let addTextFooter = `<div class="footer text-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
                     <div class="row">
@@ -2641,7 +2641,7 @@ let add_text_footer = `<div class="footer text-footer" >
 /**
  * Variable contains photo section
  */
-let add_photo_section = `<div class="text-section" >
+let addPhotoSection = `<div class="text-section" >
             <div class="container pt-4">
                 <div id="root" class="">
                     <div class="card-box card-bg card-border">
@@ -2669,7 +2669,7 @@ let add_photo_section = `<div class="text-section" >
 /**
  * Variable contains photo footer section
  */
-let add_photo_footer = `<div class="footer text-footer" >
+let addPhotoFooter = `<div class="footer text-footer" >
             <div class="footer-padd bt">
                 <div class="container ">
                     <div class="row">
@@ -2696,118 +2696,118 @@ let add_photo_footer = `<div class="footer text-footer" >
 /**
  * Variable contains video section
  */
-let add_video_section = `<div class="text-section" >
-<div class="container pt-4">
-    <div id="root" class="">
-        <div class="card-box card-bg card-border">
-            <div class="form-group">
-                <label class="w-100">Upload Video   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
-                <div class="relative">
-                    <div class="video-box card card-bg card-border max-min-220 upvj">
-                        <span class="tap-upload-video-label">Tap to upload Video</span>
-                    </div>
-                    <div class="updated-video card card-bg card-border max-min-220 upvj" style="display:none">
-                        <div class="embed-responsive embed-responsive-21by9">
-                            <video controls class="video video-section-preview">
-                            </video>
+let addVideoSection = `<div class="text-section" >
+    <div class="container pt-4">
+        <div id="root" class="">
+            <div class="card-box card-bg card-border">
+                <div class="form-group">
+                    <label class="w-100">Upload Video   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
+                    <div class="relative">
+                        <div class="video-box card card-bg card-border max-min-220 upvj">
+                            <span class="tap-upload-video-label">Tap to upload Video</span>
+                        </div>
+                        <div class="updated-video card card-bg card-border max-min-220 upvj" style="display:none">
+                            <div class="embed-responsive embed-responsive-21by9">
+                                <video controls class="video video-section-preview">
+                                </video>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="form-group">
-                <textarea class="in-t form-control desc-content-about-placeholder" id="video-description" placeholder="Description. What is the content about?"></textarea>
+                <div class="form-group">
+                    <textarea class="in-t form-control desc-content-about-placeholder" id="video-description" placeholder="Description. What is the content about?"></textarea>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>`;
 
 /**
  * Variable contains video footer section
  */
-let add_video_footer = `<div class="footer text-footer" >
-<div class="footer-padd bt">
-    <div class="container ">
-        <div class="row">
-            <div class="col-9">
-                <a class=" cursur-pointer" id="back-video">
-                    <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                        <path class="ui-icon__outline gr"
-                            d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                        </path>
-                        <path class="ui-icon__filled"
-                            d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                        </path>
-                    </svg> Back
-                </a>
+let addVideoFooter = `<div class="footer text-footer" >
+    <div class="footer-padd bt">
+        <div class="container ">
+            <div class="row">
+                <div class="col-9">
+                    <a class=" cursur-pointer" id="back-video">
+                        <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
+                            <path class="ui-icon__outline gr"
+                                d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
+                            </path>
+                            <path class="ui-icon__filled"
+                                d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
+                            </path>
+                        </svg> Back
+                    </a>
+                </div>
+                <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label" id="video-done"> Done</button></div>
             </div>
-            <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label" id="video-done"> Done</button></div>
         </div>
     </div>
-</div>
 </div>`;
 
 
 /**
  * Variable contains document section
  */
-let add_document_section = `<div class="text-section" >
-<div class="container pt-4">
-    <div id="root" class="">
-        <div class="card-box card-bg card-border">
-            <div class="form-group">
-                <div class="relative">
-                    <!-- hide this div afte img added -->
-                    <div class="doc-box card card-bg card-border max-min-220 upvj">
-                        <span class="tap-upload-files-label">Tap to upload files</span>
-                    </div>
-                    <!-- show this div afte img added -->
-                    <div class="card-bg card-border p14 doc-name">
-                    </div>
+let addDocumentSection = `<div class="text-section" >
+    <div class="container pt-4">
+        <div id="root" class="">
+            <div class="card-box card-bg card-border">
+                <div class="form-group">
+                    <div class="relative">
+                        <!-- hide this div afte img added -->
+                        <div class="doc-box card card-bg card-border max-min-220 upvj">
+                            <span class="tap-upload-files-label">Tap to upload files</span>
+                        </div>
+                        <!-- show this div afte img added -->
+                        <div class="card-bg card-border p14 doc-name">
+                        </div>
 
 
+                    </div>
+                    <!-- <img src="" id="document-image-preview"> -->
                 </div>
-                <!-- <img src="" id="document-image-preview"> -->
-            </div>
-            <div class="form-group">
-                <textarea class="in-t form-control desc-content-about-placeholder" id="document-description" placeholder="Description. What is the content about?"></textarea>
+                <div class="form-group">
+                    <textarea class="in-t form-control desc-content-about-placeholder" id="document-description" placeholder="Description. What is the content about?"></textarea>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </div>`;
 
 /**
  * Variable contains document footer section
  */
-let add_document_footer = `<div class="footer text-footer" >
-<div class="footer-padd bt">
-    <div class="container ">
-        <div class="row">
-            <div class="col-9">
-                <a class=" cursur-pointer" id="back-photo">
-                    <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                        <path class="ui-icon__outline gr"
-                            d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                        </path>
-                        <path class="ui-icon__filled"
-                            d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                        </path>
-                    </svg> Back
-                </a>
+let addDocumentFooter = `<div class="footer text-footer" >
+    <div class="footer-padd bt">
+        <div class="container ">
+            <div class="row">
+                <div class="col-9">
+                    <a class=" cursur-pointer" id="back-photo">
+                        <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
+                            <path class="ui-icon__outline gr"
+                                d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
+                            </path>
+                            <path class="ui-icon__filled"
+                                d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
+                            </path>
+                        </svg> Back
+                    </a>
+                </div>
+                <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
+                        id="document-done"> Done</button></div>
             </div>
-            <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
-                    id="document-done"> Done</button></div>
         </div>
     </div>
-</div>
 </div>`;
 
 
 /**
  * Variable contains setting section
  */
-let setting_section = `<div style="display:none" id="setting">
+let settingSection = `<div style="display:none" id="setting">
         <div class="container pt-4 setting-section">
             <div class="row">
                 <div class="col-sm-12">
@@ -2852,7 +2852,7 @@ let setting_section = `<div style="display:none" id="setting">
                 <div class="col-12 mt-4">
                     <div class="input-group mb-2 form-check custom-check-outer">
                         <label class="custom-check form-check-label">
-                            <input type="checkbox" name="show_correct_answer" id="show-correct-answer" value="Yes" checked/>
+                            <input type="checkbox" name="show_correctAnswer" id="show-correct-answer" value="Yes" checked/>
                             <span class="checkmark"></span>
                             <strong class="show-correct-key">${showCorrectAnswerKey}</strong><br>
                         </label>
@@ -2890,7 +2890,7 @@ let setting_section = `<div style="display:none" id="setting">
 /**
  * Variable contains toggle section
  */
-let toggle_section = `<div class="slideup-content">
+let toggleSection = `<div class="slideup-content">
     <div class="row">
         <div class="col-3">
             <div id="add-text">

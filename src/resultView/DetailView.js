@@ -14,8 +14,8 @@ let actionNonResponders = [];
 let myUserId = "";
 let score = 0;
 let total = 0;
-let answer_is = "";
-let data_response = "";
+let answerIs = "";
+let dataResponse = "";
 
 let backKey = "";
 let dueByKey = "";
@@ -65,8 +65,8 @@ async function getStringKeys() {
  */
 async function getTheme(request) {
     getStringKeys();
-    data_response = await ActionHelper.executeApi(request);
-    let context = data_response.context;
+    dataResponse = await ActionHelper.executeApi(request);
+    let context = dataResponse.context;
     $("form.section-1").show();
     let theme = context.theme;
     $("link#theme").attr("href", "css/style-" + theme + ".css");
@@ -144,7 +144,7 @@ async function createBody() {
     $("#root").append($pcard);
 
     await getUserprofile();
-    if (myUserId == data_response.context.userId) {
+    if (myUserId == dataResponse.context.userId) {
         createCreatorQuestionView(myUserId, ResponderDate);
         return false;
     } else {
@@ -167,16 +167,16 @@ function head() {
     let dueby = new Date(actionInstance.expiryTime).toDateString();
 
     let $card = $('<div class=""></div>');
-    let $title_sec = $("<h4>" + title + "</h4>");
-    let $description_sec = $("<p class='text-justify'>" + description + "</p>");
-    let $date_sec = '';
+    let $titleSec = $("<h4>" + title + "</h4>");
+    let $descriptionSec = $("<p class='text-justify'>" + description + "</p>");
+    let $dateSec = '';
     Localizer.getString('dueBy').then(function(result) {
-        $date_sec = $(`<p><small class="date-color md-0">${result} ${dueby}</small></p>`);
+        $dateSec = $(`<p><small class="date-color md-0">${result} ${dueby}</small></p>`);
     });
 
-    $card.append($title_sec);
-    $card.append($description_sec);
-    $card.append($date_sec);
+    $card.append($titleSec);
+    $card.append($descriptionSec);
+    $card.append($dateSec);
     $card.append("<hr>");
 
     $("#root").append($card);
@@ -316,14 +316,14 @@ $(document).on("click", ".getresult", function() {
 function createReponderQuestionView(userId, responder) {
     $("div#root > div.question-content").html("");
     let count = 1;
-    answer_is = "";
+    answerIs = "";
     total = 0;
     score = 0;
 
     let name = responder.label;
     let matches = name.match(/\b(\w)/g); // [D,P,R]
     let initials = matches.join('').substring(0, 2); // DPR
-    let $you_section = `<table class="table" cellspacing="0" id="responder-table">
+    let $youSection = `<table class="table" cellspacing="0" id="responder-table">
                             <tbody>
                                 <tr id="${myUserId}" class="getresult cursur-pointer">
                                     <td>
@@ -346,121 +346,121 @@ function createReponderQuestionView(userId, responder) {
                                 </tr>
                             </tbody>
                         </table>`;
-    $('#root').append($you_section);
+    $('#root').append($youSection);
 
     actionInstance.dataTables.forEach((dataTable) => {
         dataTable.dataColumns.forEach((question, ind) => {
-            answer_is = "";
+            answerIs = "";
             let count = ind + 1;
 
-            let $card_div = $(`<div class="card-blank"></div>`);
-            let $form_group = $(`<div class="form-group"></div>`);
+            let $cardDiv = $(`<div class="card-blank"></div>`);
+            let $formGroup = $(`<div class="form-group"></div>`);
             let $row = $(`<div class="row"></div>`);
-            let $hover_btn = $('<div class="hover-btn"></div>');
-            $card_div.append($form_group);
-            $form_group.append($row);
+            let $hoverBtn = $('<div class="hover-btn"></div>');
+            $cardDiv.append($formGroup);
+            $formGroup.append($row);
             if (question.name.indexOf("photo") >= 0) {
                 /* Photo Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('photo').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     });
 
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
                     let filesAmount = Object.keys(attachment).length;
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
-                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $img_thumbnail, $col_3, 'photo')
-                    $row.append($col_3);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
+                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $imgThumbnail, $col3, 'photo')
+                    $row.append($col3);
                 }
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("#root").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             } else if (question.name.indexOf("document") >= 0) {
                 /* Document Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('document').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     })
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
                     let filesAmount = Object.keys(attachment).length;
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
-                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $img_thumbnail, $col_3, 'document')
-                    $row.append($col_3);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
+                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $imgThumbnail, $col3, 'document')
+                    $row.append($col3);
                 }
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("#root").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             } else if (question.name.indexOf("video") >= 0) {
                 /* Video Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
 
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('video').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     });
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
-                    ActionHelper.setAttachmentPreview(req, question.name, 1, $img_thumbnail, $col_3, 'video')
-                    $row.append($col_3);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
+                    ActionHelper.setAttachmentPreview(req, question.name, 1, $imgThumbnail, $col3, 'video')
+                    $row.append($col3);
                 }
 
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("#root").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             } else {
                 if (question.options.length > 1) {
@@ -469,7 +469,7 @@ function createReponderQuestionView(userId, responder) {
                     let $qDiv = $('<div class="col-sm-12"></div>');
                     let $dflex = $("<div class='d-table'></div>");
 
-                    $card_div.append($rowdDiv);
+                    $cardDiv.append($rowdDiv);
                     $rowdDiv.append($qDiv);
 
                     let $questionHeading = $(`<label class="mb0"></label>`);
@@ -477,7 +477,7 @@ function createReponderQuestionView(userId, responder) {
                         "<strong>" + count + ". " + question.displayName + "</strong>"
                     );
 
-                    $card_div.append($dflex);
+                    $cardDiv.append($dflex);
                     $dflex.append($questionHeading);
 
                     $dflex.append(
@@ -544,32 +544,32 @@ function createReponderQuestionView(userId, responder) {
                                 userResponseAnswer,
                                 correctAnswer,
                             );
-                            $card_div.append($radioOption);
+                            $cardDiv.append($radioOption);
 
-                            $card_div.find("#status-" + question.name).html(`<span class="${answer_is == 'Correct' ? 'text-success' : 'text-danger'}">${answer_is}</span>`);
+                            $cardDiv.find("#status-" + question.name).html(`<span class="${answerIs == 'Correct' ? 'text-success' : 'text-danger'}">${answerIs}</span>`);
                         }
                     });
 
-                    if (answer_is == "Correct") {
+                    if (answerIs == "Correct") {
                         score++;
                     }
-                    $("#root").append($card_div);
+                    $("#root").append($cardDiv);
                 } else {
                     /* Text Section */
-                    let $text_section = '';
+                    let $textSection = '';
                     let $clearfix = $(`<div class="clearfix"></div>`);
-                    $form_group.append($hover_btn);
+                    $formGroup.append($hoverBtn);
                     Localizer.getString('video').then(function(result) {
-                        $text_section = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
+                        $textSection = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
                                         <span class="training-type">Text</span></strong></label>
                                         <span class="float-right result"></span>`);
-                        $hover_btn.append($text_section);
+                        $hoverBtn.append($textSection);
                     });
-                    $form_group.append($clearfix);
-                    let $description_section = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $card_div.append($description_section);
+                    $formGroup.append($clearfix);
+                    let $descriptionSection = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                    $cardDiv.append($descriptionSection);
                 }
-                $("#root").append($card_div);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             }
         });
@@ -588,20 +588,20 @@ function createReponderQuestionView(userId, responder) {
 /* 
  * Method to create creator questions view
  * @param userId string identifier 
- * @param responder_data object
+ * @param responderData object
  */
-function createCreatorQuestionView(userId, responder_data) {
+function createCreatorQuestionView(userId, responderData) {
     $("div#root > div.question-content").html("");
     let count = 1;
-    let total_responders = responder_data.length;
-    answer_is = "";
+    let totalResponders = responderData.length;
+    answerIs = "";
     total = 0;
     score = 0;
 
-    let $you_section = '';
+    let $youSection = '';
 
     Localizer.getString('aggregrate_result').then(function(result) {
-        $you_section = `<table class="table" cellspacing="0" id="responder-table">
+        $youSection = `<table class="table" cellspacing="0" id="responder-table">
                             <tbody>
                                 <tr>
                                     <td>
@@ -614,63 +614,63 @@ function createCreatorQuestionView(userId, responder_data) {
                                 </tr>
                             </tbody>
                         </table>`;
-        $('#root div.card-blank:first').before($you_section);
+        $('#root div.card-blank:first').before($youSection);
     });
 
     actionInstance.dataTables.forEach((dataTable) => {
         dataTable.dataColumns.forEach((question, ind) => {
-            answer_is = "";
+            answerIs = "";
             let count = ind + 1;
-            let correct_counter = 0;
+            let correctCounter = 0;
 
-            let $card_div = $(`<div class="card-blank"></div>`);
-            let $form_group = $(`<div class="form-group"></div>`);
+            let $cardDiv = $(`<div class="card-blank"></div>`);
+            let $formGroup = $(`<div class="form-group"></div>`);
             let $row = $(`<div class="row"></div>`);
-            let $hover_btn = $('<div class="hover-btn"></div>');
-            $card_div.append($form_group);
-            $form_group.append($row);
+            let $hoverBtn = $('<div class="hover-btn"></div>');
+            $cardDiv.append($formGroup);
+            $formGroup.append($row);
             if (question.name.indexOf("photo") >= 0) {
                 /* Photo Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('photo').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     });
 
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
                     let filesAmount = Object.keys(attachment).length;
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
-                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $img_thumbnail, $col_3, 'photo');
-                    $row.append($col_3);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
+                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $imgThumbnail, $col3, 'photo');
+                    $row.append($col3);
                 }
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("#root").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             } else if (question.name.indexOf("document") >= 0) {
                 /* Document Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
 
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
 
                 Localizer.getString('document').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
@@ -678,64 +678,64 @@ function createCreatorQuestionView(userId, responder_data) {
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     })
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
                     let filesAmount = Object.keys(attachment).length;
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
-                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $img_thumbnail, $col_3, 'document');
-                    $row.append($col_3);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
+                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $imgThumbnail, $col3, 'document');
+                    $row.append($col3);
                 }
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("#root").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             } else if (question.name.indexOf("video") >= 0) {
                 /* Video Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
 
 
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('video').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     });
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
 
-                    ActionHelper.setAttachmentPreview(req, question.name, 1, $img_thumbnail, $col_3, 'video');
-                    $row.append($col_3);
+                    ActionHelper.setAttachmentPreview(req, question.name, 1, $imgThumbnail, $col3, 'video');
+                    $row.append($col3);
                 }
 
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("#root").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             } else {
                 if (question.options.length > 1) {
@@ -744,7 +744,7 @@ function createCreatorQuestionView(userId, responder_data) {
                     let $qDiv = $('<div class="col-sm-12"></div>');
                     let $dflex = $("<div class='d-table'></div>");
 
-                    $card_div.append($rowdDiv);
+                    $cardDiv.append($rowdDiv);
                     $rowdDiv.append($qDiv);
 
                     let $questionHeading = $(`<label class="mb0"></label>`);
@@ -752,7 +752,7 @@ function createCreatorQuestionView(userId, responder_data) {
                         "<strong>" + count + ". " + question.displayName + "</strong>"
                     );
 
-                    $card_div.append($dflex);
+                    $cardDiv.append($dflex);
                     $dflex.append($questionHeading);
 
                     $dflex.append(
@@ -809,7 +809,7 @@ function createCreatorQuestionView(userId, responder_data) {
                         }
 
                         if (correctAnswer.length > 0 && userResponseAnswer.length > 0 && correctAnswer == userResponseAnswer) {
-                            correct_counter++;
+                            correctCounter++;
                         }
                         if (question.options.length > 1) {
                             let $radioOption = getOptions(
@@ -819,37 +819,37 @@ function createCreatorQuestionView(userId, responder_data) {
                                 userResponseAnswer,
                                 correctAnswer,
                             );
-                            $card_div.append($radioOption);
+                            $cardDiv.append($radioOption);
 
                             if (actionDataRowsLength == 0) {
-                                $card_div.find("#status-" + question.name).html(`<span class="text-success">0% Correct</span>`);
+                                $cardDiv.find("#status-" + question.name).html(`<span class="text-success">0% Correct</span>`);
                             } else {
-                                $card_div.find("#status-" + question.name).html(`<span class="text-success">${(correct_counter * 100) / actionDataRowsLength}% Correct</span>`);
+                                $cardDiv.find("#status-" + question.name).html(`<span class="text-success">${(correctCounter * 100) / actionDataRowsLength}% Correct</span>`);
                             }
                         }
                     });
 
-                    if (answer_is == "Correct") {
+                    if (answerIs == "Correct") {
                         score++;
                     }
-                    $("#root").append($card_div);
+                    $("#root").append($cardDiv);
                 } else {
                     /* Text Section */
-                    let $text_section = '';
+                    let $textSection = '';
                     let $clearfix = $(`<div class="clearfix"></div>`);
-                    $form_group.append($hover_btn);
+                    $formGroup.append($hoverBtn);
                     Localizer.getString('text').then(function(result) {
-                        $text_section = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
+                        $textSection = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
                                             <span class="training-type">${result}</span></strong></label>
                                             <span class="float-right result"></span>`);
-                        $hover_btn.append($text_section);
+                        $hoverBtn.append($textSection);
                     });
-                    $form_group.append($clearfix);
+                    $formGroup.append($clearfix);
 
-                    let $description_section = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $card_div.append($description_section);
+                    let $descriptionSection = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                    $cardDiv.append($descriptionSection);
                 }
-                $("#root").append($card_div);
+                $("#root").append($cardDiv);
                 $("#root").append('<hr>');
             }
         });
@@ -887,119 +887,119 @@ function createQuestionView(userId) {
     let count = 1;
     actionInstance.dataTables.forEach((dataTable) => {
         dataTable.dataColumns.forEach((question, ind) => {
-            answer_is = "";
+            answerIs = "";
             let count = ind + 1;
 
-            let $card_div = $(`<div class="card-blank"></div>`);
-            let $form_group = $(`<div class="form-group"></div>`);
+            let $cardDiv = $(`<div class="card-blank"></div>`);
+            let $formGroup = $(`<div class="form-group"></div>`);
             let $row = $(`<div class="row"></div>`);
-            let $hover_btn = $('<div class="hover-btn"></div>');
-            $card_div.append($form_group);
-            $form_group.append($row);
+            let $hoverBtn = $('<div class="hover-btn"></div>');
+            $cardDiv.append($formGroup);
+            $formGroup.append($row);
             if (question.name.indexOf("photo") >= 0) {
                 /* Photo Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('photo').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     });
 
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
                     let filesAmount = Object.keys(attachment).length;
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
 
-                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $img_thumbnail, $col_3, 'photo');
-                    $row.append($col_3);
+                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $imgThumbnail, $col3, 'photo');
+                    $row.append($col3);
                 }
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("div.question-content:first").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("div.question-content:first").append($cardDiv);
                 $("div.question-content:first").append('<hr>');
             } else if (question.name.indexOf("document") >= 0) {
                 /* Document Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('document').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     })
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
                     let filesAmount = Object.keys(attachment).length;
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
 
-                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $img_thumbnail, $col_3, 'document');
-                    $row.append($col_3);
+                    ActionHelper.setAttachmentPreview(req, question.name, filesAmount, $imgThumbnail, $col3, 'document');
+                    $row.append($col3);
                 }
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("div.question-content:first").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("div.question-content:first").append($cardDiv);
                 $("div.question-content:first").append('<hr>');
             } else if (question.name.indexOf("video") >= 0) {
                 /* Video Section */
-                let $col_9 = $(`<div class="col-9"></div>`);
+                let $col9 = $(`<div class="col-9"></div>`);
                 let content = '';
-                $form_group.append($row);
-                $row.append($col_9);
+                $formGroup.append($row);
+                $row.append($col9);
                 Localizer.getString('video').then(function(result) {
                     content = `<label class="mb0"><strong><span class="counter">${count}</span>. 
                                     <span class="training-type">${result}</span></strong> 
                                 </label>
                                 <span class="float-right result"></span>
                                 <p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $col_9.append(content);
+                    $col9.append(content);
                 });
 
                 let dname = isJson(question.options[0].displayName) ? JSON.parse(question.options[0].displayName) : question.options[0].displayName;
                 let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                 if (attachment != undefined) {
-                    let attachment_img = '';
+                    let attachmentImg = '';
                     $.each(attachment, function(ind, att) {
-                        attachment_img = att;
+                        attachmentImg = att;
                         return false;
                     });
-                    let req = ActionHelper.getAttachmentInfo(attachment_img);
-                    let $col_3 = $(`<div class="col-3"></div>`);
-                    let $img_thumbnail = $(`<div class="img-thumbnail"></div>`);
-                    ActionHelper.setAttachmentPreview(req, question.name, 1, $img_thumbnail, $col_3, 'video');
-                    $row.append($col_3);
+                    let req = ActionHelper.getAttachmentInfo(attachmentImg);
+                    let $col3 = $(`<div class="col-3"></div>`);
+                    let $imgThumbnail = $(`<div class="img-thumbnail"></div>`);
+                    ActionHelper.setAttachmentPreview(req, question.name, 1, $imgThumbnail, $col3, 'video');
+                    $row.append($col3);
                 }
 
-                $form_group.append($row);
-                $card_div.append($form_group);
-                $("div.question-content:first").append($card_div);
+                $formGroup.append($row);
+                $cardDiv.append($formGroup);
+                $("div.question-content:first").append($cardDiv);
                 $("div.question-content:first").append('<hr>');
             } else {
                 if (question.options.length > 1) {
@@ -1008,7 +1008,7 @@ function createQuestionView(userId) {
                     let $qDiv = $('<div class="col-sm-12"></div>');
                     let $dflex = $("<div class='d-table'></div>");
 
-                    $card_div.append($rowdDiv);
+                    $cardDiv.append($rowdDiv);
                     $rowdDiv.append($qDiv);
 
                     let $questionHeading = $("<label class='mb0'></label>");
@@ -1016,7 +1016,7 @@ function createQuestionView(userId) {
                         "<strong>" + count + ". " + question.displayName + "</strong>"
                     );
 
-                    $card_div.append($dflex);
+                    $cardDiv.append($dflex);
                     $dflex.append($questionHeading);
 
                     $dflex.append(
@@ -1083,34 +1083,34 @@ function createQuestionView(userId) {
                                 userResponseAnswer,
                                 correctAnswer,
                             );
-                            $card_div.append($radioOption);
+                            $cardDiv.append($radioOption);
 
-                            $card_div.find("#status-" + question.name).html(`<span class="${answer_is == 'Correct' ? 'text-success' : 'text-danger'}">${answer_is}</span>`);
+                            $cardDiv.find("#status-" + question.name).html(`<span class="${answerIs == 'Correct' ? 'text-success' : 'text-danger'}">${answerIs}</span>`);
                         }
                     });
 
-                    if (answer_is == "Correct") {
+                    if (answerIs == "Correct") {
                         score++;
                     }
-                    $("div.question-content:first").append($card_div);
+                    $("div.question-content:first").append($cardDiv);
                 } else {
                     /* Text Section */
-                    let $text_section = '';
+                    let $textSection = '';
                     Localizer.getString('text').then(function(result) {
-                        $text_section = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
+                        $textSection = $(`<label class="mb0"><strong><span class="counter">${count}</span>. 
                                         <span class="training-type">${result}</span></strong></label>
                                         <span class="float-right result"></span>`);
                     });
 
                     let $clearfix = $(`<div class="clearfix"></div>`);
-                    $form_group.append($hover_btn);
-                    $hover_btn.append($text_section);
-                    $form_group.append($clearfix);
+                    $formGroup.append($hoverBtn);
+                    $hoverBtn.append($textSection);
+                    $formGroup.append($clearfix);
 
-                    let $description_section = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
-                    $card_div.append($description_section);
+                    let $descriptionSection = `<p class="mb0 text-description text-justify">${question.displayName}</p>`;
+                    $cardDiv.append($descriptionSection);
                 }
-                $("div.question-content:first").append($card_div);
+                $("div.question-content:first").append($cardDiv);
                 $("div.question-content:first").append('<hr>');
             }
         });
@@ -1130,10 +1130,10 @@ function createQuestionView(userId) {
  * @param id string 
  * @param userResponse Array contains user responded answer for a question
  * @param correctAnswer Array contains correct answer of a question
- * @param is_text String for identify the response is question type or other
+ * @param isText String for identify the response is question type or other
  */
-function getOptions(text, name, id, userResponse, correctAnswer, is_text = '') {
-    if (is_text == true) {
+function getOptions(text, name, id, userResponse, correctAnswer, isText = '') {
+    if (isText == true) {
         // This is for text block 
         return true;
     }
@@ -1146,10 +1146,11 @@ function getOptions(text, name, id, userResponse, correctAnswer, is_text = '') {
             text +
             ' <i class="fa  pull-right fa-check"></i> </p></div>'
         );
-        if (answer_is == "") {
-            Localizer.getString('correct').then(function(result) {
-                answer_is = result;
-            });
+        if (answerIs == "") {
+            /* Localizer.getString('correct').then(function(result) {
+                answerIs = result;
+            }); */
+            answerIs = 'Correct';
         }
     } else if (userResponse != id && correctAnswer == id) {
         /* If User Response is incorrect and not answered */
@@ -1165,9 +1166,11 @@ function getOptions(text, name, id, userResponse, correctAnswer, is_text = '') {
             text +
             '<i class="fa fa-pull-right fa-close"></i></p></div>'
         );
-        Localizer.getString('incorrect').then(function(result) {
-            answer_is = result;
-        });
+        /* Localizer.getString('incorrect').then(function(result) {
+            answerIs = result;
+        }); */
+        answerIs = 'Incorrect';
+
     } else {
         $oDiv.append(
             '<div class="form-group alert alert-normal""><p class="mb0">' +

@@ -90,11 +90,11 @@ export class ActionHelper {
 
     /**
      * Method to upload attachment
-     * @param file_data blob file data
-     * @param file_type string identifier
+     * @param fileData blob file data
+     * @param fileType string identifier
      */
-    static attachmentUpload(file_data, file_type) {
-        return actionSDK.AttachmentUtils.creatBlobAttachmentData(file_data, file_type);
+    static attachmentUpload(fileData, fileType) {
+        return actionSDK.AttachmentUtils.creatBlobAttachmentData(fileData, fileType);
     }
 
     /**
@@ -146,28 +146,28 @@ export class ActionHelper {
      * @param request object identfier
      * @param questionname string
      * @param filesAmount Int 
-     * @param $img_thumbnail object contaains html object of image thumbnail
+     * @param $imgThumbnail object contaains html object of image thumbnail
      * @param $col3 object contains html object where preview gets append
      * @param type string such as photo, document, video, question
      */
-    static setAttachmentPreview(request, questionName, filesAmount, $img_thumbnail, $col_3, type) {
+    static setAttachmentPreview(request, questionName, filesAmount, $imgThumbnail, $col3, type) {
         actionSDK.executeApi(request)
             .then(function(response) {
                 if (type == 'photo') {
-                    $img_thumbnail.append(`<img class="image-sec" id="${questionName}" src="${response.attachmentInfo.downloadUrl}"></img>`);
+                    $imgThumbnail.append(`<img class="image-sec" id="${questionName}" src="${response.attachmentInfo.downloadUrl}"></img>`);
                     if (filesAmount > 1) {
-                        $img_thumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
+                        $imgThumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
                     }
-                    $col_3.append($img_thumbnail);
+                    $col3.append($imgThumbnail);
                 } else if (type == 'document') {
-                    $img_thumbnail.append(`<img class="image-sec" id="${questionName}" src="images/doc.png"></img>`);
+                    $imgThumbnail.append(`<img class="image-sec" id="${questionName}" src="images/doc.png"></img>`);
                     if (filesAmount > 1) {
-                        $img_thumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
+                        $imgThumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
                     }
-                    $col_3.append($img_thumbnail);
+                    $col3.append($imgThumbnail);
                 } else if (type == 'video') {
-                    $img_thumbnail.append(`<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="${questionName}" src="${response.attachmentInfo.downloadUrl}"></video></div>`);
-                    $col_3.append($img_thumbnail);
+                    $imgThumbnail.append(`<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="${questionName}" src="${response.attachmentInfo.downloadUrl}"></video></div>`);
+                    $col3.append($imgThumbnail);
                 }
             })
             .catch(function(error) {

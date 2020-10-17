@@ -3,7 +3,7 @@ import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
 let $root = "";
 let row = {};
 let actionInstance = null;
-let summary_answer_resp = [];
+let summaryAnswerResp = [];
 let memberIds = [];
 let myUserId = [];
 let contextActionId;
@@ -233,7 +233,7 @@ function createBody() {
     } else {
 
         $('div.section-1').show();
-        $('div.section-1').append(head_section1);
+        $('div.section-1').append(headSection1);
         $('#section1-training-title').html(actionInstance.displayName);
         $('#section1-training-description').html(actionInstance.customProperties[0].value);
 
@@ -256,13 +256,13 @@ function createBody() {
                 if (data.valueType == 'LargeText') {
                     /* Call Text Section 1 */
                     let counter = $('div.card-box').length;
-                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
 
                     if (data.name.indexOf("photo") >= 0) {
-                        $('div.section-1').append(text_section3);
+                        $('div.section-1').append(textSection3);
                         $('div.card-box:last').attr('id', 'contain-' + counter);
                         $('div.card-box#contain-' + counter).find('span.counter').text(counter);
-                        $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
+                        $('div.card-box#contain-' + counter).find('.text-description').text(textTitle);
                         Localizer.getString('photo').then(function(result) {
                             $('div.card-box#contain-' + counter).find('span.training-type').text(result);
                             $('div.card-box#contain-' + counter).find("img.image-sec").attr('id', data.name);
@@ -270,12 +270,12 @@ function createBody() {
                         let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                         let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                         if (attachment != undefined) {
-                            let attachment_img = '';
+                            let attachmentImg = '';
                             $.each(attachment, function(ind, att) {
-                                attachment_img = att;
+                                attachmentImg = att;
                                 return false;
                             });
-                            let req = ActionHelper.getAttachmentInfo(attachment_img);
+                            let req = ActionHelper.getAttachmentInfo(attachmentImg);
                             let filesAmount = Object.keys(attachment).length;
                             ActionHelper.executeApi(req).then(function(response) {
                                     console.info("Attachment - Response photo:  " + JSON.stringify(response));
@@ -288,20 +288,20 @@ function createBody() {
                                 });
                         }
                     } else if (data.name.indexOf("document") >= 0) {
-                        $('div.section-1').append(text_section3);
+                        $('div.section-1').append(textSection3);
                         $('div.card-box:last').attr('id', 'contain-' + counter);
                         $('div.card-box#contain-' + counter).find('span.counter').text(counter);
-                        $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
+                        $('div.card-box#contain-' + counter).find('.text-description').text(textTitle);
                         $('div.card-box#contain-' + counter).find("img.image-sec").attr('id', data.name);
                         Localizer.getString('document').then(function(result) {
                             $('div.card-box#contain-' + counter).find('span.training-type').text(result);
                             $("img#" + data.name).attr('src', 'images/doc.png');
                         });
                     } else if (data.name.indexOf("video") >= 0) {
-                        $('div.section-1').append(text_section3);
+                        $('div.section-1').append(textSection3);
                         $('div.card-box:last').attr('id', 'contain-' + counter);
                         $('div.card-box#contain-' + counter).find('span.counter').text(counter);
-                        $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
+                        $('div.card-box#contain-' + counter).find('.text-description').text(textTitle);
                         Localizer.getString('video').then(function(result) {
                             $('div.card-box#contain-' + counter).find('span.training-type').text(result);
                             $('div.card-box#contain-' + counter).find("img.image-sec").remove();
@@ -323,32 +323,32 @@ function createBody() {
                         }
                     } else {
                         /* text */
-                        $('div.section-1').append(text_section1);
+                        $('div.section-1').append(textSection1);
                         $('div.card-box:last').attr('id', 'contain-' + counter);
                         $('div.card-box#contain-' + counter).find('span.counter').text(counter);
                         Localizer.getString('text').then(function(result) {
                             $('div.card-box#contain-' + counter).find('span.training-type').text(result);
-                            $('div.card-box#contain-' + counter).find('.text-description').text(text_title);
+                            $('div.card-box#contain-' + counter).find('.text-description').text(textTitle);
                         });
                     }
 
                 } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                     /* Call Question Section 1 */
                     let counter = $('div.card-box').length;
-                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
-                    $('div.section-1').append(question_section1);
+                    let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    $('div.section-1').append(questionSection1);
                     $('div.card-box:last').attr('id', 'contain-' + counter);
                     $('div.card-box#contain-' + counter).find('span.counter').text(counter);
                     Localizer.getString('question_with', numbertowords(Object.keys(data.options).length)).then(function(result) {
                         $('div.card-box#contain-' + counter).find('.question-title').text(result);
-                        $('div.card-box#contain-' + counter).find('.question-title-main').text(text_title);
+                        $('div.card-box#contain-' + counter).find('.question-title-main').text(textTitle);
                     });
                 }
             });
         });
 
         $('div.section-1').append(`<div class="container pb-100"></div>`);
-        $('div.section-1').after(footer_section1);
+        $('div.section-1').after(footerSection1);
     }
 
 
@@ -366,12 +366,12 @@ $(document).on('click', '.submit-form', function() {
  * Method to create question view
  * @param actionId string identifier
  */
-function createQuestionView(index_num) {
+function createQuestionView(indexNum) {
     let count = 1;
     actionInstance.dataTables.forEach((dataTable) => {
         dataTable.dataColumns.forEach((question, ind) => {
 
-            if (ind == index_num) {
+            if (ind == indexNum) {
                 let count = ind + 1;
                 let $card = $('<div class="card-box card-blank"></div>');
 
@@ -385,16 +385,16 @@ function createQuestionView(index_num) {
                 <label><strong>${question.displayName}</strong></label>`;
 
                 $card.append($questionHeading);
-                let choice_occurance = 0;
+                let choiceOccurance = 0;
                 /* Check multichoice or single choice options  */
                 if (question.valueType == "SingleOption") {
-                    choice_occurance = 1;
+                    choiceOccurance = 1;
                 } else {
-                    choice_occurance = 2;
+                    choiceOccurance = 2;
                 }
 
                 //add radio button
-                if (choice_occurance > 1) {
+                if (choiceOccurance > 1) {
                     question.options.forEach((option) => {
                         let $radioOption = getCheckboxButton(
                             option.displayName,
@@ -433,8 +433,8 @@ function createQuestionView(index_num) {
  * @param id string identifier
  */
 function getRadioButton(text, name, id) {
-    let $div_data = $(`<div class="form-group radio-section custom-radio-outer" id="${id}" columnId="${name}" ><label class="custom-radio"><input type="radio" name="${name}" id="${id}"> <span class="radio-block"></span> ${text}</label></div>`)
-    return $div_data;
+    let $divData = $(`<div class="form-group radio-section custom-radio-outer" id="${id}" columnId="${name}" ><label class="custom-radio"><input type="radio" name="${name}" id="${id}"> <span class="radio-block"></span> ${text}</label></div>`)
+    return $divData;
 }
 
 /*
@@ -444,8 +444,8 @@ function getRadioButton(text, name, id) {
  * @param id string identifier
  */
 function getCheckboxButton(text, name, id) {
-    let div_data = $(`<div class="form-group radio-section custom-check-outer" id="${id}" columnId="${name}" ><label class="custom-check form-check-label"><input type="checkbox" class="form-check-input" name="${name}" id="${id}"><span class="checkmark"></span> ${text}</label></div>`)
-    return div_data;
+    let divData = $(`<div class="form-group radio-section custom-check-outer" id="${id}" columnId="${name}" ><label class="custom-check form-check-label"><input type="checkbox" class="form-check-input" name="${name}" id="${id}"><span class="checkmark"></span> ${text}</label></div>`)
+    return divData;
 }
 
 /*
@@ -499,8 +499,8 @@ function loadSummaryView() {
     if ($('.section-3').length <= 0) {
         $('div.section-2').after(`<div class="section-3"><div class="container pt-4"><label><strong>Training Summary</strong></label></div><div class="container pb-100"></div></div>`);
 
-        $('div.section-3 .container:first').append(head_section1);
-        $('div.section-3 .container:first').after(footer_section3);
+        $('div.section-3 .container:first').append(headSection1);
+        $('div.section-3 .container:first').after(footerSection3);
         $('div.section-3 #section1-training-title').html(actionInstance.displayName);
         $('div.section-3 #section1-training-description').html(actionInstance.customProperties[0].value);
 
@@ -510,35 +510,36 @@ function loadSummaryView() {
                 if (data.valueType == 'LargeText') {
                     /* Call Text Section 1 */
                     let counter = $('.section-3 div.card-box').length;
-                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
-                    $('div.section-3 .container:first').append(text_section1);
-                    $('div.card-box:last').find('span.counter').text(counter);
-                    $('div.card-box:last').find('.text-description').text(text_title);
+                    let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    $('div.section-3 .container:first').append(textSection1);
+                    $('div.card-box:last').attr('id', 'content-' + counter);
+                    $('div.card-box#content-' + counter).find('span.counter').text(counter);
+                    $('div.card-box#content-' + counter).find('.text-description').text(textTitle);
 
                     if (data.name.indexOf("photo") >= 0) {
                         Localizer.getString('photo').then(function(result) {
-                            $('div.card-box:last').find('.training-type').text(result);
+                            $('div.card-box#content-' + counter).find('.training-type').text(result);
                         });
                     } else if (data.name.indexOf("video") >= 0) {
                         Localizer.getString('video').then(function(result) {
-                            $('div.card-box:last').find('.training-type').text(result);
+                            $('div.card-box#content-' + counter).find('.training-type').text(result);
                         });
                     } else if (data.name.indexOf("document") >= 0) {
                         Localizer.getString('document').then(function(result) {
-                            $('div.card-box:last').find('.training-type').text(result);
+                            $('div.card-box#content-' + counter).find('.training-type').text(result);
                         });
                     }
                 } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
                     /* Call Question Section 1 */
                     let counter = $('.section-3 div.card-box').length;
-                    let text_title = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
-                    $('div.section-3 .container:first').append(question_section1);
-                    $('div.card-box:last').find('span.counter').text(counter);
+                    let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                    $('div.section-3 .container:first').append(questionSection1);
+                    $('div.card-box#content-' + counter).find('span.counter').text(counter);
                     Localizer.getString('question_with', numbertowords(Object.keys(data.options).length)).then(function(result) {
-                        $('div.card-box:last').find('.question-title').text(result);
-                        $('div.card-box:last').find('.question-title-main').text(text_title);
+                        $('div.card-box#content-' + counter).find('.question-title').text(result);
+                        $('div.card-box#content-' + counter).find('.question-title-main').text(textTitle);
                         if (actionInstance.customProperties[3].value == 'Yes') {
-                            $('div.card-box:last').find('.result').html(summary_answer_resp[ind] == true ? `<span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> ${correctKey}</span>` : `<span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> ${incorrectKey}</span>`);
+                            $('div.card-box#content-' + counter).find('.result').html(summaryAnswerResp[ind] == true ? `<span class="float-right result text-success"><i class="fa fa-check" aria-hidden="true"></i> ${correctKey}</span>` : `<span class="float-right result text-danger"><i class="fa fa-remove" aria-hidden="true"></i> ${incorrectKey}</span>`);
                         }
                     });
                 }
@@ -597,7 +598,7 @@ function getDataRow(actionId) {
  * @param actionId string identifier
  */
 function addDataRows(actionId) {
-    let addDataRowRequest = addDataRow(getDataRow(actionId))
+    let addDataRowRequest = ActionHelper.addDataRow(getDataRow(actionId))
     let closeViewRequest = ActionHelper.closeView();
     let batchRequest = ActionHelper.batchRequest([addDataRowRequest, closeViewRequest]);
     ActionHelper.executeBatchApi(batchRequest)
@@ -611,9 +612,9 @@ function addDataRows(actionId) {
 
 /*
  * Method to create training section with pagination
- * @param index_num number identifier
+ * @param indexNum number identifier
  */
-function createTrainingSection(index_num) {
+function createTrainingSection(indexNum) {
     /* Create Text and Question summary */
     actionInstance.dataTables.forEach((dataTable, index) => {
         if (index == 0) {
@@ -621,17 +622,17 @@ function createTrainingSection(index_num) {
             $('#y').text(y);
 
             dataTable.dataColumns.forEach((data, ind) => {
-                if (ind == index_num) {
+                if (ind == indexNum) {
                     let x = ind + 1;
                     $('#x').text(x);
 
                     if (data.valueType == 'LargeText') {
                         /* Call Text Section 1 */
-                        $('div.section-2 > .container:first').append(text_section2);
+                        $('div.section-2 > .container:first').append(textSection2);
                         let counter = $('div.section-2 .container > div.card-box').length;
-                        let text_title = data.displayName;
+                        let textTitle = data.displayName;
                         $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
-                        $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(text_title);
+                        $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(textTitle);
 
                         if (data.name.indexOf("photo") >= 0) {
                             Localizer.getString('photo').then(function(result) {
@@ -641,14 +642,14 @@ function createTrainingSection(index_num) {
                             let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
                             let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                             let $carousel = $('<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel"></div>');
-                            let $ol_section = $('<ol class="carousel-indicators"></ol>');
-                            let $carousel_inner = $('<div class="carousel-inner"></div>');
+                            let $olSection = $('<ol class="carousel-indicators"></ol>');
+                            let $carouselInner = $('<div class="carousel-inner"></div>');
 
                             if (attachment != undefined) {
                                 let filesAmount = Object.keys(attachment).length;
 
-                                $carousel.append($ol_section);
-                                $carousel.append($carousel_inner);
+                                $carousel.append($olSection);
+                                $carousel.append($carouselInner);
 
                                 let count = 0;
                                 $.each(attachment, function(i, att) {
@@ -657,10 +658,10 @@ function createTrainingSection(index_num) {
                                     ActionHelper.executeApi(req)
                                         .then(function(response) {
 
-                                            let $img_div = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
+                                            let $imgDiv = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
                                                             <img class="d-block w-100" src="${response.attachmentInfo.downloadUrl}" alt="${count+1} slide">
                                                         </div>`);
-                                            $carousel_inner.append($img_div);
+                                            $carouselInner.append($imgDiv);
 
                                             if (count == (filesAmount - 1)) {
                                                 $carousel.append(`<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
@@ -703,9 +704,9 @@ function createTrainingSection(index_num) {
                                 });
 
                         } else if (data.name.indexOf("video") >= 0) {
-                            $('div.section-1').append(text_section3);
+                            $('div.section-1').append(textSection3);
                             $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
-                            $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(text_title);
+                            $('div.section-2 > .container:first > div.card-box:last').find('.text-description').text(textTitle);
                             Localizer.getString('video').then(function(result) {
                                 $('div.section-2 > .container:first > div.card-box:last').find('span.section-type-title').text(result);
                                 $('div.section-2 > .container:first > div.card-box:last').find("img.image-sec").remove();
@@ -726,14 +727,14 @@ function createTrainingSection(index_num) {
 
                         } else {
                             /* text */
-                            $('div.section-1').append(text_section1);
+                            $('div.section-1').append(textSection1);
                             $('div.card-box:last').find('span.counter').text(counter);
-                            $('div.card-box:last').find('.text-description').text(text_title);
+                            $('div.card-box:last').find('.text-description').text(textTitle);
 
                         }
 
                     } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
-                        createQuestionView(index_num);
+                        createQuestionView(indexNum);
                         let counter = $('div.section-2 .container > div.card-box').length;
                         $('div.section-2 > .container:first > div.card-box:last').find('span.counter').text(counter);
                     }
@@ -768,7 +769,7 @@ $(document).on('click', '#start', function() {
     $('div.section-1').after(`<div class="section-2"><div class="container pt-4"></div></div>`);
 
     /* Show first section */
-    $('div.section-2').after(footer_section2);
+    $('div.section-2').after(footerSection2);
     $('div.section-2').append(`<div class="container pb-100"></div>`);
 
     createTrainingSection(pagination);
@@ -783,22 +784,22 @@ $(document).on('click', '#check', function() {
     let data = [];
     let answerKeys = isJson(actionInstance.customProperties[5].value) ? JSON.parse(actionInstance.customProperties[5].value) : actionInstance.customProperties[5].value;
 
-    let correct_ans_arr = [];
-    let selected_answer = [];
-    let check_counter = 0;
-    let correct_answer = false;
-    let attr_name = '';
+    let correctAnsArr = [];
+    let selectedAnswer = [];
+    let checkCounter = 0;
+    let correctAnswer = false;
+    let attrName = '';
 
-    let is_checked = false;
+    let isChecked = false;
 
     $('div.card-box:visible').find("input[type='checkbox']:checked").each(function(ind, ele) {
         if ($(ele).is(':checked')) {
-            check_counter++;
-            selected_answer.push($.trim($(ele).attr('id')));
-            attr_name = $(ele).attr('name');
+            checkCounter++;
+            selectedAnswer.push($.trim($(ele).attr('id')));
+            attrName = $(ele).attr('name');
             data.push($(this).attr("id"));
 
-            is_checked = true;
+            isChecked = true;
         }
     });
 
@@ -810,18 +811,18 @@ $(document).on('click', '#check', function() {
 
     $('div.card-box:visible').find("input[type='radio']:checked").each(function(ind, ele) {
         if ($(ele).is(':checked')) {
-            check_counter++;
-            selected_answer.push($.trim($(ele).attr('id')));
-            attr_name = $(ele).attr('name');
+            checkCounter++;
+            selectedAnswer.push($.trim($(ele).attr('id')));
+            attrName = $(ele).attr('name');
 
             if (!row[(pagination + 1)]) row[(pagination + 1)] = [];
             row[(pagination + 1)] = $(this).attr("id");
 
-            is_checked = true;
+            isChecked = true;
         }
     });
 
-    if (check_counter <= 0) {
+    if (checkCounter <= 0) {
         $('#next').prop('disabled', true);
     } else {
         $('#next').prop('disabled', false);
@@ -831,38 +832,38 @@ $(document).on('click', '#check', function() {
         $('.error-msg').remove();
 
     /* Validate if show answer is Yes */
-    if (is_checked == true) {
-        is_checked = false;
-        let ans_res = [];
-        $.each(selected_answer, function(i, selected_subarray) {
-            if ($.inArray(selected_subarray, answerKeys[(attr_name - 1)]) !== -1) {
-                ans_res.push("true");
+    if (isChecked == true) {
+        isChecked = false;
+        let ansRes = [];
+        $.each(selectedAnswer, function(i, selected_subarray) {
+            if ($.inArray(selected_subarray, answerKeys[(attrName - 1)]) !== -1) {
+                ansRes.push("true");
             } else {
-                ans_res.push("false");
+                ansRes.push("false");
             }
         });
 
-        if ((answerKeys[(attr_name - 1)].length == ans_res.length) && ($.inArray("false", ans_res) == -1)) {
-            correct_answer = true
+        if ((answerKeys[(attrName - 1)].length == ansRes.length) && ($.inArray("false", ansRes) == -1)) {
+            correctAnswer = true
         } else {
-            correct_answer = false;
+            correctAnswer = false;
         }
 
         $('div.section-2').find('div.card-box').each(function(inde, ele) {
             if ($(ele).is(':visible')) {
-                summary_answer_resp[inde] = correct_answer;
+                summaryAnswerResp[inde] = correctAnswer;
                 return false;
             }
         });
 
-        $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
-            correct_ans_arr.push($.trim($('#' + subarr).text()));
+        $.each(answerKeys[(attrName - 1)], function(ii, subarr) {
+            correctAnsArr.push($.trim($('#' + subarr).text()));
         });
 
-        let correct_value = correct_ans_arr.join();
+        let correctValue = correctAnsArr.join();
 
         if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
-            if (correct_answer == true) {
+            if (correctAnswer == true) {
                 $('div.card-box:last').find('.result').remove();
                 $('div.card-box:last').append(`
                         <div class="result">
@@ -881,7 +882,7 @@ $(document).on('click', '#check', function() {
                                 <div class="clearfix"></div>
                                 <hr>
                             </div>
-                            <label><strong>${correctAnswerIsKey}: </strong> <span class="question-title-main">${correct_value}</span></label>
+                            <label><strong>${correctAnswerIsKey}: </strong> <span class="question-title-main">${correctValue}</span></label>
                         </div>`);
 
                 $('#check').text('Next').attr('id', 'next');
@@ -904,7 +905,7 @@ $(document).on('click', '#check', function() {
                                 <div class="clearfix"></div>
                                 <hr>
                             </div>
-                            <label><strong>${correctAnswerIsKey}: </strong> <span class="question-title-main">${correct_value}</span></label>
+                            <label><strong>${correctAnswerIsKey}: </strong> <span class="question-title-main">${correctValue}</span></label>
                         </div>`);
 
                 $('#check').text('Next').attr('id', 'next');
@@ -942,20 +943,20 @@ $(document).on('click', '#next', function() {
     if ($('div.card-box:visible').find('.training-type').text() == 'Question') {
         /* Question Validations */
         let answerKeys = isJson(actionInstance.customProperties[5].value) ? JSON.parse(actionInstance.customProperties[5].value) : actionInstance.customProperties[5].value;
-        let correct_ans_arr = [];
-        let selected_answer = [];
-        let check_counter = 0;
-        let correct_answer = false;
-        let attr_name = '';
-        let is_checked = false;
+        let correctAnsArr = [];
+        let selectedAnswer = [];
+        let checkCounter = 0;
+        let correctAnswer = false;
+        let attrName = '';
+        let isChecked = false;
 
         $('div.card-box:visible').find("input[type='checkbox']:checked").each(function(ind, ele) {
             if ($(ele).is(':checked')) {
-                check_counter++;
-                selected_answer.push($.trim($(ele).attr('id')));
-                attr_name = $(ele).attr('name');
+                checkCounter++;
+                selectedAnswer.push($.trim($(ele).attr('id')));
+                attrName = $(ele).attr('name');
                 data.push($(this).attr("id"))
-                is_checked = true;
+                isChecked = true;
             }
         });
         if (!row[(pagination + 1)]) row[(pagination + 1)] = [];
@@ -963,56 +964,56 @@ $(document).on('click', '#next', function() {
 
         $('div.card-box:visible').find("input[type='radio']:checked").each(function(ind, ele) {
             if ($(ele).is(':checked')) {
-                check_counter++;
-                selected_answer.push($.trim($(ele).attr('id')));
-                attr_name = $(ele).attr('name');
+                checkCounter++;
+                selectedAnswer.push($.trim($(ele).attr('id')));
+                attrName = $(ele).attr('name');
 
                 if (!row[(pagination + 1)]) row[(pagination + 1)] = [];
                 row[(pagination + 1)] = $(this).attr("id");
 
-                is_checked = true;
+                isChecked = true;
             }
         });
 
-        if (check_counter <= 0) {
+        if (checkCounter <= 0) {
             $('#next').prop('disabled', true);
         } else {
             $('#next').prop('disabled', false);
         }
 
         /* Validate if show answer is Yes */
-        if (is_checked == true) {
-            is_checked = false;
-            let ans_res = [];
-            $.each(selected_answer, function(i, selected_subarray) {
-                if ($.inArray(selected_subarray, answerKeys[(attr_name - 1)]) !== -1) {
-                    ans_res.push("true");
+        if (isChecked == true) {
+            isChecked = false;
+            let ansRes = [];
+            $.each(selectedAnswer, function(i, selected_subarray) {
+                if ($.inArray(selected_subarray, answerKeys[(attrName - 1)]) !== -1) {
+                    ansRes.push("true");
                 } else {
-                    ans_res.push("false");
+                    ansRes.push("false");
                 }
             });
 
-            if ((answerKeys[(attr_name - 1)].length == ans_res.length) && ($.inArray("false", ans_res) == -1)) {
-                correct_answer = true
+            if ((answerKeys[(attrName - 1)].length == ansRes.length) && ($.inArray("false", ansRes) == -1)) {
+                correctAnswer = true
             } else {
-                correct_answer = false;
+                correctAnswer = false;
             }
 
             $('div.section-2').find('div.card-box').each(function(inde, ele) {
                 if ($(ele).is(':visible')) {
-                    summary_answer_resp[inde] = correct_answer;
+                    summaryAnswerResp[inde] = correctAnswer;
                     return false;
                 }
             });
 
-            $.each(answerKeys[(attr_name - 1)], function(ii, subarr) {
-                correct_ans_arr.push($.trim($('#' + subarr).text()));
+            $.each(answerKeys[(attrName - 1)], function(ii, subarr) {
+                correctAnsArr.push($.trim($('#' + subarr).text()));
             });
 
-            let correct_value = correct_ans_arr.join();
+            let correctValue = correctAnsArr.join();
 
             if (actionInstance.customProperties[3].value == 'Yes' && $('div.card-box:visible').find("input").parent('label').attr('disabled') !== "disabled") {
-                if (correct_answer == true) {
+                if (correctAnswer == true) {
                     /* If Correct Answer */
                     pagination++;
 
@@ -1094,7 +1095,7 @@ $(document).on('click', '#next', function() {
 
                     $('div.section-2').find('div.card-box').each(function(inde, ele) {
                         if ($(ele).is(':visible')) {
-                            summary_answer_resp[inde] = true;
+                            summaryAnswerResp[inde] = true;
                             return false;
                         }
                     });
@@ -1187,7 +1188,7 @@ $(document).on('click', '#back', function() {
 /**
  * Variable contains head section  
  */
-let head_section1 = `<div class="card-box card-bg card-border">
+let headSection1 = `<div class="card-box card-bg card-border">
                             <h4 id="section1-training-title">My Training title</h4>
                             <p class="text-justify" id="section1-training-description">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type
                                 specimen book.</p>
@@ -1196,7 +1197,7 @@ let head_section1 = `<div class="card-box card-bg card-border">
 /**
  * Variable contains text section
  */
-let text_section1 = `<div class="card-box card-bg card-border">
+let textSection1 = `<div class="card-box card-bg card-border">
                         <div class="form-group">
                             <div class="hover-btn ">
                                 <label class="mb0"><strong><span class="counter">1</span>. <span class="training-type">Text</span></strong> </label><span class="float-right result"></span>
@@ -1211,7 +1212,7 @@ let text_section1 = `<div class="card-box card-bg card-border">
 /**
  * Variable contains text section for media file
  */
-let text_section3 = `<div class="card-box card-bg card-border">
+let textSection3 = `<div class="card-box card-bg card-border">
                     <div class="form-group">
                         <div class="row">
                             <div class="col-9">
@@ -1235,7 +1236,7 @@ let text_section3 = `<div class="card-box card-bg card-border">
 /**
  * Variable contains question section
  */
-let question_section1 = `<div class="card-box card-bg card-border">
+let questionSection1 = `<div class="card-box card-bg card-border">
                             <div class="form-group">
                                 <div class="hover-btn ">
                                     <label><strong><span class="counter">2</span>. <span class="question-title">Question with two option</span></strong> </label><span class="float-right result"></span>
@@ -1255,7 +1256,7 @@ let question_section1 = `<div class="card-box card-bg card-border">
 /**
  * Variable contains footer section
  */
-let footer_section1 = `<div class="footer section-1-footer">
+let footerSection1 = `<div class="footer section-1-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
                                     <div class="row">
@@ -1270,7 +1271,7 @@ let footer_section1 = `<div class="footer section-1-footer">
 /**
  * Variable contains text section
  */
-let text_section2 = `<div class="card-box card-bg card-border">
+let textSection2 = `<div class="card-box card-bg card-border">
                         <div class="form-group">
                             <div class="hover-btn ">
                                 <label><strong><span class="counter">1</span>. <span class="section-type-title">Text</span></strong> </label>
@@ -1291,7 +1292,7 @@ let text_section2 = `<div class="card-box card-bg card-border">
 /**
  * Variable contains footer section
  */
-let footer_section2 = `<div class="footer section-2-footer">
+let footerSection2 = `<div class="footer section-2-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
                                     <div class="row">
@@ -1306,7 +1307,7 @@ let footer_section2 = `<div class="footer section-2-footer">
 /**
  * Variable contains footer section
  */
-let footer_section3 = `<div class="footer section-3-footer">
+let footerSection3 = `<div class="footer section-3-footer">
                             <div class="footer-padd bt">
                                 <div class="container ">
                                     <div class="row">
