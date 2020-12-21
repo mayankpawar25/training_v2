@@ -1,216 +1,257 @@
-import { Localizer, ActionHelper } from '../common/ActionSdkHelper';
+import { Localizer, ActionHelper } from "../common/ActionSdkHelper";
+import { UxUtils } from "../common/utils/UxUtils";
+import { Utils } from "../common/utils/Utils";
+import { Constants } from "../common/utils/Constants";
+import { KeyboardUtils } from "../common/utils/KeyboardUtils";
 
 let questions = new Array();
 let validate = true;
-let settingText = '';
-let opt = '';
+let settingText = "";
+let opt = "";
 let request;
 let lastSession = null;
 
-let addMoreOptionsKey = '';
-let choicesKey = '';
-let checkMeKey = '';
-let nextKey = '';
-let backKey = '';
-let requiredKey = '';
-let dueByKey = '';
-let resultVisibleToKey = '';
-let resultEveryoneKey = '';
-let resultMeKey = '';
-let correctAnswerKey = '';
-let everyoneKey = '';
-let onlyMeKey = '';
-let showCorrectAnswerKey = '';
-let answerCannotChangeKey = '';
+let addMoreOptionsKey = "";
+let choicesKey = "";
+let checkMeKey = "";
+let nextKey = "";
+let backKey = "";
+let requiredKey = "";
+let dueByKey = "";
+let questionLeftBlankKey = "";
+let submitKey = "";
+let resultVisibleToKey = "";
+let resultEveryoneKey = "";
+let resultMeKey = "";
+let correctAnswerKey = "";
+let everyoneKey = "";
+let onlyMeKey = "";
+let showCorrectAnswerKey = "";
+let answerCannotChangeKey = "";
 let questionCount = 0;
-let questionTitleKey = '';
-let optionKey = '';
+let questionTitleKey = "";
+let questionKey = "";
+let optionKey = "";
+let clearKey = "";
+let atleastOneContentKey = "";
+let allowMultipleAttemptKey = "";
+let uploadCoverImageKey = "";
+let coverImageKey = "";
+let trainingTitleKey = "";
+let assigneeTakeMultipleTraining = "";
+let trainingDescriptionOptionalKey = "";
+let addContentKey = "";
+let ok = "";
+let close = "";
+let saveAttachmentData = new Array(); // Add Training Banner Image
+let uploadImageLabelKey = "";
+let addTitlePlaceholderKey = "";
+let addDescriptionPlaceholderKey = "";
+let uploadFileLabelKey = "";
+let uploadVideoLabelKey = "";
+let contentLimitExceedKey = "";
 
 /***********************************  Manage Questions *********************************/
+
 /**
- * Event to add question when click on add question button
+ * @event to load more load less text description
+ * onClick Load more text
+ *
+ */
+$(document).on("click", ".moreless-button", function() {
+    $(".more-text").slideToggle();
+    if ($(this).text() == "Load more...") {
+        $(this).text("Load less");
+        $(this).parent().find(".show-text").css({ "-webkit-line-clamp": "" });
+    } else {
+        $(this).text("Load more...");
+        $(this).parent().find(".show-text").css({ "-webkit-line-clamp": Constants.webkitLineClampCssCount() });
+    }
+});
+
+/**
+ * @event to increase textarea height
+ */
+$(document).on("input", "#training-text-description", function() {
+    this.style.height = "auto";
+    this.style.height = (this.scrollHeight) + "px";
+});
+
+/**
+ * @event Focusin to show trash on focusin at input
+ */
+$(document).on("focusin", `.option-div, .input-group-append, .input-group, .input-group input[type="text"], .input-tpt, .input-tpt .remove-option`, function() {
+    $(this).parents("div.row").find(".remove-option").show();
+});
+
+/**
+ * @event Focusout to hide trash on focusout at input
+ */
+$(document).on("focusout", ".option-div, .input-tpt, .input-tpt .remove-option, .check-me-title, .input-group input[type='text']", function() {
+    $(this).parents("div.row").find(".remove-option").hide();
+});
+
+/**
+ * @event to switch to Question Section and hide Summary Section
  */
 $(document).on("click", "#add-questions", function() {
-    $('.error-msg').remove();
-    $('.section-2').hide();
-    $('.section-2-footer').hide();
+    getStringKeys();
+    let textNumber = parseInt($("div.training-card-section.section-div").length);
+    if (textNumber == 30) {
+        Localizer.getString("contentLimitExceed").then(function(result) {
+            $("form.sec1 div.section-2 div#root div.training-card-section:last").after(`<span class="text-danger content-limit-exceed">${result}</span>`);
+        });
+    }
+    $(".error-msg").remove();
+    $(".section-2").hide();
+    $(".section-2-footer").hide();
 
-    if ($('form.sec1 > div.question-section').length > 0) {
-        $('form.sec1 > div.question-section').remove();
-        $('form.sec1 > .question_button').remove();
-        $('form.sec1 > div.question-footer').remove();
+    if ($("form.sec1 > div.question-section").length > 0) {
+        $("form.sec1 > div.question-section").remove();
+        $("form.sec1 > .question_button").remove();
+        $("form.sec1 > div.question-footer").remove();
     }
 
-    $('form.sec1').append(questionsSection);
-    $('form.sec1').append(addQuestionButton);
-    $('form.sec1').append(questionFooter);
-
-    if ($('form.sec1 > div.question-section').length == 1) {
-        $('form.sec1 > div.question-section').find('.container').addClass('pt-4');
-    }
+    $("form.sec1").append(questionsSection);
+    $("form.sec1").append(addQuestionButton);
+    $("form.sec1").append(questionFooter);
 
     let questionCounter = 0;
-    $("div.question-container:visible").each(function(index, elem) {
+    $("div.question-section-div:visible").each(function(index, elem) {
         questionCounter = index + 1;
         $(elem)
             .find("span.question-number")
-            .text(questionCounter + ".");
-        $(elem).attr({ id: "question" + questionCounter });
+            .text("Question # " + questionCounter);
+        $(elem).attr({
+            id: "question" + questionCounter
+        });
     });
 
 });
 
 /**
- * Event to add question to same section when new question added
+ * @event to add question to same section when new question added
  */
 $(document).on("click", "#add-questions-same-section", function() {
     let questionCounter;
-    $('form.sec1').append(questionsSection);
-    $('form > .question_button').remove();
+    $("form.sec1").append(questionsSection);
+    $("form > .question_button").remove();
 
     $("div.question-container:visible").each(function(index, elem) {
         questionCounter = index + 1;
         $(elem)
             .find("span.question-number")
-            .text(questionCounter + ".");
-        $(elem).attr({ id: "question" + questionCounter });
+            .html(UxUtils.getQuestionNumber(questionKey, questionCounter));
+        $(elem).attr({
+            id: "question" + questionCounter
+        });
     });
     questionCount++;
+    $("form.sec1").append(addQuestionButton);
 
-    $('form.sec1').append(addQuestionButton);
+    /* Focus to last question input */
+    $("#question" + questionCounter + " #question-title").focus();
+    return false;
 });
 
 /**
- * Event on back button on question area
+ * @event on back button on question area
  */
 $(document).on("click", "#back-question", function() {
-    $(".question-section").hide();
-    $(".add_question_button").hide();
-    $(".question-footer").hide();
-    $(".question_button").hide();
-
-    $(".section-2").show();
-    $(".section-2-footer").show();
+    confirmBox();
 });
 
 /**
- * Event to remove question
+ * @event to remove sections
  */
-$(document).on("click", ".remove-question", function() {
+$(document).on("click", ".remove-image-section", function() {
     let element = $(this);
-    let dataId = $(this).parents('.question-container').attr('id');
-    $('div.question-section').find('div.error-msg').remove();
+    let dataId = $(this).parents(".question-container").attr("id");
+    $("div.question-section").find("div.error-msg").remove();
     if ($("div.question-container:visible").length > 1) {
-        let confirmBox = `
-            <div class="confirm-box">
-                <hr class="hr-danger">
-                <ul class="d-flex table-remove mb-0">
-                    <li><span class="text-danger">Are you sure you want to delete?</span></li>
-                    <li> 
-                        <button class="btn btn-primary btn-sm pull-right" data-id="${dataId}" id="delete-question">Ok</button> 
-                        <button class="btn btn-primary-outline btn-sm pull-right mr-1" id="cancel-confirm">Close</button>
-                    </li>
-                </ul>
-            </div>
-        `;
-
-        $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
-        $(this).parents("div.question-container").find('div.d-flex').after(confirmBox);
+        let confirmBox = UxUtils.getDeleteQuestionConfirmBox(dataId, ok, close);
+        // $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
+        $(this).parents("div.question-container").find("div.d-flex").after(confirmBox);
     } else {
-        Localizer.getString('atleast_one_question').then(function(result) {
-            $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
+        Localizer.getString("atleastOneQuestion").then(function(result) {
+            $(this).parents("div.card-box:visible").prepend(getAtLeastOneQuestionError(result));
         });
     }
 });
 
 /**
- * Event to cancel the confirm box for delete question
+ * @Event to cancel the confirm box for delete question
  */
-$(document).on('click', '#cancel-confirm', function() {
+$(document).on("click", "#cancel-confirm", function() {
     $(this).parents("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
-    $(this).parents('.confirm-box').remove();
-})
+    $(this).parents(".confirm-box").remove();
+});
 
 /**
- * Event to delete question when click on confirm area ok button
+ * @event Click for cancel button on confirm box of question deletion
+ */
+$(document).on("click", ".cancel-question-delete", function() {
+    $(this).parents(".question-container").find(".add-options").show();
+    $(this).parents("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
+    $(this).parents(".confirm-box").remove();
+});
+
+/**
+ * @Event to delete question when click on confirm area ok button
  */
 $(document).on("click", "#delete-question", function() {
-    let element = $(this).attr('data-id');
-    $('#' + element).parents('div.question-section').remove();
+    let element = $(this).attr("data-id");
+    $("#" + element).parents("div.question-section").remove();
     let questionCounter;
-    $('div.question-section').find('div.error-msg').remove();
+    $("div.question-section").find("div.error-msg").remove();
 
     $("div.question-container:visible").each(function(index, elem) {
         questionCounter = index + 1;
-        $(elem).find("span.question-number").text(questionCounter);
-        $(elem).attr({ id: "question" + questionCounter });
+        $(elem).find("span.question-number").text(questionKey + "&nbsp;#&nbsp;" + questionCounter);
+        $(elem).attr({
+            id: "question" + questionCounter
+        });
     });
 });
 
 /**
- * Event to add option when click on add more option button
+ * @Event to remove option
  */
-$(document).on("click", ".add-options", function() {
-    $(this).parents('div.card-box:visible').find('.error-msg').remove();
-    if ($(this).parents("div.container").find("div.option-div input[type='text']").length >= 10) {
-        Localizer.getString('maximum_ten_options').then(function(result) {
-            $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
-        })
-        return false;
-    } else {
-        $(this).parents(".container").find("div.option-div:last").after(opt.clone());
-        let selector = $(this).parents("div.container");
-        $(selector)
-            .find('div.option-div div.input-group input[type="text"]')
-            .each(function(index, elem) {
-                let counter = index + 1;
-                $(elem).attr({
-                    placeholder: "Option " + counter,
-                });
-                $(elem).attr({ id: "option" + counter });
-                $(elem)
-                    .parents(".option-div")
-                    .find("input.form-check-input")
-                    .attr({ id: "check" + counter });
-            });
-    }
-});
 
-/**
- * Event to remove option
- */
 $(document).on("click", ".remove-option", function(eve) {
-    $('div.question-section').find('div.error-msg').remove();
+    $("div.question-section").find("div.error-msg").remove();
     if ($(this).parents("div.question-container").find("div.option-div").length > 2) {
         let selector = $(this).closest("div.container");
         $(this).parents("div.option-div").remove();
         $(selector)
-            .find('div.option-div div.input-group input[type="text"]')
+            .find("div.option-div div.input-group input[type='text']")
             .each(function(index, elem) {
                 let counter = index + 1;
                 $(elem).attr({
-                    placeholder: "Option " + counter,
+                    placeholder: "Enter your choice ",
                 });
-                $(elem).attr({ id: "option" + counter });
+                $(elem).attr({
+                    id: "option" + counter
+                });
                 $(elem)
                     .parents(".option-div")
                     .find("input.form-check-input")
-                    .attr({ id: "check" + counter });
+                    .attr({
+                        id: "check" + counter
+                    });
             });
 
     } else {
-        Localizer.getString('two_option_error').then(function(result) {
-            $(this).parents('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${result}</div>`);
+        Localizer.getString("two_option_error").then(function(result) {
+            $("div.card-box:visible").append(`<div class="mt--8 mb--8 text-danger error-msg">${result}</div>`);
         });
     }
 });
 
 /**
- * Event to submit question on click done button
+ * @Event to submit question on click done button
  */
 $(document).on("click", "#question-done", function() {
-    $('#question-done').prop('disabled', true);
-
     /* Validate */
     let errorText = "";
     let questionNumber = 0;
@@ -218,167 +259,189 @@ $(document).on("click", "#question-done", function() {
     validate = true;
     $("input[type='text']").removeClass("danger");
     $("label.label-alert").remove();
-    $('div.error-msg').remove();
+    $("div.error-msg").remove();
 
     $("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
+
+    $(".question-container:visible").each(function(qind, quest) {
+
+        let isChecked = false;
+        $(quest).find("#options").find(`input[type="checkbox"]`).each(function(optind, opt) {
+            if ($(opt).prop("checked") == true) {
+                isChecked = true;
+            }
+        });
+
+        if (isChecked != true) {
+            // let questionId = $(quest).attr("id");
+            let questionId = qind;
+            $(quest)
+                .find("div.d-flex-ques")
+                .after(`<div class="clearfix"></div>
+                    <label class="label-alert d-block option-required-err text-left pull-left mt--8 mb--16"><font>Please select correct choice for the question</font></label>
+                    <div class="clearfix"></div>`);
+            $(quest)
+                .find("div.card-box")
+                .removeClass("card-box")
+                .addClass("card-box-alert");
+            errorText += "Option check required";
+
+            $([document.documentElement, document.body]).animate({
+                scrollTop: $(".option-required-err:last").offset().top - 200
+            }, 1000);
+        }
+
+    });
 
     $("form")
         .find("input[type='text']")
         .each(function() {
             let element = $(this);
             if (element.val() == "") {
-                validate = false;
+                if (element.attr("id") == "quiz-title") {
+                    errorText += "<p>Quiz title is required.</p>";
+                    $("#quiz-title").addClass("danger");
+                    $("#quiz-title").before(
+                        `<label class="label-alert d-block mb--4"><font class="required-key">${requiredKey}</font></label>`
+                    );
 
-                $(this)
-                    .parents("div.card-box")
-                    .removeClass("card-box")
-                    .addClass("card-box-alert");
-
-                if (element.attr("id").startsWith("question-title")) {
-                    $(this).addClass("danger");
-                    $(this).parents("div.input-group").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
-
+                    if ($(this).find("div.card-box").length > 0) {
+                        $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
+                    }
+                } else if (element.attr("id").startsWith("question-title")) {
+                    if ($(element).parents("div.form-group-question").find("img.question-preview-image").attr("src") != "") {
+                        // Do nothing
+                    } else {
+                        if ($(this).find("div.card-box").length > 0) {
+                            $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
+                        }
+                        $(element).addClass("danger");
+                        Localizer.getString("questionLeftBlank").then(function(result) {
+                            questionLeftBlankKey = result;
+                            $(".question-blank-key").text(result);
+                            $(element).parents("div.form-group-question").find(".question-number").parent("div")
+                                .after(
+                                    `<label class="label-alert d-block mb--4"><font class="question-blank-key">${result}</font></label>`
+                                );
+                        });
+                        errorText += "<p>Question cannot not left blank.</p>";
+                        $(element).addClass("danger");
+                    }
                 } else if (element.attr("id").startsWith("option")) {
-                    $(this).addClass("danger");
-                    $(this).parents("div.input-group").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
+                    if ($(element).parents("div.radio-outer").find("img.option-preview-image").attr("src") != "") {
+                        // Do nothing
+                    } else {
+                        if ($(this).find("div.card-box").length > 0) {
+                            $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
+                        }
+                        $(this).addClass("danger");
+                        $(this)
+                            .parents("div.col-12").parents("div.option-div")
+                            .prepend(
+                                `<label class="label-alert d-block mb--4"><font class="required-key">${requiredKey}</font></label>`
+                            );
 
-                    errorText += "<p>Blank option not allowed for " + element.attr("placeholder") + ".</p>";
+                        errorText +=
+                            "<p>Blank option not allowed for " +
+                            element.attr("placeholder") +
+                            ".</p>";
+                    }
                 }
             }
         });
 
-    let questionCount = $("form div.question-section").find("div.container.question-container").length;
-    questions = new Array();
+    if ($.trim(errorText).length <= 0) {
+        let questionCount = $("form").find("div.container.question-container").length;
+        $("div.question-container").each(function(i, e) {
+            let j = $("div.question-section-div").length + 1;
+            let textNumber = parseInt($("div.question-section-div").length) + 1;
+            /*  Get selected Answer */
+            let correct = [];
+            let optionChecked = "";
+            let optionText = "";
+            let optionAttachments = "";
 
-    for (let i = 1; i <= questionCount; i++) {
-        let isSelected = 0;
+            /* Looping for options */
+            $(e)
+                .find("div.option-div")
+                .each(function(index, elem) {
+                    let count = index + 1;
+                    let optionsInputs = `<input type="hidden" class="all_options" id="option${count}" value="${$(elem).find("#option" + count).val()}">`;
+                    let ifCorrectCheck = "";
+                    let styleOptionImage = "d-none";
+                    let imagePreview = ($(elem).find("div.option-preview:visible").html()) ? $(elem).find("div.option-preview:visible").html() : "";
+                    let optionValue = $(elem).find("#option" + count).val();
+                    let questionOptionId = `question${j}option${count}`;
 
-        $(".question-section > #question" + i)
-            .find("div.option-div")
-            .each(function(index, elem) {
-                let count = index + 1;
-                if (
-                    $(".question-section > #question" + i)
-                    .find("#check" + count)
-                    .is(":checked")
-                ) {
-                    // if it is checked
-                    isSelected++;
-                }
-            });
-        if (isSelected == 0) {
-            validate = false;
+                    if ($(elem).find("div.option-preview:visible").html()) { styleOptionImage = ""; }
 
-            Localizer.getString('correct_choice').then(function(result) {
-                $("#question" + i).find("div.input-group:first").before(`<label class="label-alert d-block"><small>${result}</small></label>`);
-            });
+                    if (
+                        $(e)
+                        .find("#check" + count)
+                        .is(":checked")
+                    ) {
+                        ifCorrectCheck = `&nbsp;<i class="success">${Constants.getDefaultTickIcon()}</i>`;
+                        optionChecked += `<input type="checkbox" class="d-none quest-answer" checked>`;
+                        // if it is checked
+                        correct.push(questionOptionId);
+                    }
+                    optionText += UxUtils.getOptionValue(optionsInputs, imagePreview, optionValue, questionOptionId, ifCorrectCheck, styleOptionImage, count);
 
-            $("#submit").prop('disabled', false);
-
-
-            $("#question" + i)
-                .find("#question-title")
-                .addClass("danger");
-
-            $("#question" + i)
-                .find("div.card-box")
-                .removeClass("card-box")
-                .addClass("card-box-alert");
-            error = true;
-        }
-    }
-
-    if (validate == true && error == false) {
-        $('.question-section').hide();
-        $('.question-footer').hide();
-        $('.question_button').hide();
-
-        $('.section-2').show();
-        $('.section-2-footer').show();
+                    let optionFile = ($(elem).find("textarea#option-attachment-set").val()) ? $(elem).find("textarea#option-attachment-set").val() : "";
+                    if (optionFile) {
+                        optionAttachments += `<textarea class="d-none option-image${count}">${optionFile}</textarea>`;
+                    }
+                });
+            let questionInput = `<input type="hidden" class="question${j}" value="${$(e).find("#question-title").val()}">`;
+            let questionInputs = $(e).find("div.card-box").clone();
+            let questionText = ($(e).find("#question-title").val() != "") ? $(e).find("#question-title").val() : "";
+            let questionImage = $(e).find("img.question-preview-image").parent().html();
+            let hideQuestionImage = "d-none";
+            if ($(e).find("img.question-preview-image").attr("src") != "") {
+                $(e).find("img.question-preview-image").addClass("image-responsive question-template-image smallfit");
+                hideQuestionImage = "";
+            }
+            let questionImagearray = ($(e).find("textarea#question-attachment-set").val()) ? $(e).find("textarea#question-attachment-set").val() : "";
+            $("div#root div.training-card-section:last").after(UxUtils.getQuestionSection(j, optionChecked, questionImage, hideQuestionImage, questionText, optionText, questionInput, questionImagearray, optionAttachments));
+            $("#quest-text-" + textNumber).html(questionInputs);
+        });
 
         /* Create Question Section Here */
         for (let j = 1; j <= questionCount; j++) {
 
-            let textNumber = parseInt($("div.training-card-section").length);
-
-
-
-            /*  Get selected Answer */
-            let correct = [];
-
-            /* Looping for options */
-            $("#question" + j)
-                .find("div.option-div")
-                .each(function(index, elem) {
-                    let count = index + 1;
-
-                    if (
-                        $("#question" + j)
-                        .find("#check" + count)
-                        .is(":checked")
-                    ) {
-                        let optData = $(elem).find('input[id^="option"]').val();;
-
-                        // if it is checked
-                        correct.push(optData);
-                    }
+            $("form.sec1 div.section-2:visible div.container div#root div.training-card-section").each(function(index, obj) {
+                $(this).attr({
+                    "data-id": "text-section-" + index
                 });
-
-
-
-
-            let questionInputs = $("#question" + j).find('div.card-box').clone();
-            let questionText = $("#question" + j).find('#question-title').val();
-            let correctAnswer = correct.join(', ');
-
-            let optionsCounter = numbertowords($('#question' + j).find('input[id^="option"]').length);
-
-            $("form.sec1 div.section-2:visible div#root .card-box.training-card-section:last").after(`<div class="card-box card-bg card-border training-card-section section-div question-section-div">
-                <div class="form-group">
-                    <div class="hover-btn h-32">
-                        <label><strong><span class="counter">${textNumber}</span>. Question with <span class="option-counter"> ${optionsCounter} </span> option </strong> </label>
-                        <button type="button" class="close remove-text" data-dismiss="alert">
-                            <span aria-hidden="true">
-                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                    <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                    <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                    <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                    <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                </svg>
-                            </span>
-                            <span class="sr-only">Close</span>
-                        </button>
-                    </div>
-                    <div class="clearfix"></div>
-                    <hr>
-                </div>
-                <label class="text-justify"><strong class="question">${questionText}</strong></label>
-                <p class="mb0 text-justify">Correct Answer: <span class="correct-answer">${correctAnswer}</span></p>
-                <div class="question-inputs" id="quest-text-${textNumber}" style="display:none">
-                
-                </div>
-            </div>`);
-            $('#quest-text-' + textNumber).html(questionInputs);
-
-            $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
-                $(this).attr({ 'data-id': 'text-section-' + index });
-                $(this).attr({ 'id': 'section-' + index });
-                $(this).find('span.counter').text(index);
+                $(this).attr({
+                    "id": "section-" + index
+                });
+                if (!($(obj).hasClass("question-section-div"))) {
+                    $(this).find("span.counter").text(index);
+                }
             });
         }
+
+        $(".question-section").hide();
+        $(".question-footer").hide();
+        $(".question_button").hide();
+
+        $(".section-2").show();
+        $(".section-2-footer").show();
+
+    } else {
+        $(".required-key").text(requiredKey);
+        $("#submit").prop("disabled", false);
+        return;
     }
-
-    $('#question-done').prop('disabled', false);
-
 });
 
 /****************************  Manage Questions Ends ***************************/
 
-
 /***********************************  Add Text *********************************/
 
 /**
- * Event to show setting section
+ * @Event to show setting section
  */
 $(document).on("click", ".show-setting", function() {
     $(".section-1").hide();
@@ -387,655 +450,710 @@ $(document).on("click", ".show-setting", function() {
 });
 
 /**
- * Event to get on back button at content area
+ * @Event to get on back button at content area
  */
 $(document).on("click", "#back-text, #back-photo, #back-video, #back-document", function() {
+    confirmBox();
+});
 
-    $(".text-section").hide();
-    $(".text-footer").hide();
+/**
+ * Add Show Confirm box for discard
+ */
+function confirmBox() {
+    $("div.discardContent").html(discardContent);
+}
 
+/**
+ * @Method to Go Back to previous step
+ */
+function goBack() {
+    $("div.discardContent").html(" ");
     $(".section-2").show();
     $(".section-2-footer").show();
+    $(".text-section").hide();
+    $(".text-footer").hide();
+    if (!$(".question-section").is(":visible")) {
+        $("form.sec1 div.section-2 div#root div.training-card-section:last").remove();
+    }
+    $(".question-section").hide();
+    $(".add_question_button").hide();
+    $(".question-footer").hide();
+    $(".question_button").hide();
+}
 
-    $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").remove();
+/**
+ * @Event to Cancel Confirmation if don't want to discard content
+ */
+$(document).on("click", ".cancel", function() {
+    $("div.discardContent").html(" ");
 });
 
 /**
- * Event to add text when click on content area button
+ * If discard All changes and Go back to previous step
+ */
+$(document).on("click", ".discard-success", function() {
+    goBack();
+});
+
+/**
+ * @Event to add text when click on content area button
  */
 $(document).on("click", "#add-text", function() {
-    $('.error-msg').remove();
-    $('#submit').attr('disabled', false);
-    let textNumber = parseInt($("div.training-card-section").length);
-    let textData = '';
+    $(".error-msg").remove();
+    $("#submit").attr("disabled", false);
+    $(".loader-overlay").remove();
 
-    $('.section-2').hide();
-    $('.section-2-footer').hide();
-
-    if ($('form.sec1 > div.text-section').length > 0) {
-        $('form.sec1 > div.text-section').remove();
-        $('form.sec1 > div.text-footer').remove();
+    let textNumber = parseInt($("div.training-card-section.section-div").length);
+    if (textNumber == 30) {
+        Localizer.getString("contentLimitExceed").then(function(result) {
+            $("form.sec1 div.section-2 div#root div.training-card-section:last").after(`<span class="text-danger content-limit-exceed">${result}</span>`);
+        });
     }
 
-    $('form.sec1').append(addTextSection);
-    $('form.sec1').append(addTextFooter);
+    let textData = "";
 
-    $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
-            <div class="card-box card-bg card-border training-card-section section-div text-section-div">
-                <div class="form-group">
-                    <div class="hover-btn">
-                        <label class="mb-0"><strong><span class="counter">${textNumber}</span>. <span class="type">Text</span></strong> </label>
-                        <button type="button" class="close remove-text" data-dismiss="alert">
-                            <span aria-hidden="true">
-                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                    <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                    <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                    <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                    <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                </svg>
-                            </span>
-                            <span class="sr-only">Close</span>
-                        </button>
-                    </div>
-                    <div class="clearfix"></div>
-                    <hr>
-                </div>
-                <p class="mb0 text-description-preview text-justify">${textData}</p>
-                <textarea class="textarea-text d-none" >${textData}</textarea>
-            </div>`);
+    $(".section-2").hide();
+    $(".section-2-footer").hide();
+
+    if ($("form.sec1 > div.text-section").length > 0) {
+        $("form.sec1 > div.text-section").remove();
+        $("form.sec1 > div.text-footer").remove();
+    }
+
+    $("form.sec1").append(addTextSection);
+    $("form.sec1").append(addTextFooter);
+
+    $("form.sec1 div.section-2 div#root div.training-card-section:last").after(UxUtils.getAddTextContainer(textData));
 });
 
 /**
- * Event to submit text when click on done button
+ * @Event to submit text when click on done button
  */
 $(document).on("click", "#text-done", function() {
     let textNumber = parseInt($("div.training-card-section").length) - 1;
 
-
     let errorText = "";
-    $("textarea").removeClass('danger');
+    $("textarea").removeClass("danger");
     $("label.label-alert").remove();
 
-    if ($("textarea#training-text").val().length <= 0) {
-        $("textarea#training-text").before(`<label class="label-alert d-block">${requiredKey}</label>`);
-        $("textarea#training-text").focus();
-        $("textarea#training-text").addClass('danger');
+    if ($("input#training-text").val().length <= 0 || $("textarea#training-text-description").val().length <= 0) {
+
+        if ($("textarea#training-text-description").val().length <= 0) {
+            $("textarea#training-text-description").before(UxUtils.getRequiredError(requiredKey));
+            $("textarea#training-text-description").focus();
+            $("textarea#training-text-description").addClass("danger");
+        } else {
+            $("textarea#training-text-description").removeClass("danger");
+        }
+
+        if ($("input#training-text").val().length <= 0) {
+            $("input#training-text").before(UxUtils.getRequiredError(requiredKey));
+            $("input#training-text").focus();
+            $("input#training-text").addClass("danger");
+        } else {
+            $("input#training-text").removeClass("danger");
+        }
+
     } else {
 
-        let textDesc = $('textarea#training-text').val();
-        $('.text-section').hide();
-        $('.text-footer').hide();
+        let textTrainingTitle = $("input#training-text").val();
+        let textTrainingDesc = $("textarea#training-text-description").val();
+        $(".text-section").hide();
+        $(".text-footer").hide();
 
-        $('.section-2').show();
-        $('.section-2-footer').show();
+        $(".section-2").show();
+        $(".section-2-footer").show();
 
-        $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
-            $(this).attr({ 'data-id': 'text-section-' + index });
-            $(this).attr({ 'id': 'section-' + index });
-            $(this).find('span.counter').text(index);
+        $("form.sec1 div.section-2:visible div#root div.training-card-section").each(function(index, obj) {
+            if (!$(this).hasClass("question-section-div")) {
+                $(this).attr({
+                    "data-id": "text-section-" + index
+                });
+                $(this).attr({
+                    "id": "section-" + index
+                });
+                if (!($(obj).hasClass("question-section-div"))) {
+                    $(this).find("span.counter").text(index);
+                }
+            }
         });
 
-        $("#section-" + textNumber).find('.textarea-text').val(textDesc);
-        $("#section-" + textNumber).find('.text-description-preview').text(textDesc);
+        $("#section-" + textNumber).find(".textarea-text").val(textTrainingTitle);
+        $("#section-" + textNumber).find(".type").text(textTrainingTitle);
+
+        $("#section-" + textNumber).find(".text-description-preview").text(textTrainingDesc);
+        $("#section-" + textNumber).find(".textarea-text-description").val(textTrainingDesc);
+        if (textTrainingDesc && (textTrainingDesc.split(/\r\n|\r|\n/).length > 2 || textTrainingDesc.length > 200)) {
+            $("#section-" + textNumber).find(".text-description-preview").addClass("show-text");
+            $("#section-" + textNumber).find(".text-description-preview").css({ "-webkit-line-clamp": `${Constants.webkitLineClampCssCount()}` });
+            $("#section-" + textNumber).find(".text-description-preview").after(Constants.getLoadMoreLink());
+        }
+
     }
 });
 
 /**
- * Event to show photo section when click on add content button
+ * @Event to show photo section when click on add content button
  */
-$(document).on('click', '#add-photo', function() {
-    let textData = '';
+$(document).on("click", "#add-photo", function() {
+    let textData = "";
     let textNumber = parseInt($("div.training-card-section").length);
-    $('.error-msg').remove();
-    $('#submit').attr('disabled', false);
-
-    $('.section-2').hide();
-    $('.section-2-footer').hide();
-
-    if ($('form.sec1 > div.text-section').length > 0) {
-        $('form.sec1 > div.text-section').remove();
-        $('form.sec1 > div.text-footer').remove();
+    if (textNumber > 29) {
+        Localizer.getString("contentLimitExceed").then(function(result) {
+            $("form.sec1 div.section-2 div#root div.training-card-section:last").after(`<span class="text-danger content-limit-exceed">${result}</span>`);
+        });
     }
+    $(".error-msg").remove();
+    $("#submit").attr("disabled", false);
+    $(".loader-overlay").remove();
 
-    $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
-            <div class="card-box card-bg card-border training-card-section section-div photo-section-div">
-                <div class="form-group">
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="hover-btn">
-                                <label class="mb-0">
-                                    <strong><span class="counter">${textNumber}</span>. <span class="type">Photo</span></strong> 
-                                </label>
-                                <button type="button" class="close remove-text" data-dismiss="alert">
-                                    <span aria-hidden="true">
-                                        <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                            <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                            <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                            <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                            <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                        </svg>
-                                    </span>
-                                    <span class="sr-only">Close</span>
-                                </button>
-                            </div>
-                            <div class="clearfix"></div>
-                            <hr>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-9">
-                            <p class="mb0 photo-description-preview text-justify">${textData}</p>                    
-                        </div>
-                        <div class="col-3">
-                            <div class="img-thumbnail">
-                                <img id="image-sec-${textNumber}">                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <textarea class="textarea-photo-description d-none" >${textData}</textarea>
-                <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple>
-            </div>`);
+    $(".section-2").hide();
+    $(".section-2-footer").hide();
 
-    $('form.sec1').append(addPhotoSection);
-    $('form.sec1').append(addPhotoFooter);
-    $('#upload-photo').click();
+    if ($("form.sec1 > div.text-section").length > 0) {
+        $("form.sec1 > div.text-section").remove();
+        $("form.sec1 > div.text-footer").remove();
+    }
+    $("form.sec1 div.section-2 div#root div.training-card-section:last").after(UxUtils.getAddImageSection(textNumber, textData));
+    $("form.sec1").append(addPhotoSection);
+    $("form.sec1").append(addPhotoFooter);
+    $("#upload-photo").click();
 });
 
 /**
- * Event to submit photo
+ * @Event to submit photo
  */
 $(document).on("click", "#photo-done", function() {
     let textNumber = parseInt($("div.training-card-section").length) - 1;
     let errorText = "";
-    $("input[type='file']#upload-photo").removeClass('danger');
+    $("input[type='file']#upload-photo").removeClass("danger");
     $("label.label-alert").remove();
-
-    if ($("input[type='file']#upload-photo").val().length <= 0) {
-        if ($("input[type='file']#upload-photo").val().length <= 0) {
-            $("input[type='file']#upload-photo").before(`<label class="label-alert d-block">${requiredKey}</label>`);
+    if ($("div.updated-img div.carousel:last").find("div.carousel-inner").html() == undefined || $("#image-training-text").val().length <= 0) {
+        if ($("div.updated-img div.carousel:last").find("div.carousel-inner").html() == undefined) {
+            $(".change-link").before(UxUtils.getRequiredError(requiredKey));
             $("input[type='file']#upload-photo").focus();
-            $("input[type='file']#upload-photo").addClass('danger');
+            $("input[type='file']#upload-photo").addClass("danger");
+        } else {
+            $(".change-link").find(`.label-alert .d-block`).remove();
+        }
+        if ($("#image-training-text").val().length <= 0) {
+            $("#image-training-text").before(UxUtils.getRequiredError(requiredKey));
+            $("#image-training-text").focus();
+            $("#image-training-text").addClass("danger");
+        } else {
+            $("#image-training-text").removeClass("danger");
         }
     } else {
-        let photoDesc = $('textarea#photo-description').val();
-        $('.text-section').hide();
-        $('.text-footer').hide();
-
-        $('.section-2').show();
-        $('.section-2-footer').show();
-
-
-        $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
-            $(this).attr({ 'data-id': 'text-section-' + index });
-            $(this).attr({ 'id': 'section-' + index });
-            $(this).find('span.counter').text(index);
+        let photoTitle = $("input#image-training-text").val();
+        let photoDesc = $("textarea#photo-description").val();
+        let photoAttachments = $("textarea#photo-attachments").val();
+        $(".text-section").hide();
+        $(".text-footer").hide();
+        $(".section-2").show();
+        $(".section-2-footer").show();
+        $("div.photo-section-div").find("span.type").text(" " + photoTitle);
+        $("form.sec1 div.section-2:visible div#root div.training-card-section").each(function(index, obj) {
+            $(this).attr({
+                "data-id": "text-section-" + index
+            });
+            $(this).attr({
+                "id": "section-" + index
+            });
+            if (!($(obj).hasClass("question-section-div"))) {
+                $(this).find("span.counter").text(index);
+            }
         });
 
         /* File reader */
         let input = $("input[type='file']#upload-photo")[0];
         if (input.files) {
-            $('#submit').attr('disabled', true);
-
+            $("#submit").attr("disabled", true);
+            $(".body-outer").before(loader);
             let filesAmount = input.files.length;
-
             let count = 0;
             for (let j = 0; j < filesAmount; j++) {
                 let reader = new FileReader();
                 reader.onload = function(event) {
                     if (count == 0) {
-
-                        $("#section-" + textNumber).find("#image-sec-" + textNumber).attr({ "src": event.target.result });
-
-                        if (filesAmount > 1)
+                        $("#section-" + textNumber).find("#image-sec-" + textNumber).attr({
+                            "src": event.target.result
+                        });
+                        if (filesAmount > 1) {
                             $("#section-" + textNumber).find("#image-sec-" + textNumber).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                        }
                     }
                     count++;
-                }
+                };
                 reader.readAsDataURL(input.files[j]);
             }
+            $(".change-link").find(`.label-alert .d-block`).remove();
+            let carasoulId = $("div.carousel:last").attr("id");
+            $("#section-" + textNumber).find("div.img-thumbnail-new").html(UxUtils.getCarousalSliders($("div.carousel:last").html(), carasoulId));
         }
-        $("#section-" + textNumber).find('.textarea-photo-description').val(photoDesc);
-        $("#section-" + textNumber).find('.photo-description-preview').text(photoDesc);
-
-        let imageCounter = $("#section-" + textNumber).find('input[type="file"]').get(0).files.length;
-        let attachmentRequest = '';
-        let attachmentId = {};
-
-        $("#section-" + textNumber).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
-
-        for (let i = 0; i < imageCounter; i++) {
-            let fileData = $("#section-" + textNumber).find('input[type="file"]').get(0).files[i];
-
-
-            let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
-            attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
-
-            ActionHelper.executeApi(attachmentRequest)
-                .then(function(response) {
-                    attachmentId[i] = response.attachmentId;
-                    $("#section-" + textNumber).find('textarea#attachment-id').val(JSON.stringify(attachmentId));
-
-                    if (Object.keys(attachmentId).length == imageCounter) {
-                        $('#submit').attr('disabled', false);
-                    }
-                });
+        $("#section-" + textNumber).find(".textarea-photo-title").val(photoTitle);
+        $("#section-" + textNumber).find(".textarea-photo-description").val(photoDesc);
+        $("#section-" + textNumber).find(".photo-description-preview").text(photoDesc);
+        if (photoDesc.length < 1) {
+            $("#section-" + textNumber).find(".photo-description-preview").parent(".col-12").addClass("d-none");
         }
+        if (photoDesc && (photoDesc.split(/\r\n|\r|\n/).length > 2 || photoDesc.length > 200)) {
+            $("#section-" + textNumber).find(".photo-description-preview").addClass("show-text");
+            $("#section-" + textNumber).find(".photo-description-preview").css({ "-webkit-line-clamp": Constants.webkitLineClampCssCount() });
+            $("#section-" + textNumber).find(".photo-description-preview").after(Constants.getLoadMoreLink());
+        }
+        $("#section-" + textNumber).find("textarea.textarea-photo-attachments").val(photoAttachments);
+
+        $("#submit").attr("disabled", false);
+        $(".loader-overlay").remove();
 
     }
 });
 
 /**
- * Event to show video section
+ * @Event to show video section
  */
-$(document).on('click', '#add-video', function() {
+$(document).on("click", "#add-video", function() {
     let textNumber = parseInt($("div.training-card-section").length);
-    let textData = '';
-    $('.error-msg').remove();
-    $('#submit').attr('disabled', false);
 
-    $('.section-2').hide();
-    $('.section-2-footer').hide();
-
-    if ($('form.sec1 > div.text-section').length > 0) {
-        $('form.sec1 > div.text-section').remove();
-        $('form.sec1 > div.text-footer').remove();
+    if (textNumber > 29) {
+        Localizer.getString("contentLimitExceed").then(function(result) {
+            $("form.sec1 div.section-2 div#root div.training-card-section:last").after(`<span class="text-danger content-limit-exceed">${result}</span>`);
+        });
     }
 
-    $('form.sec1').append(addVideoSection);
-    $('form.sec1').append(addVideoFooter);
-    $('#upload-video').click();
+    let textData = "";
+    $(".error-msg").remove();
+    $("#submit").attr("disabled", false);
+    $(".loader-overlay").remove();
 
-    $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
-        <div class="card-box card-bg card-border training-card-section section-div video-section-div">
-            <div class="form-group">
-                <div class="hover-btn">
-                    <label class="mb-0">
-                        <strong><span class="counter">${textNumber}</span>. <span class="type">Video</span></strong> 
-                    </label>
-                    <button type="button" class="close remove-text" data-dismiss="alert">
-                        <span aria-hidden="true">
-                            <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                            </svg>
-                        </span>
-                        <span class="sr-only">Close</span>
-                    </button>
-                </div>
-                <div class="clearfix"></div>
-                <hr>
-                <div class="row">
-                    <div class="col-9">
-                        <p class="mb0 video-description-preview text-justify">${textData}</p>
-                    </div>
-                    <div class="col-3">
-                        <div class="embed-responsive embed-responsive-21by9">
-                            <video controls class="video" id="video-sec-${textNumber}">
-                            </video>
-                        </div>        
-                    </div>
-                </div>
-            </div>
-            <textarea class="textarea-video d-none">${textData}</textarea>
-            <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
-        </div>`);
+    $(".section-2").hide();
+    $(".section-2-footer").hide();
 
+    if ($("form.sec1 > div.text-section").length > 0) {
+        $("form.sec1 > div.text-section").remove();
+        $("form.sec1 > div.text-footer").remove();
+    }
+
+    $("form.sec1").append(addVideoSection);
+    $("form.sec1").append(addVideoFooter);
+    $("form.sec1 div.section-2 div#root div.training-card-section:last").after(UxUtils.getAddVideoSection(textNumber, textData));
+    $("#upload-video").click();
 });
 
 /**
- * Event to submit video
+ * @Event to submit video
  */
 $(document).on("click", "#video-done", function() {
     let textNumber = parseInt($("div.training-card-section").length) - 1;
-    let videoDesc = $('textarea#video-description').val();
-
+    let videoTitle = $("input#video-training-text").val();
+    let videoDesc = $("textarea#video-description").val();
+    let videoAttachment = $("textarea#video-attachments").val();
 
     let errorText = "";
-    $("textarea").removeClass('danger');
+    $("textarea").removeClass("danger");
     $("label.label-alert").remove();
 
-    if ($("input[type='file']#upload-video").val() == '') {
-        $('div.card-box:visible').find('.form-group:first').prepend(`<label class="label-alert d-block">${requiredKey}</label>`);
-        $('div.card-box:visible').find(".video-box").focus().addClass('danger');
-    } else {
-        $('.label-alert').remove();
-        $('.text-section').hide();
-        $('.text-footer').hide();
-
-        $('.section-2').show();
-        $('.section-2-footer').show();
-
-        $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
-            $(this).attr({ 'data-id': 'text-section-' + index });
-            $(this).attr({ 'id': 'section-' + index });
-            $(this).find('span.counter').text(index);
-        });
-        let fileInput = document.getElementById('upload-video');
-        let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
-        $("#section-" + textNumber).find("#video-sec-" + textNumber).attr("src", fileUrl);
-        $("#section-" + textNumber).find('textarea.textarea-video').val(videoDesc);
-        $("#section-" + textNumber).find('.video-description-preview').text(videoDesc);
-
-        let imageCounter = $("#section-" + textNumber).find('input[type="file"]').get(0).files.length;
-        let attachmentRequest = '';
-        let attachmentId = {};
-        $("#section-" + textNumber).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
-
-        for (let i = 0; i < imageCounter; i++) {
-            $('#submit').attr('disabled', true);
-
-            let fileData = $("#section-" + textNumber).find('input[type="file"]').get(0).files[i];
-
-
-            let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
-            attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
-
-            ActionHelper.executeApi(attachmentRequest)
-                .then(function(response) {
-                    attachmentId[i] = response.attachmentId;
-
-
-
-                    $("#section-" + textNumber).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
-
-                    if (Object.keys(attachmentId).length == imageCounter) {
-                        $('#submit').attr('disabled', false);
-                    }
-                });
+    if ($("input[type='file']#upload-video").val().length <= 0 || $("#video-training-text").val().length <= 0) {
+        if ($("input[type='file']#upload-video").val().length <= 0) {
+            $("div.video-box").before(UxUtils.getRequiredError(requiredKey));
+            $("div.video-box").focus().addClass("danger");
         }
+
+        if ($("#video-training-text").val().length <= 0) {
+            $("#video-training-text").before(UxUtils.getRequiredError(requiredKey));
+            $("#video-training-text").focus();
+            $("#video-training-text").addClass("danger");
+        } else {
+            $("#video-training-text").removeClass("danger");
+        }
+    } else {
+        $(".label-alert").remove();
+        $(".text-section").hide();
+        $(".text-footer").hide();
+        $(".section-2").show();
+        $(".section-2-footer").show();
+        $("form.sec1 div.section-2:visible div#root div.training-card-section").each(function(index, obj) {
+            $(this).attr({
+                "data-id": "text-section-" + index
+            });
+            $(this).attr({
+                "id": "section-" + index
+            });
+            if (!($(obj).hasClass("question-section-div"))) {
+                $(this).find("span.counter").text(index);
+            }
+        });
+        let fileInput = document.getElementById("upload-video");
+        let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
+        $("#section-" + textNumber).find("span.type").text(videoTitle);
+        $("#section-" + textNumber).find("#video-sec-" + textNumber).attr("src", fileUrl);
+        $("#section-" + textNumber).find("textarea.textarea-video").val(videoTitle);
+        $("#section-" + textNumber).find("textarea.textarea-video-description").val(videoDesc);
+        $("#section-" + textNumber).find(".video-description-preview").text(videoDesc);
+        if (videoDesc.length < 1) {
+            $("#section-" + textNumber).find(".video-description-preview").parent(".col-12").addClass("d-none");
+        }
+        if (videoDesc && (videoDesc.split(/\r\n|\r|\n/).length > 2 || videoDesc.length > 200)) {
+            $("#section-" + textNumber).find(".video-description-preview").addClass("show-text");
+            $("#section-" + textNumber).find(".video-description-preview").css({ "-webkit-line-clamp": Constants.webkitLineClampCssCount() });
+            $("#section-" + textNumber).find(".video-description-preview").after(Constants.getLoadMoreLink());
+        }
+        $("#section-" + textNumber).find(".textarea-video-attachments").val(videoAttachment);
+        let imageCounter = $("#section-" + textNumber).find(`input[type="file"]`).get(0).files.length;
+        $("#section-" + textNumber).find("textarea:last").after(UxUtils.getAttachmentTextarea());
     }
 });
 
 /**
  * Even to shwo document upload section
  */
-$(document).on('click', '#add-document', function() {
+$(document).on("click", "#add-document", function() {
     let textNumber = parseInt($("div.training-card-section").length);
-    let textData = '';
-    $('.error-msg').remove();
-    $('#submit').attr('disabled', false);
 
-    $('.section-2').hide();
-    $('.section-2-footer').hide();
-
-    if ($('form.sec1 > div.text-section').length > 0) {
-        $('form.sec1 > div.text-section').remove();
-        $('form.sec1 > div.text-footer').remove();
+    if (textNumber > 29) {
+        Localizer.getString("contentLimitExceed").then(function(result) {
+            $("form.sec1 div.section-2 div#root div.training-card-section:last").after(`<span class="text-danger content-limit-exceed">${result}</span>`);
+        });
     }
 
-    $("form.sec1 div.section-2 div#root .card-box.training-card-section:last").after(`
-    <div class="card-box card-bg card-border training-card-section section-div document-section-div">
-        <div class="form-group">
-            <div class="hover-btn">
-                <label class="mb-0">
-                    <strong><span class="counter">${textNumber}</span>. <span class="type">Document</span></strong> 
-                </label>
-                <button type="button" class="close remove-text" data-dismiss="alert">
-                    <span aria-hidden="true">
-                        <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                            <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                            <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                            <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                            <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                        </svg>
-                    </span>
-                    <span class="sr-only">Close</span>
-                </button>
-            </div>
-            <div class="clearfix"></div>
-            <hr>
-        </div>
-        <div class="row">
-            <div class="col-9">
-                <p class="mb0 document-description-preview text-justify">${textData}</p>
-            </div>
-            <div class="col-3">
-                <div class="img-thumbnail">
-                    <img id="image-sec-${textNumber}">                
-                </div>
-            </div>
-        </div>
-        <textarea class="textarea-document" style="display:none">${textData}</textarea>
-        <input type="file" id="upload-document" accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf" src="images/px-img.png" style="width:100%; height: 180px; display:none">
-    </div>`);
-
-    $('form.sec1').append(addDocumentSection);
-    $('form.sec1').append(addDocumentFooter);
-    $('#upload-document').click();
+    let textData = "";
+    $(".error-msg").remove();
+    $("#submit").attr("disabled", false);
+    $(".loader-overlay").remove();
+    $(".section-2").hide();
+    $(".section-2-footer").hide();
+    if ($("form.sec1 > div.text-section").length > 0) {
+        $("form.sec1 > div.text-section").remove();
+        $("form.sec1 > div.text-footer").remove();
+    }
+    $("form.sec1 div.section-2 div#root div.training-card-section:last").after(UxUtils.getAddDownloadSection(textNumber, textData));
+    $("form.sec1").append(addDocumentSection);
+    $("form.sec1").append(addDocumentFooter);
+    $("#upload-document").click();
 });
 
 /**
- * Event to submit the document area
+ * @Event to submit the document area
  */
 $(document).on("click", "#document-done", function() {
     let textNumber = parseInt($("div.training-card-section").length) - 1;
-
-
-    let errorText = "";
-    $("textarea").removeClass('danger');
+    let docTitle = $("#doc-training-text").val();
+    let docDescription = $("#document-description").val();
+    $("textarea").removeClass("danger");
     $("label.label-alert").remove();
-
-    if ($("input[type='file']#upload-document").val().length <= 0) {
-        if ($("input[type='file']#upload-document").val().length <= 0) {
-            $("input[type='file']#upload-document").before(`<label class="label-alert d-block">${requiredKey}</label>`);
-            $("input[type='file']#upload-document").focus();
-            $("input[type='file']#upload-document").addClass('danger');
+    if ($("div.doc-name").text().trim().length <= 0 || $("#doc-training-text").val().length <= 0) {
+        if ($("div.doc-name").text().trim().length <= 0) {
+            $("div.doc-box").before(UxUtils.getRequiredError(requiredKey));
+        } else {
+            $("div.doc-box").parents().find("label.label-alert").remove();
+        }
+        if ($("#doc-training-text").val().length <= 0) {
+            $("#doc-training-text").before(UxUtils.getRequiredError(requiredKey));
+            $("#doc-training-text").focus();
+            $("#doc-training-text").addClass("danger");
+        } else {
+            $("#doc-training-text").removeClass("danger");
         }
     } else {
+        $(".text-section").hide();
+        $(".text-footer").hide();
+        $(".section-2").show();
+        $(".section-2-footer").show();
+        $("div.document-section-div").find("span.type").text(" " + docTitle);
+        $("form.sec1 div.section-2:visible div#root div.training-card-section").each(function(index, obj) {
+            $(this).attr({
+                "data-id": "text-section-" + index
+            });
+            $(this).attr({
+                "id": "section-" + index
+            });
 
+            if (!($(obj).hasClass("question-section-div"))) {
+                $(this).find("span.counter").text(index);
+            }
 
-        $('.text-section').hide();
-        $('.text-footer').hide();
-
-        $('.section-2').show();
-        $('.section-2-footer').show();
-
-
-        $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
-            $(this).attr({ 'data-id': 'text-section-' + index });
-            $(this).attr({ 'id': 'section-' + index });
-            $(this).find('span.counter').text(index);
         });
 
-        $('#section-' + textNumber).find('textarea.textarea-document').val($('#document-description').val());
-        $('#section-' + textNumber).find('.document-description-preview').text($('#document-description').val());
-        $("#section-" + textNumber).find("#image-sec-" + textNumber).attr('src', 'images/doc.png');
-        $("#section-" + textNumber).find("#image-sec-" + textNumber).parents('div.row').find('p.document-description-preview').after('<hr><p>File name: <span class="doc-name">' + $("input[type='file']#upload-document")[0].files[0].name + '</span></p>');
+        $("#section-" + textNumber).find("textarea.textarea-document").val(docTitle);
+        $("#section-" + textNumber).find(".document-description-preview").text(docDescription);
+        $("#section-" + textNumber).find("textarea.textarea-document-description").val(docDescription);
+
+        if (docDescription.length < 1) {
+            $("#section-" + textNumber).find(".document-description-preview").addClass("d-none");
+        }
+
+        if (docDescription && (docDescription.split(/\r\n|\r|\n/).length > 2 || docDescription.length > 200)) {
+            $("#section-" + textNumber).find(".document-description-preview").addClass("show-text");
+            $("#section-" + textNumber).find(".document-description-preview").css({ "-webkit-line-clamp": Constants.webkitLineClampCssCount() });
+            $("#section-" + textNumber).find(".document-description-preview").after(Constants.getLoadMoreLink());
+        }
+        $("#section-" + textNumber).find("textarea.textarea-document-attachment").val($("#document-attachment").val());
+        $("#section-" + textNumber).find("#image-sec-" + textNumber).attr("src", "images/doc.png");
+        let docfilesize = $("input[type='file']#upload-document")[0].files[0].size / 1024;
+        let fileTypeIcon = "";
+        let fileType = $("input[type='file']#upload-document")[0].files[0].type;
+        $("div.doc-box").html(Constants.getDocumentIcon());
+        fileTypeIcon = Constants.getDocumentIcon();
+        $("#section-" + textNumber).find("#image-sec-" + textNumber).parents("div.row").find("p.document-description-preview").before(`<p class="mb0 doc-name">${fileTypeIcon}&nbsp;<span class="semi-bold teams-link a-link font-14">` + $("input[type='file']#upload-document")[0].files[0].name + ` (` + Math.round(docfilesize) + ` Kb)</span></p>`);
     }
-    let imageCounter = $("#section-" + textNumber).find('input[type="file"]').get(0).files.length;
-    let attachmentRequest = '';
-    let attachmentId = {};
-    $("#section-" + textNumber).find('textarea:last').after('<textarea id="attachment-id" class="d-none" ></textarea>');
-    for (let i = 0; i < imageCounter; i++) {
-        $('#submit').attr('disabled', true);
+    $("#section-" + textNumber).find("textarea:last").after(`<textarea id="attachment-id" class="d-none" ></textarea>`);
+});
 
-        let fileData = $("#section-" + textNumber).find('input[type="file"]').get(0).files[i];
-
-
-        let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
-        attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
-        ActionHelper.executeApi(attachmentRequest)
-            .then(function(response) {
-                attachmentId[i] = response.attachmentId;
-
-
-
-                $("#section-" + textNumber).find('textarea#attachment-id').html(JSON.stringify(attachmentId));
-                if (Object.keys(attachmentId).length == imageCounter) {
-                    $('#submit').attr('disabled', false);
-                }
-            });
+/**
+ * @Event to submit photo
+ */
+$(document).on("change", "#upload-photo", function() {
+    if ($(this).val()) {
+        $("#photo-done").addClass("disabled");
+        $("#photo-done").append(Constants.getDisabledLoader());
+        if (imagesPreview(this, ".update-carasoul")) {
+            $(".text-section .photo-box").hide();
+            $(".text-section .change-link").show();
+            $(".text-section .update-carasoul").show();
+            $(".text-section .label-alert").remove();
+        }
     }
 });
 
 /**
- * Event to submit photo 
- */
-$(document).on('change', '#upload-photo', function() {
-    if (imagesPreview(this, '.updated-img')) {
-        $('.photo-box').hide();
-        $('.change-link').show();
-        $('.updated-img').show();
-    }
-})
-
-/**
- * Method to show image preview  
+ * Method to show image preview
  * @param input object contain the input element data
  * @param placeToInsertImagePreview object contains html element where image preview will be showed
  */
 let imagesPreview = function(input, placeToInsertImagePreview) {
-
+    $("div.text-section:visible div.relative").parent().find(`span.text-danger.float-right`).remove();
     if (input.files) {
         let filesAmount = input.files.length;
-
         if (filesAmount > 10) {
-            Localizer.getString('maximum_images_allowed').then(function(result) {
+            Localizer.getString("maximum_images_allowed").then(function(result) {
                 let msg = result;
-                Localizer.getString('alert').then(function(result) {
-                    $('div.card-box:visible').prepend(`<div class="alert alert-danger error-msg">${alert} ${msg}</div>`);
-                })
-            })
-            $('.photo-done').addClass('disabled');
-
+                Localizer.getString("alert").then(function(result) {
+                    $("div.text-section:visible div.relative").before(`<span class="text-danger error-msg float-right"> ${msg}</span><div class="clearfix"></div>`);
+                });
+            });
             return false;
-        } else {
-            $('.error-msg').remove();
-            $('.photo-done').removeClass('disabled');
         }
 
-        $('.updated-img').html('');
-        let $carousel = $('<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel"></div>');
-        let $olSection = $('<ol class="carousel-indicators"></ol>');
-        let $carouselInner = $('<div class="carousel-inner"></div>');
-
+        for (let i = 0; i < filesAmount; i++) {
+            let fileTypes = ["jpg", "jpeg", "png", "gif", "webp", "jfif"];
+            let isSuccess = false;
+            if (input.files && input.files[0]) {
+                // let reader = new FileReader();
+                let extension = input.files[0].name.split(".").pop().toLowerCase();
+                isSuccess = fileTypes.indexOf(extension) > -1;
+                if (isSuccess) {
+                    isSuccess = true;
+                } else {
+                    $("div.text-section:visible div.relative").before(`<span class="text-danger float-right">Invalid file formate</span><div class="clearfix"></div>`);
+                    return false;
+                }
+            }
+        }
+        let uniqueCarouselId = Constants.getUniqueId();
+        $(".update-carasoul").html("");
+        let $carousel = $(`<div id="carouselExampleIndicators${uniqueCarouselId}" class="carousel slide" data-ride="carousel"></div>`);
+        let $olSection = $(`<ol class="carousel-indicators"></ol>`);
+        let $carouselInner = $(`<div class="carousel-inner"></div>`);
         $carousel.append($olSection);
         $carousel.append($carouselInner);
-
+        let attachmentRequest = "";
         let count = 0;
+        let newPhotos = new Array();
+        let photoUploadCounter = 0;
         for (let i = 0; i < filesAmount; i++) {
             let reader = new FileReader();
-            let $liList = $(`<li data-target="#carouselExampleIndicators" data-slide-to="${i}" class="${i == 0 ? 'active': ''}"></li>`);
+            let $liList = $(`<li data-target="#carouselExampleIndicators${uniqueCarouselId}" data-slide-to="${i}" class="${i == 0 ? "active": ""}"></li>`);
             $olSection.append($liList);
-
             reader.onload = function(event) {
-
-                let $imgDiv = $(`<div class="carousel-item ${count == 0 ? 'active' : ''}">
-                                    <img class="d-block w-100" src="${event.target.result}" alt="${count+1} slide">
-                                </div>`);
+                let $imgDiv = $(UxUtils.getCarousalImages(count, event.target.result));
                 $carouselInner.append($imgDiv);
                 count++;
-            }
-
+            };
             reader.readAsDataURL(input.files[i]);
+            let fileData = input.files[i];
+            let attachment = ActionHelper.attachmentUpload(fileData, fileData["type"]);
+            attachmentRequest = ActionHelper.requestAttachmentUploadDraft(attachment);
+            ActionHelper.executeApi(attachmentRequest)
+                .then(function(response) {
+                    let filesize = input.files[i].size / Constants.getKbConvertConst();
+                    let attachmentData = {
+                        "name": input.files[i].name + " ( " + Math.round(filesize) + " Kb)",
+                        "type": "Image",
+                        "id": response.attachmentId
+                    };
+                    newPhotos.push(attachmentData);
+                    $(input).parent().find("textarea.textarea-photo-attachments").val(JSON.stringify(newPhotos));
+                    $("div.text-section").find("textarea#photo-attachments").val(JSON.stringify(newPhotos));
+                    photoUploadCounter++;
+                });
         }
-        $carousel.append(`<a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                            <span class="sr-only">Previous</span>
-                        </a>
-                        <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                            <span class="sr-only">Next</span>
-                        </a>`);
+
+        let tid = setInterval(() => {
+            if (photoUploadCounter == filesAmount) {
+                $("#photo-done").removeClass("disabled");
+                $("#photo-done").find(Constants.getDisabledLoaderClass()).remove();
+                clearInterval(tid);
+            }
+        }, Constants.setIntervalTimeHundred());
+        $carousel.append(UxUtils.getCarousalPagination(uniqueCarouselId));
         $(placeToInsertImagePreview).append($carousel);
-        $('.carousel').carousel();
+        $(".carousel").carousel();
         return true;
     }
     return false;
 };
 
 /**
- * Event to show previous carousel slide
+ * @event to show previous carousel slide
  */
-$(document).on('click', '.carousel-control-prev', function() {
-    $('.carousel').carousel('prev')
+$(document).on("click", ".carousel-control-prev", function() {
+    $(this).parents(".carousel").carousel("prev");
 });
 
 /**
- * Event to show next carousel slide
+ * @event to show next carousel slide
  */
-$(document).on('click', '.carousel-control-next', function() {
-
-    $('.carousel').carousel('next')
+$(document).on("click", ".carousel-control-next", function() {
+    $(this).parents(".carousel").carousel("next");
 });
 
 /**
- * Event to show video upload section
+ * @event to show video upload section
  */
-$(document).on('change', '#upload-video', function() {
-    let fileInput = document.getElementById('upload-video');
-    let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
-    $('.updated-video').show();
-    $('.change-link').show();
-    $('.video-box').hide();
-    $(".video-section-preview").last().attr("src", fileUrl);
+$(document).on("change", "#upload-video", function() {
+    if (!$(this).val()) {
+        return false;
+    }
+    let fileInput = $(this)[0];
+    $(".video-box").parents().find(".text-danger.font-12.pull-right").remove();
+    let videoSize = Constants.getVideoUploadingSize();
+    let videoFormate = ["video/webm", "video/mp4", "video/avi", "video/ogv", "video/ogg"];
+    if (fileInput.files.length > 0) {
+        let inputVideoSize = fileInput.files[0].size;
+        let sizeOf1MB = 1048576;
+        if ((inputVideoSize / sizeOf1MB) > videoSize) {
+            $(".video-box").parent(".relative").before(`<span class="text-danger font-12 pull-right">${Constants.getInvalidFileSizeMsg()}</span><div class="clearfix"></div>`);
+            return false;
+        }
+        if ($.inArray(fileInput.files[0].type, videoFormate) == -1) {
+            $(".video-box").parent(".relative").before(`<span class="text-danger font-12 pull-right">${Constants.getInvalidFileMsg()}</span><div class="clearfix"></div>`);
+            return false;
+        }
+        $("button#video-done").addClass("disabled");
+        $("#video-done").append(Constants.getDisabledLoader());
+        let fileUrl = window.URL.createObjectURL(fileInput.files[0]);
+        let fileData = fileInput.files[0];
+        let attachment = ActionHelper.attachmentUpload(fileData, fileData["type"]);
+        let attachmentRequest = ActionHelper.requestAttachmentUploadDraft(attachment);
+        ActionHelper.executeApi(attachmentRequest)
+            .then(function(response) {
+                let newResponse = {
+                    "name": fileInput.files[0].name,
+                    "type": "Video",
+                    "id": response.attachmentId
+                };
+                $("div.text-section").find("textarea#video-attachments").val(JSON.stringify(newResponse));
+                $("button#video-done").removeClass("disabled");
+                $("#video-done").find(Constants.getDisabledLoaderClass()).remove();
+            });
+        $(".updated-video").show();
+        $(".change-link").show();
+        $(".video-box").hide();
+        $(".video-section-preview").last().attr("src", fileUrl);
+        $(".video-section-preview").parents("div.relative").find(".label-alert").remove();
+    }
 });
 
 /**
- * Event when upload document uploadedd
+ * @event when upload document uploadedd
  */
-$(document).on('change', '#upload-document', function() {
-    if ($(this)[0].files[0].name != undefined || $(this)[0].files[0].name != null)
-        $('.doc-name').html('');
-    $('.doc-name').append(`<a>${$(this)[0].files[0].name}</a>`);
+$(document).on("change", "#upload-document", function() {
+    let textNumber = parseInt($("div.training-card-section").length) - 1;
+
+    // If file is blank then return back
+    if (!$(this).val()) {
+        return false;
+    }
+
+    if ($(this)[0].files[0].name != undefined || $(this)[0].files[0].name != null) {
+        $(".doc-name").html("");
+    }
+
+    $("#document-done").addClass("disabled");
+    $("#document-done").append(Constants.getDisabledLoader());
+
+    // Convert File size in Kb
+    let filesize = $(this)[0].files[0].size / Constants.getKbConvertConst();
+    let filename = $(this)[0].files[0].name;
+    let fileData = $(this)[0].files[0];
+    let fileTypeIcon = "";
+    fileTypeIcon = Constants.getDocumentIcon();
+    $("a.change-doc-link").show();
+    let attachment = ActionHelper.attachmentUpload(fileData, fileData["type"]);
+    let attachmentRequest = ActionHelper.requestAttachmentUploadDraft(attachment);
+    ActionHelper.executeApi(attachmentRequest)
+        .then(function(response) {
+            let newResponse = {
+                "name": filename + " (" + Math.round(filesize) + " Kb)",
+                "type": "Document",
+                "id": response.attachmentId
+            };
+            $("textarea#document-attachment").val(JSON.stringify(newResponse));
+            $("#document-done").removeClass("disabled");
+            $("#document-done").find(Constants.getDisabledLoaderClass()).remove();
+        });
+    $("label.label-alert").remove();
+    $(".doc-box").addClass("d-none");
+    $(".doc-name").append(`${fileTypeIcon}&nbsp; <a class="a-link">${$(this)[0].files[0].name} (${Math.round(filesize)} Kb)</a>`);
 });
 
 /**
- * Event to remove the text from preview section
+ * @event to remove the text from preview section
  */
 $(document).on("click", ".remove-text", function() {
-    let dataId = $(this).parents('.card-box').attr('data-id');
-    let confirmBox = `
-            <div class="confirm-box">
-                <hr class="hr-danger">
-                <ul class="d-flex table-remove mb-0">
-                    <li><span class="text-danger">Are you sure you want to delete?</span></li>
-                    <li> 
-                        <button class="btn btn-primary btn-sm pull-right" data-id="${dataId}" id="confirm-delete-text">Ok</button> 
-                        <button class="btn btn-primary-outline btn-sm pull-right mr-1" id="cancel-confirm">Close</button>
-                    </li>
-                </ul>
-            </div>
-        `;
-    $(this).parents("div.card-box").find('p:last').after(confirmBox);
-    $(this).parents("div.card-box").removeClass("card-box").addClass("card-box-alert");
-
+    let dataId = $(this).parents(".card-box").attr("data-id");
+    let confirmBox = UxUtils.getTextConfirmBox(dataId);
+    if (!$(this).parents("div.card-box").find("div.confirm-box").is(":visible")) {
+        if ($(this).parents(".card-box").hasClass("question-section-div")) {
+            $(this).parents("div.card-box").find(".input_section").after(confirmBox);
+        } else if ($(this).parents(".card-box").hasClass("text-section-div")) {
+            $(this).parents("div.card-box").find("p:last").after(confirmBox);
+        } else {
+            $(this).parents("div.card-box").find(".row:last").after(confirmBox);
+        }
+    }
 });
 
 /**
- * Event when click on confirm delete section
+ * @event when click on confirm delete section
  */
 $(document).on("click", "#confirm-delete-text", function() {
-    let eve = $(this).attr('data-id');
-
-    $('div.card-box-alert[data-id="' + eve + '"]').remove();
-    $("form.sec1 div.section-2:visible div#root .card-box.training-card-section").each(function(index, obj) {
-        $(this).find('span.counter').text(index);
+    let eve = $(this).attr("data-id");
+    $(`div.card-box[data-id="${eve}"]`).remove();
+    $("form.sec1 div.section-2:visible div#root div.training-card-section").each(function(index, obj) {
+        if (!($(obj).hasClass("question-section-div"))) {
+            $(this).find("span.counter").text(index);
+        }
         $(this).attr("data-id", "text-section-" + index);
         $(this).attr("id", "section-" + index);
-        if ($(this).find('div.question-inputs').length > 0) {
-            $(this).find('div.question-inputs').attr('id', 'quest-text-' + index);
+        if ($(this).find("div.question-inputs").length > 0) {
+            $(this).find("div.question-inputs").attr("id", "quest-text-" + index);
         }
     });
 });
 
 /**
- * Event to get Local string and check contains argument to append or not
+ * @Event to get Local string and check contains argument to append or not
  */
 $(document).on("click", "#next", function() {
     /* Validate */
     let errorText = "";
     let questionNumber = 0;
-
     $("form").find("input[type='text']").each(function() {
         let element = $(this);
         if (element.val() == "") {
             validate = false;
             if (element.attr("id").startsWith("question-title")) {
-
                 if (questionNumber != element.parents("div.form-group").find("span.question-number").text()) {
                     questionNumber = element.parents("div.form-group").find("span.question-number").text();
                     errorText += "<h6><u>Question " + questionNumber + "</u> </h6>";
@@ -1054,7 +1172,6 @@ $(document).on("click", "#next", function() {
         }
     });
 
-
     if ($.trim(errorText).length <= 0) {
         $(".section-1").hide();
         $("form").append($("#setting").clone());
@@ -1062,27 +1179,37 @@ $(document).on("click", "#next", function() {
     } else {
         $("#exampleModalCenter")
             .find("#exampleModalLongTitle")
-            .html('<img src="images/error.png"/> Error!');
+            .html(`<img src="images/error.png"/> Error!`);
         $("#exampleModalCenter").find(".modal-body").html(errorText);
         $("#exampleModalCenter")
             .find(".modal-footer")
             .html(
-                '<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>'
+                `<button type="button" class="btn btn-outline-secondary btn-sm" data-dismiss="modal">Close</button>`
             );
         $("#exampleModalCenter").find("#save-changes").hide();
-
         $("#exampleModalCenter").modal("show");
+    }
+});
+
+$(document).on("change", "div.question-container input.form-check-input", function() {
+    if ($(this).prop("checked") == true) {
+        if ($(this).parents(".card-box-alert").find(".label-alert").length > 1) {
+            $(this).parents(".card-box-alert").find(".label-alert.correct-choice-error").remove();
+        } else if ($(this).parents(".card-box-alert").find(".label-alert").length == 1) {
+            $(this).parents(".card-box-alert").find(".label-alert.correct-choice-error").remove();
+            $(this).parents("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
+        }
     }
 });
 /********************************  Add Text Ends *************************************/
 
-
 /***********************************  Submit Training *********************************/
 /**
- * Event to submit form
+ * @Event to submit form
  */
 $(document).on("click", "#submit", function() {
-    $("#submit").prop('disabled', true);
+    $("#submit").prop("disabled", true);
+    $(".body-outer").before(loader);
     submitForm();
 });
 
@@ -1090,30 +1217,36 @@ $(document).on("click", "#submit", function() {
  * Method to fetch localization sting
  */
 async function getStringKeys() {
-    Localizer.getString('quizTitle').then(function(result) {
-        $('#quiz-title').attr({ 'placeholder': result });
+    Localizer.getString("quizTitle").then(function(result) {
+        $("#quiz-title").attr({
+            "placeholder": result
+        });
     });
 
-    Localizer.getString('quizDescription').then(function(result) {
-        $('#quiz-description').attr({ 'placeholder': result });
+    Localizer.getString("quizDescription").then(function(result) {
+        $("#quiz-description").attr({
+            "placeholder": result
+        });
     });
 
-    Localizer.getString('enterTheQuestion').then(function(result) {
-        $('#question-title').attr({ 'placeholder': result });
+    Localizer.getString("enterTheQuestion").then(function(result) {
+        $("#question-title").attr({
+            "placeholder": result
+        });
         questionTitleKey = result;
     });
 
-    Localizer.getString('option', '').then(function(result) {
+    Localizer.getString("option", "").then(function(result) {
         optionKey = result;
     });
-    Localizer.getString('dueIn', ' 1 week, ', 'Correct answer shown after every question').then(function(result) {
+    Localizer.getString("dueIn", " 1 week ", "").then(function(result) {
         settingText = result;
-        $('#due').text(settingText);
+        $("#due").text(settingText);
     });
 
-    Localizer.getString('addMoreOptions').then(function(result) {
+    Localizer.getString("addMoreOptions").then(function(result) {
         addMoreOptionsKey = result;
-        $('.add-options').html(`<svg role="presentation" focusable="false" viewBox="8 8 16 16" class="cc gs gt tc gv">
+        $(".add-options").html(`<svg role="presentation" focusable="false" viewBox="8 8 16 16" class="cc gs gt tc gv">
             <path class="ui-icon__outline cc" d="M23.352 16.117c.098.1.148.217.148.352 0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149h-6v6c0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149.477.477 0 0 1-.352-.149.477.477 0 0 1-.148-.351v-6h-6a.477.477 0 0 1-.352-.149.48.48 0 0 1-.148-.351c0-.135.05-.252.148-.352A.481.481 0 0 1 10 15.97h6v-6c0-.135.049-.253.148-.352a.48.48 0 0 1 .352-.148c.135 0 .252.05.352.148.098.1.148.216.148.352v6h6c.135 0 .252.05.352.148z">
             </path>
             <path class="ui-icon__filled gr" d="M23.5 15.969a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078H17v5.5a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078.965.965 0 0 1-.387-.079.983.983 0 0 1-.535-.535.97.97 0 0 1-.078-.386v-5.5H9.5a.965.965 0 0 1-.387-.078.983.983 0 0 1-.535-.535.972.972 0 0 1-.078-.387 1.002 1.002 0 0 1 1-1H15v-5.5a1.002 1.002 0 0 1 1.387-.922c.122.052.228.124.32.215a.986.986 0 0 1 .293.707v5.5h5.5a.989.989 0 0 1 .707.293c.09.091.162.198.215.32a.984.984 0 0 1 .078.387z">
@@ -1121,168 +1254,242 @@ async function getStringKeys() {
         </svg> ${addMoreOptionsKey}`);
     });
 
-    Localizer.getString('choices').then(function(result) {
+    Localizer.getString("choices").then(function(result) {
         choicesKey = result;
-        $('.choice-label').text(choicesKey);
+        $(".choice-label").text(choicesKey);
     });
 
-    Localizer.getString('checkMe').then(function(result) {
+    Localizer.getString("checkMe").then(function(result) {
         checkMeKey = result;
-        $('.check-me').text(checkMeKey);
-        $('.check-me-title').attr({ "title": checkMeKey });
+        $(".check-me").text(checkMeKey);
+        $(".check-me-title").attr({
+            "title": checkMeKey
+        });
     });
 
-    Localizer.getString('next').then(function(result) {
+    Localizer.getString("next").then(function(result) {
         nextKey = result;
-        $('.next-key').text(nextKey);
+        $(".next-key").text(nextKey);
     });
 
-    Localizer.getString('back').then(function(result) {
+    Localizer.getString("back").then(function(result) {
         backKey = result;
-        $('.back-key').text(backKey);
+        $(".back-key").text(backKey);
     });
 
-    Localizer.getString('required').then(function(result) {
+    Localizer.getString("required").then(function(result) {
         requiredKey = result;
-        $('.required-key').text(requiredKey);
+        $(".required-key").text(requiredKey);
     });
 
-    Localizer.getString('dueBy').then(function(result) {
+    Localizer.getString("dueBy").then(function(result) {
         dueByKey = result;
-        $('.due-by-key').text(dueByKey);
+        $(".due-by-key").text(dueByKey);
     });
 
-    Localizer.getString('resultVisibleTo').then(function(result) {
+    Localizer.getString("resultVisibleTo").then(function(result) {
         resultVisibleToKey = result;
-        $('.result-visible-key').text(resultVisibleToKey);
+        $(".result-visible-key").text(resultVisibleToKey);
     });
 
-    Localizer.getString('resultEveryone').then(function(result) {
+    Localizer.getString("resultEveryone").then(function(result) {
         resultEveryoneKey = result;
     });
 
-    Localizer.getString('resultMe').then(function(result) {
+    Localizer.getString("resultMe").then(function(result) {
         resultMeKey = result;
     });
 
-    Localizer.getString('correctAnswer', ', ').then(function(result) {
+    Localizer.getString("correctAnswerSetting", ", ").then(function(result) {
         correctAnswerKey = result;
     });
 
-    Localizer.getString('everyone', ', ').then(function(result) {
+    Localizer.getString("everyone", ", ").then(function(result) {
         everyoneKey = result;
-        $('.everyone-key').text(everyoneKey);
+        $(".everyone-key").text(everyoneKey);
     });
 
-    Localizer.getString('onlyMe', ', ').then(function(result) {
+    Localizer.getString("onlyMe", ", ").then(function(result) {
         onlyMeKey = result;
-        $('.onlyme-key').text(onlyMeKey);
+        $(".onlyme-key").text(onlyMeKey);
     });
 
-    Localizer.getString('showCorrectAnswer').then(function(result) {
+    Localizer.getString("showCorrectAnswer").then(function(result) {
         showCorrectAnswerKey = result;
-        $('.show-correct-key').text(showCorrectAnswerKey);
+        $(".show-correct-key").text(showCorrectAnswerKey);
     });
 
-    Localizer.getString('answerCannotChange').then(function(result) {
+    Localizer.getString("allowMultipleAttemptKey").then(function(result) {
+        allowMultipleAttemptKey = result;
+        $(".allow-multiple-attempt").text(allowMultipleAttemptKey);
+    });
+
+    Localizer.getString("assigneeTakeMultipleTraining").then(function(result) {
+        assigneeTakeMultipleTraining = result;
+        $(".allow-multiple-change-key").text(assigneeTakeMultipleTraining);
+    });
+
+    Localizer.getString("answerCannotChange").then(function(result) {
         answerCannotChangeKey = result;
-        $('.answer-cannot-change-key').text(answerCannotChangeKey);
+        $(".answer-cannot-change-key").text(answerCannotChangeKey);
     });
 
-    Localizer.getString('training_title').then(function(result) {
-        $('#training-title').attr('placeholder', result)
+    Localizer.getString("training_title").then(function(result) {
+        $("#training-title").attr("placeholder", result);
     });
 
-    Localizer.getString('training_description').then(function(result) {
-        $('#training-description').attr('placeholder', result);
+    Localizer.getString("training_description").then(function(result) {
+        $("#training-description").attr("placeholder", result);
     });
 
-    Localizer.getString('cover_image').then(function(result) {
-        $('.cover-image-label').text(result)
+    Localizer.getString("coverImage").then(function(result) {
+        $(".cover-image-label").text(result);
+        coverImageKey = result;
     });
 
-    Localizer.getString('tap_upload_image').then(function(result) {
-        $('.tap-upload-label').text(result);
+    Localizer.getString("tap_upload_image").then(function(result) {
+        $(".tap-upload-label").text(result);
+        uploadImageLabelKey = result;
     });
 
-    Localizer.getString('tap_upload_file').then(function(result) {
-        $('.tap-upload-files-label').text(result);
+    Localizer.getString("tap_upload_file").then(function(result) {
+        $(".tap-upload-files-label").text(result);
+        uploadFileLabelKey = result;
     });
 
-    Localizer.getString('tap_upload_video').then(function(result) {
-        $('.tap-upload-video-label').text(result);
+    Localizer.getString("tap_upload_video").then(function(result) {
+        $(".tap-upload-video-label").text(result);
+        uploadVideoLabelKey = result;
     });
 
-    Localizer.getString('dueBy').then(function(result) {
-        $('.due-by-label').text(result);
+    Localizer.getString("dueBy").then(function(result) {
+        $(".due-by-label").text(result);
     });
 
-    Localizer.getString('add_content').then(function(result) {
-        $('.add-content-label').text(result);
+    Localizer.getString("addContent").then(function(result) {
+        $(".add-content-label").text(result);
+        addContentKey = result;
     });
 
-    Localizer.getString('photo').then(function(result) {
-        $('.photo-label').text(result);
+    Localizer.getString("photo").then(function(result) {
+        $(".photo-label").text(result);
     });
 
-    Localizer.getString('video').then(function(result) {
-        $('.video-label').text(result);
+    Localizer.getString("video").then(function(result) {
+        $(".video-label").text(result);
     });
 
-    Localizer.getString('document').then(function(result) {
-        $('.document-label').text(result);
+    Localizer.getString("document").then(function(result) {
+        $(".document-label").text(result);
     });
 
-    Localizer.getString('text').then(function(result) {
-        $('.text-label').text(result);
-        $('.text-label-placeholder').text(result);
+    Localizer.getString("text").then(function(result) {
+        $(".text-label").text(result);
+        $(".text-label-placeholder").text(result);
     });
 
-    Localizer.getString('quiz').then(function(result) {
-        $('.quiz-label').text(result);
+    Localizer.getString("quiz").then(function(result) {
+        $(".quiz-label").text(result);
     });
 
-    Localizer.getString('done').then(function(result) {
-        $('.done-label').text(result);
+    Localizer.getString("done").then(function(result) {
+        $(".done-label").text(result);
     });
 
-    Localizer.getString('tap_upload_photo').then(function(result) {
-        $('.tap-upload-label').text(result);
+    Localizer.getString("tap_upload_photo").then(function(result) {
+        $(".tap-upload-label").text(result);
+        uploadImageLabelKey = result;
     });
 
-    Localizer.getString('upload_photo').then(function(result) {
-        $('.upload-photo-label').text(result);
+    Localizer.getString("upload_photo").then(function(result) {
+        $(".upload-photo-label").text(result);
     });
 
-    Localizer.getString('description_content_about').then(function(result) {
-        $('.desc-content-about-placeholder').attr('placeholder', result);
+    Localizer.getString("description_content_about").then(function(result) {
+        $(".desc-content-about-placeholder").attr("placeholder", result);
     });
 
-    Localizer.getString('add_questions').then(function(result) {
-        $('.add-question-label').text(result);
-    })
+    Localizer.getString("addQuestions").then(function(result) {
+        $(".add-question-label").text(result);
+    });
+
+    Localizer.getString("close").then(function(result) {
+        close = result;
+    });
+
+    Localizer.getString("ok").then(function(result) {
+        ok = result;
+    });
+
+    Localizer.getString("uploadCoverImage").then(function(result) {
+        uploadCoverImageKey = result;
+        $(".upload-cover-image-key").text(uploadCoverImageKey);
+    });
+
+    Localizer.getString("trainingDescriptionOptional").then(function(result) {
+        trainingDescriptionOptionalKey = result;
+        $(".training-description-optional-key").attr("placeholder", trainingDescriptionOptionalKey);
+    });
+
+    Localizer.getString("trainingTitle").then(function(result) {
+        trainingTitleKey = result;
+        $(".training-title-key").attr("placeholder", trainingTitleKey);
+    });
+
+    Localizer.getString("clear").then(function(result) {
+        clearKey = result;
+        $(".clear-key").text(clearKey);
+    });
+
+    Localizer.getString("submit").then(function(result) {
+        submitKey = result;
+        $(".submit-key").text(submitKey);
+    });
+
+    Localizer.getString("question").then(function(result) {
+        questionKey = result;
+        $(".question-key").text(questionKey);
+    });
+
+    Localizer.getString("atleastOneContent").then(function(result) {
+        atleastOneContentKey = result;
+        $(".at-least-one-content-key").text(atleastOneContentKey);
+    });
+
+    Localizer.getString("addTitlePlaceholder").then(function(result) {
+        addTitlePlaceholderKey = result;
+    });
+
+    Localizer.getString("addDescriptionPlaceholder").then(function(result) {
+        addDescriptionPlaceholderKey = result;
+    });
 }
 
 /**
  * Method to submit form
  */
 function submitForm() {
+    $("form.sec1").find("div.text-danger.error-msg.at-least-one-content-key").remove();
+    getStringKeys();
     ActionHelper
         .executeApi(request)
         .then(function(response) {
             console.info("GetContext - Response: " + JSON.stringify(response));
-            if ($('.section-2').find('div.card-box:visible').length > 1) {
+            if ($(".section-2").find("div.card-box:visible").length > 0) {
                 createAction(response.context.actionPackageId);
             } else {
-                $('#submit').attr('disabled', true);
-                Localizer.getString('atleast_one_conent').then(function(result) {
-                    $('.section-2').find('div.card-box:visible').before(`<div class="alert alert-danger error-msg">${result}</div>`);
-                });
+                $("#submit").attr("disabled", false);
+                $(".loader-overlay").remove();
+                $(".section-2").after(UxUtils.getAtLeastOneContainerError(atleastOneContentKey));
             }
-        })
-        .catch(function(error) {
-            console.error("GetContext - Error123: " + JSON.stringify(error));
         });
+    /*
+            .catch(function(error) {
+                $("#submit").attr("disabled", false);
+                $(".loader-overlay").remove();
+                $(".section-2").after(UxUtils.getAtLeastOneContainerError(atleastOneContentKey));
+                console.error("GetContext - Error123: " + JSON.stringify(error));
+            })*/
 }
 
 /**
@@ -1290,113 +1497,145 @@ function submitForm() {
  */
 function getQuestionSet() {
     questions = new Array();
-
-    $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
+    $("form div.section-2 #root").find(".section-div").each(function(index, elem) {
         if ($(elem).hasClass("question-section-div") == true) {
-            /* Get Questions */
-            let optionType = ActionHelper.getColumnType('singleselect');
-            let questionId = $(elem).find('span.counter').text();
-            let option = [];
 
-            $(elem).find("div.option-div").each(function(ind, e) {
+            /* Get Questions */
+            let optionType = ActionHelper.getColumnType("singleselect");
+            // let questionId = $(elem).data("id");
+            let questionId = $(elem).find("span.counter").text();
+            let option = [];
+            $(elem).find("div.qna-option").each(function(ind, e) {
                 let count = ind + 1;
                 let optId = "question" + questionId + "option" + count;
-                let optTitle = $("div.section-2 #quest-text-" + questionId).find("#option" + count).val();
-
-                if ($("div.section-2 #quest-text-" + questionId).find("input[type=checkbox]:checked").length > 1) {
-                    optionType = ActionHelper.getColumnType('multiselect');
+                let optTitle = $(elem).find("input#option" + count).val();
+                let optionAttachment = ($(elem).find("textarea.option-image" + count).val()) ? [JSON.parse($(elem).find("textarea.option-image" + count).val())] : [];
+                if ($(elem).find("input.quest-answer:checked").length > 1) {
+                    optionType = ActionHelper.getColumnType("multiselect");
                 } else {
-                    optionType = ActionHelper.getColumnType('singleselect');
+                    optionType = ActionHelper.getColumnType("singleselect");
                 }
-                option.push({ name: optId, displayName: optTitle });
+                option.push({
+                    name: optId,
+                    displayName: optTitle,
+                    attachments: optionAttachment
+                });
             });
-
+            let questionAttachment = ($(elem).find("textarea.question-image").val()) ? [JSON.parse($(elem).find("textarea.question-image").val())] : [];
             let val = {
                 name: questionId.toString(),
-                displayName: $("div.section-2 #quest-text-" + questionId).find("#question-title").val(),
+                displayName: $(elem).find("input.question" + questionId).val(),
                 valueType: optionType,
                 allowNullValue: false,
                 options: option,
+                attachments: questionAttachment,
             };
-
-
             questions.push(val);
-
         } else if ($(elem).hasClass("text-section-div") == true) {
-
             /*  Get Text  */
-            let optionType = ActionHelper.getColumnType('largetext');
+            let optionType = ActionHelper.getColumnType("largetext");
             let option = [];
-            let optId = $(elem).find('span.counter').text();
-            let optTitle = $(elem).find('textarea').val();
-
-            option.push({ name: optId, displayName: optTitle });
-
+            let optId = index; // $(elem).find("span.counter").text();
+            let optTitle = $(elem).find("textarea.textarea-text").val();
+            let optDescription = $(elem).find("textarea.textarea-text-description").val();
+            option.push({
+                name: optId,
+                displayName: optDescription
+            });
             let val = {
-                name: optId.toString(),
+                name: "text-" + optId.toString(),
                 displayName: optTitle,
+                description: optDescription,
                 valueType: optionType,
                 allowNullValue: false,
                 options: option,
+                attachments: [],
             };
-
             questions.push(val);
         } else if ($(elem).hasClass("photo-section-div") == true) {
             /* Photo */
-            let optionType = ActionHelper.getColumnType('largetext');
+            let optionType = ActionHelper.getColumnType("largetext");
             let option = [];
-            let optId = $(elem).find('span.counter').text();
-            let optTitle = $(elem).find('textarea').val();
-
-            let displayNameArr = { 'description': optTitle, 'attachmentId': $(elem).find('textarea#attachment-id').val() };
-            option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
-
+            let optId = index; // $(elem).find("span.counter").text();
+            let optTitle = $(elem).find("textarea.textarea-photo-title").val();
+            let optDesc = $(elem).find("textarea.textarea-photo-description").val();
+            let optAttachments = ($(elem).find("textarea.textarea-photo-attachments").val()) ? JSON.parse($(elem).find("textarea.textarea-photo-attachments").val()) : [];
+            option.push({
+                name: optId,
+                displayName: optDesc
+            });
             let val = {
-                name: 'photo-' + optId.toString(),
+                name: "photo-" + optId.toString(),
                 displayName: optTitle,
+                description: optDesc,
                 valueType: optionType,
                 allowNullValue: false,
                 options: option,
+                attachments: optAttachments
             };
-
             questions.push(val);
         } else if ($(elem).hasClass("document-section-div") == true) {
             /* Document */
-            let attachmentId = $(elem).find('textarea#attachment-id').val();
-            let optionType = ActionHelper.getColumnType('largetext');
+            let attachmentId = $(elem).find("textarea#attachment-id").val();
+            let optionType = ActionHelper.getColumnType("largetext");
             let option = [];
-            let optId = $(elem).find('span.counter').text();
-            let optTitle = $(elem).find('textarea').val();
+            let optId = index; // $(elem).find("span.counter").text();
+            let optTitle = $(elem).find("textarea.textarea-document").val();
+            let optDesc = $(elem).find("textarea.textarea-document-description").val();
+            let optAttach = [JSON.parse($(elem).find("textarea.textarea-document-attachment").val())];
 
-            let displayNameArr = { 'description': optTitle, 'attachmentId': (attachmentId) };
-            option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
+            let displayNameArr = {
+                "description": optDesc,
+                "attachmentId": (attachmentId)
+            };
+            /* option.push({
+                name: optId,
+                displayName: JSON.stringify(displayNameArr)
+            }); */
+
+            option.push({
+                name: optId,
+                displayName: optDesc
+            });
 
             let val = {
-                name: 'document-' + optId.toString(),
+                name: "document-" + optId.toString(),
                 displayName: optTitle,
+                description: optDesc,
                 valueType: optionType,
                 allowNullValue: false,
                 options: option,
+                attachments: optAttach
             };
-
             questions.push(val);
         } else if ($(elem).hasClass("video-section-div") == true) {
             /* Video */
-            let attachmentId = $(elem).find('textarea#attachment-id').val();
-            let optionType = ActionHelper.getColumnType('largetext');
+            let attachmentId = $(elem).find("textarea#attachment-id").val();
+            let optionType = ActionHelper.getColumnType("largetext");
             let option = [];
-            let optId = $(elem).find('span.counter').text();
-            let optTitle = $(elem).find('textarea').val();
+            let optId = index; // $(elem).find("span.counter").text();
+            let optTitle = $(elem).find("textarea.textarea-video").val();
+            let optDesc = $(elem).find("textarea.textarea-video-description").val();
+            let optAttachment = [JSON.parse($(elem).find("textarea.textarea-video-attachments").val())];
 
-            let displayNameArr = { 'description': optTitle, 'attachmentId': (attachmentId) };
-            option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
+            let displayNameArr = {
+                "description": optDesc,
+                "attachmentId": (attachmentId)
+            };
+            //option.push({ name: optId, displayName: JSON.stringify(displayNameArr) });
+            option.push({
+                name: optId,
+                displayName: optDesc
+            });
 
             let val = {
-                name: 'video-' + optId.toString(),
+                name: "video-" + optId.toString(),
                 displayName: optTitle,
+                description: optDesc,
                 valueType: optionType,
                 allowNullValue: false,
                 options: option,
+                attachments: optAttachment
             };
             questions.push(val);
         }
@@ -1411,16 +1650,15 @@ function getQuestionSet() {
 function getCorrectAnswer() {
     let correctOption = [];
 
-    $("form div.section-2 #root").find('.section-div').each(function(index, elem) {
+    $("form div.section-2 #root").find(".section-div").each(function(index, elem) {
         let correct = [];
-        let questionId = $(elem).find('span.counter').text();
+        let questionId = $(elem).find("span.counter").text();
         if ($(elem).hasClass("question-section-div") == true) {
             $(elem).find("div.option-div").each(function(ind, e) {
                 let count = ind + 1;
-
+                let questionId = $(elem).data("id");
                 if ($(elem).find("#quest-text-" + questionId + " #check" + count).is(":checked")) {
                     let optId = "question" + questionId + "option" + count;
-
                     // if it is checked
                     correct.push(optId);
                 }
@@ -1448,11 +1686,11 @@ function getCorrectAnswer() {
 function createAction(actionPackageId) {
     let trainingTitle = $("#training-title").val();
     let trainingDescription = $("#training-description").val();
-
     let trainingExpireDate = $("input[name='expiry_date']").val();
     let trainingExpireTime = $("input[name='expiry_time']").val();
     let resultVisible = $("input[name='visible_to']:checked").val();
     let showCorrectAnswer = $("#show-correct-answer").is(":checked") ? "Yes" : "No";
+    let allowMultipleAttempt = $("#allow-multiple-attempt").is(":checked") ? "Yes" : "No";
     let questionsSet = getQuestionSet();
     let getcorrectanswers = getCorrectAnswer();
     let properties = [];
@@ -1475,12 +1713,16 @@ function createAction(actionPackageId) {
     }, {
         name: "Attachment Id",
         type: "Text",
-        value: ($('#training-attachment-id').length && $('#training-attachment-id').val().length) ? $('#training-attachment-id').val() : '',
+        value: "",
+    }, {
+        name: "Allow Multiple Attempt",
+        type: "Text",
+        value: allowMultipleAttempt,
     });
     properties.push(getcorrectanswers);
 
     let action = {
-        id: generateGUID(),
+        id: Utils.generateGUID(),
         actionPackageId: actionPackageId,
         version: 1,
         displayName: trainingTitle,
@@ -1488,17 +1730,15 @@ function createAction(actionPackageId) {
         expiryTime: new Date(trainingExpireDate + " " + trainingExpireTime).getTime(),
         customProperties: properties,
         dataTables: [{
-            name: "TestDataSet",
+            name: "TrainingDataSet",
             itemsVisibility: ActionHelper.visibility(),
             rowsVisibility: resultVisible == "Everyone" ? ActionHelper.visibility() : ActionHelper.visibility(),
             itemsEditable: false,
             canUserAddMultipleItems: false,
-            dataColumns: questionsSet
-        }]
+            dataColumns: questionsSet,
+            attachments: saveAttachmentData
+        }],
     };
-
-
-
     let request = ActionHelper.createAction(action);
     ActionHelper
         .executeApi(request)
@@ -1510,35 +1750,26 @@ function createAction(actionPackageId) {
         });
 }
 
-/**
- * Method to generate guid
- */
-function generateGUID() {
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-        let r = (Math.random() * 16) | 0,
-            v = c == "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
-}
-
 /***********************************  Submit Training Ends *******************************/
 
 /**
- * Event when document load is ready
+ * @event when document load is ready
  */
 $(document).ready(function() {
     request = ActionHelper.getContextRequest();
     getStringKeys();
     getTheme();
-    $('.training-clear').hide();
+    $(".training-clear").attr({
+        "style": "display:none;"
+    });
 });
 
 /**
  * Method to get theme color and localization
  */
 async function getTheme() {
-    let response = '';
-    let context = '';
+    let response = "";
+    let context = "";
     ActionHelper.executeApi(request).then(function(res) {
         response = res;
         context = response.context;
@@ -1546,75 +1777,74 @@ async function getTheme() {
 
         let theme = context.theme;
         $("link#theme").attr("href", "css/style-" + theme + ".css");
-
-
-        $('form.sec1').append(formSection);
-        $('form.sec1').append(settingSection);
-        $('form.sec1').append(trainingSectionView);
-        $('form.sec1').after(optionSection);
-        $('form.sec1').after(toggleSection);
+        $("form.sec1").append(formSection);
+        $("form.sec1").append(settingSection);
+        $("form.sec1").append(trainingSectionView);
+        $("form.sec1").after(optionSection);
+        // $("form.sec1").after(toggleSection);
         opt = $("div#option-section .option-div").clone();
-
         let weekDate = new Date(new Date().setDate(new Date().getDate() + 7))
             .toISOString()
             .split("T")[0];
 
-        let weekMonth = new Date(weekDate).toLocaleString('default', { month: 'short' });
+        let weekMonth = new Date(weekDate).toLocaleString("default", {
+            month: "short"
+        });
         let weekD = new Date(weekDate).getDate();
         let weekYear = new Date(weekDate).getFullYear();
         let weekDateFormat = weekMonth + " " + weekD + ", " + weekYear;
-
         let currentTime = (("0" + new Date().getHours()).substr(-2)) + ":" + (("0" + new Date().getMinutes()).substr(-2));
-
 
         /* If Edit back the quiz */
         if (lastSession != null) {
-            let ddtt = ((lastSession.action.customProperties[1].value).split('T'));
-            let dt = ddtt[0].split('-');
-            weekDateFormat = new Date(dt[1]).toLocaleString('default', { month: 'short' }) + " " + dt[2] + ", " + dt[0];
-            let ttTime = (ddtt[1].split('Z')[0]).split(':');
-            currentTime = `${ttTime[0]}:${ttTime[1]}`;
-
-            if (lastSession.action.customProperties[2].value == 'Everyone') {
-                $('input[name="visible_to"][value="Everyone"]').prop("checked", true);
+            let ddtt = ((lastSession.action.customProperties[1].value).split("T"));
+            let dt = ddtt[0].split("-");
+            weekDateFormat = new Date(dt[1]).toLocaleString("default", {
+                month: "short"
+            }) + " " + dt[2] + ", " + dt[0];
+            let ttTime = (ddtt[1].split("Z")[0]).split(":");
+            currentTime = `${ttTime[0]}:${ ttTime[1]}`;
+            if (lastSession.action.customProperties[2].value == "Everyone") {
+                $(`input[name="visible_to"][value="Everyone"]`).prop("checked", true);
             } else {
-                $('input[name="visible_to"][value="Only me"]').prop("checked", true);
+                $(`input[name="visible_to"][value="Only me"]`).prop("checked", true);
             }
 
-            if (lastSession.action.customProperties[3].value == 'Yes') {
-                $('#show-correct-answer').prop("checked", true);
+            if (lastSession.action.customProperties[3].value == "Yes") {
+                $("#show-correct-answer").prop("checked", true);
             } else {
-                $('#show-correct-answer').prop("checked", false);
+                $("#show-correct-answer").prop("checked", false);
             }
 
             /* Quiz Section */
-            $('#quiz-title').val(lastSession.action.displayName);
-            $('#quiz-description').val(lastSession.action.customProperties[0].value);
-
+            $("#quiz-title").val(lastSession.action.displayName);
+            $("#quiz-description").val(lastSession.action.customProperties[0].value);
 
             /* Due Setting String */
-            let end = new Date(weekDateFormat + ' ' + currentTime);
+            let end = new Date(weekDateFormat + " " + currentTime);
             let start = new Date();
             let days = calc_date_diff(start, end);
 
-            let resultVisible = lastSession.action.customProperties[2].value == 'Everyone' ? resultEveryoneKey : resultMeKey;
-            let correctAnswer = lastSession.action.customProperties[3].value == 'Yes' ? correctAnswerKey : '';
+            let resultVisible = lastSession.action.customProperties[2].value == "Everyone" ? resultEveryoneKey : resultMeKey;
+            let correctAnswer = lastSession.action.customProperties[3].value == "Yes" ? correctAnswerKey : "";
 
-            Localizer.getString('dueIn', days, correctAnswer).then(function(result) {
+            Localizer.getString("dueIn", days, correctAnswer).then(function(result) {
                 settingText = result;
-                $('#due').text(settingText);
+                $("#due").text(settingText);
             });
 
         } else {
             $("form.sec1").show();
             $(".section-1").show();
-            $(".section-1-footer").show()
+            $(".section-1-footer").show();
         }
-        $('.form_date input').val(weekDateFormat);
-        $(".form_date").attr({ "data-date": weekDateFormat });
+        $(".form_date input").val(weekDateFormat);
+        $(".form_date").attr({
+            "data-date": weekDateFormat
+        });
 
-        $('.form_time').datetimepicker({
-            language: 'en',
+        $(".form_time").datetimepicker({
+            language: "en",
             weekStart: 1,
             todayBtn: 1,
             autoclose: 1,
@@ -1625,107 +1855,113 @@ async function getTheme() {
             forceParse: 0
         });
 
-        $('.form_time input').val(currentTime);
-        let dateInput = $('input[name="expiry_date"]');
-        let container = $('.bootstrap-iso form').length > 0 ? $('.bootstrap-iso form').parent() : "body";
+        $(".form_time input").val(currentTime);
+        let dateInput = $(`input[name="expiry_date"]`);
+        let container = $(".bootstrap-iso form").length > 0 ? $(".bootstrap-iso form").parent() : "body";
         let options = {
-            format: 'M dd, yyyy',
+            format: "M dd, yyyy",
             container: container,
             todayHighlight: true,
             autoclose: true,
-            orientation: 'top'
+            orientation: "top"
         };
 
         if (lastSession != null) {
             $(".sec1").show();
             $(".section-1").hide();
             $(".section-1-footer").hide();
-            $('.section-2').show();
-            $('div.section-2-footer').show();
+            $(".section-2").show();
+            $("div.section-2-footer").show();
             getStringKeys();
 
-
-
-            $('#training-title').val(lastSession.action.displayName);
-            $('#training-description').val(lastSession.action.customProperties[0].value);
-            $('#training-title-content').text(lastSession.action.displayName);
-            $('#training-description-content').text(lastSession.action.customProperties[0].value);
+            $("#training-title").val(lastSession.action.displayName);
+            $("#training-description").val(lastSession.action.customProperties[0].value);
+            $("#training-title-content").text(lastSession.action.displayName);
+            $("#training-description-content").text(lastSession.action.customProperties[0].value);
 
             /* Check if image upload for training */
-            let req = ActionHelper.getAttachmentInfo(lastSession.action.customProperties[4].value);
-
-            ActionHelper.executeApi(req)
-                .then(function(response) {
-                    console.info("Attachment - Response: " + JSON.stringify(response));
-                    $('#training-title-image').attr('src', `${response.attachmentInfo.downloadUrl}`);
-                    $('#training-img-preview').attr('src', `${response.attachmentInfo.downloadUrl}`);
-                    $('.section-1').find('.training-updated-img').show();
-                    $('.section-1').find('.photo-box').hide();
-                    $('.section-2').find('.img-thumbnail').show();
-                    $('.section-2').find('#training-title-image').show();
-                })
-                .catch(function(error) {
-                    console.error("AttachmentAction - Error: " + JSON.stringify(error));
-                });
-            $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
-            $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
-            $('#cover-image').after('<span name="is_edit" class="training-is_edit" >Edit</span>');
+            if (lastSession.action.dataTables[0].attachments.length > 0) {
+                let req2 = ActionHelper.getAttachmentInfoDraft(lastSession.action.dataTables[0].attachments[0].id);
+                saveAttachmentData.push(lastSession.action.dataTables[0].attachments[0]);
+                ActionHelper.executeApi(req2)
+                    .then(function(response) {
+                        $("#training-title-image").attr("src", `${response.attachmentInfo.downloadUrl}`);
+                        $("#training-title-image").addClass('heightfit');
+                        $("#training-title-image").parent().show();
+                        $("#training-img-preview").attr("src", `${response.attachmentInfo.downloadUrl}`);
+                        $(".section-1").find(".training-updated-img").show();
+                        $(".section-1").find(".photo-box").hide();
+                        $(".section-2").find(".img-thumbnail").show();
+                        $(".section-2").find("#training-title-image").show();
+                        $('.training-clear').show();
+                    })
+                    .catch(function(error) {
+                        console.error("AttachmentAction - Error: sasasa" + JSON.stringify(error));
+                    });
+                $("#cover-image").after(`<textarea name="training_title" class="training-title" style="display:none">${$("#training-title").val()}</textarea>`);
+                $("#cover-image").after(`<textarea name="training_description" class="training-description" style="display:none">${$("#training-description").val()}</textarea>`);
+                // $("#cover-image").after(`<span name="is_edit" class="training-is_edit" >Edit</span>`);
+            }
 
             /* Create Text and Question summary */
             lastSession.action.dataTables.forEach((dataTable) => {
+                let countQuestionno = 1;
+                let countQuestion = 0;
                 dataTable.dataColumns.forEach((data, ind) => {
                     let counter = ind + 1;
-                    if (data.valueType == 'LargeText') {
+                    if (data.valueType == "LargeText") {
                         /* Call Text Section 1 */
-                        let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(' ', 97)) + '...' : data.displayName;
+                        let textTitle = data.displayName.length > 100 ? data.displayName.substr(0, data.displayName.lastIndexOf(" ", 97)) + "..." : data.displayName;
 
                         if (data.name.indexOf("photo") >= 0) {
-                            let photoSec = `<div class="card-box card-bg card-border training-card-section section-div photo-section-div" data-id="text-section-${counter}" id="section-${counter}">
-                                            <div class="form-group">
-                                                <div class="row">
-                                                    <div class="col-12">
-                                                        <div class="hover-btn">
-                                                            <label class="mb-0">
-                                                                <strong><span class="counter">${counter}</span>. <span class="type">Photo</span></strong> 
-                                                            </label>
-                                                            <button type="button" class="close remove-text" data-dismiss="alert">
-                                                                <span aria-hidden="true">
-                                                                    <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                        <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                        <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                        <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                        <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    </svg>
-                                                                </span>
-                                                                <span class="sr-only">Close</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="clearfix"></div>
-                                                        <hr>
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-9">
-                                                        <p class="mb0 photo-description-preview text-justify">${data.displayName}</p>
-                                                    </div>
-                                                    <div class="col-3">
-                                                        <div class="img-thumbnail">
-                                                            <img id="image-sec-${counter}" src="">
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <textarea class="textarea-photo-description d-none"></textarea><textarea id="attachment-id" class="d-none"></textarea>
-                                            <input type="file" id="upload-photo" class="in-t form-control d-none" accept="image/*" src="images/px-img.png" multiple="">
-                                        </div>`;
+                            let uniqueCarouselId = Constants.getUniqueId();
+                            let $carousel = $(`<div id="carouselExampleIndicators${uniqueCarouselId}" class="carousel slide "data-ride="carousel"></div>`);
+                            let $olSection = $(`<ol class="carousel-indicators"></ol>`);
+                            let $carouselInner = $(`<div class="carousel-inner"></div>`);
+                            $carousel.append($olSection);
+                            $carousel.append($carouselInner);
+                            data.attachments.forEach((respData, indx) => {
+                                let $liList = $(`<li data-target="#carouselExampleIndicators${uniqueCarouselId}" data-slide-to="${indx}" class="${indx == 0 ? "active": ""}"></li>`);
+                                $olSection.append($liList);
+                                let getImagedata = ActionHelper.getAttachmentInfoDraft(respData.id);
+                                ActionHelper.executeApi(getImagedata)
+                                    .then(function(response) {
+                                        let $imgDiv = $(UxUtils.getCarousalImages(indx, response.attachmentInfo.downloadUrl));
+                                        $carouselInner.append($imgDiv);
+                                        console.info("Attachment - Response: " + JSON.stringify(response));
+                                    })
+                                    .catch(function(error) {
+                                        console.error("AttachmentAction - Error: " + JSON.stringify(error));
+                                    });
+                            });
+                            $carousel.append(UxUtils.getCarousalPagination(uniqueCarouselId));
+                            let photoDesc = data.options[0].displayName;
+                            let loaderClass = "";
+                            let loaderCss = "";
+                            let loaderButton = "";
+                            if (photoDesc && (photoDesc.split(/\r\n|\r|\n/).length > 2 || photoDesc.length > 200)) {
+                                loaderClass = "show-text";
+                                loaderCss = Constants.getLoadMoreCss();
+                                loaderButton = Constants.getLoadMoreLink();
+                            }
+                            let photoSec = UxUtils.getEditImageSection(counter, data.displayName, photoDesc, JSON.stringify(data.attachments), loaderClass, loaderCss, loaderButton);
+                            $("div.section-2 div#root").append(photoSec);
 
-                            $('div.section-2 div#root').append(photoSec);
-                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
-                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            $(".edit-carasoul-here").append($carousel);
+                            $(".carousel").carousel();
+
+                            if (photoDesc && (photoDesc.split(/\r\n|\r|\n/).length > 2 || photoDesc.length > 200)) {
+                                $("#section-" + counter).find(".photo-description-preview").addClass("show-text");
+                                $("#section-" + counter).find(".photo-description-preview").css({ "-webkit-line-clamp": Constants.webkitLineClampCssCount() });
+                                $("#section-" + counter).find(".photo-description-preview").after(Constants.getLoadMoreLink());
+                            }
+
+                            let dname = Utils.isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = Utils.isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                             if (attachment != undefined) {
-                                $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
+                                $("#text-section-" + counter + " textarea#attachment-id").val(attachment);
 
-                                let attachmentImg = '';
+                                let attachmentImg = "";
                                 $.each(attachment, function(ind, att) {
                                     attachmentImg = att;
                                     return false;
@@ -1735,259 +1971,155 @@ async function getTheme() {
                                 ActionHelper.executeApi(req)
                                     .then(function(response) {
                                         console.info("Attachment - Response: " + JSON.stringify(response));
-                                        $("img#image-sec-" + counter).attr('src', response.attachmentInfo.downloadUrl);
-                                        if (filesAmount > 1)
+                                        $("img#image-sec-" + counter).attr("src", response.attachmentInfo.downloadUrl);
+                                        if (filesAmount > 1) {
                                             $("img#image-sec-" + counter).after(`<span class="file-counter">+${filesAmount-1}</span>`);
+                                        }
                                     })
                                     .catch(function(error) {
                                         console.error("AttachmentAction - Error: " + JSON.stringify(error));
                                     });
 
-
                             }
+
                         } else if (data.name.indexOf("document") >= 0) {
-                            let documentSection = `<div class="card-box card-bg card-border training-card-section section-div document-section-div" data-id="text-section-${counter}" id="section-${counter}">
-                                                    <div class="form-group">
-                                                        <div class="hover-btn">
-                                                            <label class="mb-0">
-                                                                <strong><span class="counter">${counter}</span>. <span class="type">Document</span></strong> 
-                                                            </label>
-                                                            <button type="button" class="close remove-text" data-dismiss="alert">
-                                                                <span aria-hidden="true">
-                                                                    <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                        <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                        <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                        <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                        <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    </svg>
-                                                                </span>
-                                                                <span class="sr-only">Close</span>
-                                                            </button>
-                                                        </div>
-                                                        <div class="clearfix"></div>
-                                                        <hr>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-9">
-                                                            <p class="mb0 document-description-preview text-justify">${data.displayName}</p>
-                                                        </div>
-                                                        <div class="col-3">
-                                                            <div class="img-thumbnail">
-                                                                <img id="image-sec-${counter}" src="images/doc.png">                
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <textarea class="textarea-document" style="display:none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a052fa39-60f3-4bb0-964b-9236dc562852"}</textarea>
-                                                    <input type="file" id="upload-document" accept=".xlsx,.xls,.doc, .docx,.ppt, .pptx,.txt,.pdf" src="images/px-img.png" style="width:100%; height: 180px; display:none">
-                                                </div>`;
-                            $('div.section-2 div#root').append(documentSection);
-                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
-                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
+                            let docDesc = data.options[0].displayName;
+                            let loaderClass = "";
+                            let loaderCss = "";
+                            let loaderButton = "";
+                            if (docDesc && (docDesc.split(/\r\n|\r|\n/).length > 2 || docDesc.length > 200)) {
+                                loaderClass = "show-text";
+                                loaderCss = `-webkit-line-clamp : ${Constants.webkitLineClampCssCount()}`;
+                                loaderButton = Constants.getLoadMoreLink();
+                            }
+                            let documentSection = UxUtils.getEditDownloadSection(counter, data.displayName, data.options[0].displayName, JSON.stringify(data.attachments[0]), Constants.getDocumentIcon(), loaderClass, loaderCss, loaderButton);
+                            $("div.section-2 div#root").append(documentSection);
+                            let dname = Utils.isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
+                            let attachment = Utils.isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
                             if (attachment != undefined) {
-                                $('#section-' + counter + ' textarea#textarea-document').val(attachment);
+                                $("#section-" + counter + " textarea#textarea-document").val(attachment);
                             }
 
                         } else if (data.name.indexOf("video") >= 0) {
-                            let videoSection = `<div class="card-box card-bg card-border training-card-section section-div video-section-div" data-id="text-section-${counter}" id="section-${counter}">
-                                                <div class="form-group">
-                                                    <div class="hover-btn">
-                                                        <label class="mb-0">
-                                                            <strong><span class="counter">${counter}</span>. <span class="type">Video</span></strong> 
-                                                        </label>
-                                                        <button type="button" class="close remove-text" data-dismiss="alert">
-                                                            <span aria-hidden="true">
-                                                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                    <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                    <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                </svg>
-                                                            </span>
-                                                            <span class="sr-only">Close</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="clearfix"></div>
-                                                    <hr>
-                                                    <div class="row">
-                                                        <div class="col-9">
-                                                            <p class="mb0 video-description-preview text-justify">${data.displayName}</p>
-                                                        </div>
-                                                        <div class="col-3">
-                                                            <div class="embed-responsive embed-responsive-21by9">
-                                                                <video controls="" class="video" id="video-sec-${counter}" src="">
-                                                                </video>
-                                                            </div>        
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <textarea class="textarea-video d-none"></textarea><textarea id="attachment-id" class="d-none">{"0":"a367aca8-ef8d-4094-b256-4eb3707e911e"}</textarea>
-                                                <input type="file" id="upload-video" accept="video/*" src="images/px-img.png" class="d-none">
-                                            </div>`;
-                            $('div.section-2 div#root').append(videoSection);
-                            let dname = isJson(data.options[0].displayName) ? JSON.parse(data.options[0].displayName) : data.options[0].displayName;
-                            let attachment = isJson(dname.attachmentId) ? JSON.parse(dname.attachmentId) : dname.attachmentId;
-                            if (attachment != undefined) {
-                                $('#text-section-' + counter + ' textarea#attachment-id').val(attachment);
-                                let req = ActionHelper.getAttachmentInfo(attachment[0]);
-                                ActionHelper.executeApi(req)
-                                    .then(function(response) {
-                                        console.info("Attachment - Response: " + JSON.stringify(response));
-                                        $(`#section-${counter}`).find(`#video-sec-${counter}`).attr('src', response.attachmentInfo.downloadUrl);
-                                    })
-                                    .catch(function(error) {
-                                        console.error("AttachmentAction - Error: " + JSON.stringify(error));
-                                    });
+                            let videoId = data.attachments[0].id;
+                            let req = ActionHelper.getAttachmentInfoDraft(videoId);
+                            let videoDesc = data.options[0].displayName;
+                            let videoDownloadURL = "";
+                            let loaderClass = "";
+                            let loaderCss = "";
+                            let loaderButton = "";
+                            if (videoDesc && (videoDesc.split(/\r\n|\r|\n/).length > 2 || videoDesc.length > 200)) {
+                                loaderClass = "show-text";
+                                loaderCss = `-webkit-line-clamp : ${Constants.webkitLineClampCssCount()}`;
+                                loaderButton = Constants.getLoadMoreLink();
                             }
+                            let videoSection = UxUtils.getEditVideoSection(counter, data.displayName, data.options[0].displayName, JSON.stringify(data.attachments[0]), "", loaderClass, loaderCss, loaderButton);
+                            ActionHelper.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: videourl" + JSON.stringify(response));
+                                    videoDownloadURL += response.attachmentInfo.downloadUrl;
+                                    $(`#section-${counter}`).find(`#video-sec-${counter}`).attr("src", videoDownloadURL);
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: videourl" + JSON.stringify(error));
+                                });
+                            $("div.section-2 div#root").append(videoSection);
                         } else {
                             /* text */
-                            let textSection = `<div class="card-box card-bg card-border training-card-section section-div text-section-div" data-id="text-section-${counter}" id="section-${counter}">
-                                                <div class="form-group">
-                                                    <div class="hover-btn">
-                                                        <label class="mb-0"><strong><span class="counter">${counter}</span>. <span class="type">Text</span></strong> </label>
-                                                        <button type="button" class="close remove-text" data-dismiss="alert">
-                                                            <span aria-hidden="true">
-                                                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                    <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                    <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                </svg>
-                                                            </span>
-                                                            <span class="sr-only">Close</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="clearfix"></div>
-                                                    <hr>
-                                                </div>
-                                                <p class="mb0 text-description-preview text-justify">${data.displayName}</p>
-                                                <textarea class="textarea-text d-none">${data.displayName}</textarea>
-                                                <textarea id="training-attachment-id" class="d-none"></textarea>
-                                            </div>`;
-                            $('div.section-2 div#root').append(textSection);
+                            let textDesc = data.options[0].displayName;
+                            let loaderClass = "";
+                            let loaderCss = "";
+                            let loaderButton = "";
+                            if (textDesc && (textDesc.split(/\r\n|\r|\n/).length > 2 || textDesc.length > 200)) {
+                                loaderClass = "show-text";
+                                loaderCss = `-webkit-line-clamp : ${Constants.webkitLineClampCssCount()}`;
+                                loaderButton = Constants.getLoadMoreLink();
+                            }
+                            let textSection = UxUtils.getEditTextContainer(counter, data.displayName, textDesc, loaderClass, loaderCss, loaderButton);
+
+                            $("div.section-2 div#root").append(textSection);
                         }
 
-                    } else if (data.valueType == 'SingleOption' || data.valueType == 'MultiOption') {
+                    } else if (data.valueType == "SingleOption" || data.valueType == "MultiOption") {
+
                         /* Call Question Section 1 */
-                        let optionsCounter = data.options.length != undefined ? numbertowords(data.options.length) : "";
-                        let correct_opt = '';
-                        let opts = '';
+                        let correct = new Array();
+                        let correctOpt = "";
+                        let optionText = "";
+                        let correctInputs = "";
+                        let questionInput = `<input type="hidden" class="question${countQuestionno}" value="${data.displayName}">`;
+                        let questionImagearray = "";
+                        if (data.attachments.length > 0) {
+                            questionImagearray = data.attachments[0];
+                            let req = ActionHelper.getAttachmentInfoDraft(questionImagearray.id);
+                            ActionHelper.executeApi(req)
+                                .then(function(response) {
+                                    console.info("Attachment - Response: question image" + JSON.stringify(response));
+                                    $(".section-2").find(`#${questionImagearray.id}`).attr("src", response.attachmentInfo.downloadUrl);
+                                })
+                                .catch(function(error) {
+                                    console.error("AttachmentAction - Error: question image" + JSON.stringify(error));
+                                });
+                        }
+                        if (questionImagearray) {
+                            questionImagearray = JSON.stringify(questionImagearray);
+                        }
+                        let imageQuestionURL = "";
+                        let optionChecked = "";
+                        let optionAttachments = "";
                         data.options.forEach((opt, inde) => {
-                            let quesAnsArr = $.parseJSON(lastSession.action.customProperties[5].value);
-
-                            if ($.inArray(opt.name, quesAnsArr[ind]) != -1) {
-                                opts += `
-                                        <div class="option-div">
-                                            <div class="form-group">
-                                                <div class="input-group mb-2"> 
-                                                    <div class="input-group-append">
-                                                        <div class="custom-check-outer mt-04">
-                                                            <label class="custom-check  ">
-                                                                <input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes" checked=true>
-                                                                <span class="checkmark"></span>
-                                                            </label>
-                                                        </div>
-                                                    </div>
-                                                    <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>
-                                                    <div class="input-group-append">
-                                                        <span class="input-group-text remove-option input-tpt" style="cursor: pointer;"><svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                            </svg>
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    `;
-                                correct_opt += `<p class="mb0">${opt.displayName}</li>`;
-                            } else {
-                                opts += `<div class="option-div">
-                                        <div class="form-group">
-                                            <div class="input-group mb-2"> 
-                                                <div class="input-group-append">
-                                                    <div class="custom-check-outer mt-04">
-                                                        <label class="custom-check  ">
-                                                        <input type="checkbox" class="form-check-input" id="check${inde + 1}" value="yes">
-                                                        <span class="checkmark"></span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-                                                <input type="text" class="form-control in-t" placeholder="Option ${inde + 1}" aria-label="Option ${inde + 1}" aria-describedby="basic-addon2" id="option${inde + 1}" value="${opt.displayName}"></input>
-                                                <div class="input-group-append">
-                                                    <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
-                                                        <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                            <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                            <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                            <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                            <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                        </svg>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>`;
+                            let count = inde + 1;
+                            let quesAnsArr = $.parseJSON(lastSession.action.customProperties[Constants.getCorrectAnswerIndex()].value);
+                            let imageArray = "";
+                            let imageURL = "";
+                            let styleOptionImage = "d-none";
+                            $(`.opt-image${count}`).parent().find("loader-cover").show();
+                            if (opt.attachments.length > 0) {
+                                styleOptionImage = "";
+                                imageArray = opt.attachments[0];
+                                let req = ActionHelper.getAttachmentInfoDraft(imageArray.id);
+                                ActionHelper.executeApi(req)
+                                    .then(function(response) {
+                                        console.info("Attachment - Response: option url" + JSON.stringify(response));
+                                        imageURL += response.attachmentInfo.downloadUrl;
+                                        $(`.opt-image${count}`).attr("src", response.attachmentInfo.downloadUrl);
+                                        $(`.opt-image${count}`).parent().find("loader-cover").hide();
+                                    })
+                                    .catch(function(error) {
+                                        console.error("AttachmentAction - Error: option url" + JSON.stringify(error));
+                                    });
                             }
-                        });
-                        let questSection = `<div class="card-box card-bg card-border training-card-section section-div question-section-div" data-id="text-section-${counter}" id="section-${counter}">
-                                            <div class="form-group">
-                                                <div class="hover-btn h-32">
-                                                    <label><strong><span class="counter">${counter}</span>. Question with <span class="option-counter"> ${optionsCounter} </span> option </strong> </label>
-                                                    <button type="button" class="close remove-text" data-dismiss="alert">
-                                                        <span aria-hidden="true">
-                                                            <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                            </svg>
-                                                        </span>
-                                                        <span class="sr-only">Close</span>
-                                                    </button>
-                                                </div>
-                                                <div class="clearfix"></div>
-                                                <hr>
-                                            </div>
-                                            <label><strong class="question">${data.displayName}</strong></label>
-                                            <p class="mb0">Correct Answer: 
-                                                <span class="correct-answer">
-                                                    ${correct_opt}
-                                                </span>
-                                            </p>
-    
-                                            <div class="question-inputs" id="quest-text-${counter}" style="display:none">
-                                                <div class="card-box card-border card-bg">
-                                                    <div class="form-group">
-                                                        <div class="input-group mb-2">
-                                                            <div class="input-group-append">
-                                                                <span class="question-number input-group-text input-tpt pl-0 strong" style="cursor: pointer;">2.</span>
-                                                            </div>
-                                                            <input type="text" class="form-control in-t question-title" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title" value="${data.displayName}">
-                                                            <div class="input-group-append">
-                                                                <span class="input-group-text remove-question remove-option-q input-tpt" style="cursor: pointer;" aria-hidden="true">
-                                                                    <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                                        <path d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                        <path d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                        <path d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0"></path>
-                                                                        <path d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0"></path>
-                                                                    </svg>
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex">
-                                                        <div class="ext-flex"></div>
-                                                        <div class="form-group" id="options">
-                                                            <label><strong>Choices</strong></label>
-                                                            ${opts}
-                                                        </div>                 
-                                                    </div>                 
-                                                </div>
-                                            </div>
-                                        </div>`;
+                            if (imageArray) {
+                                optionAttachments += `<textarea class="d-none option-image${count}">${JSON.stringify(imageArray)}</textarea>`;
+                            }
 
-                        $('div.section-2 div#root').append(questSection);
+                            let ifCorrectCheck = "";
+                            let questionOptionId = `question${countQuestionno}option${count}`;
+                            if ($.inArray(opt.name, quesAnsArr[countQuestion]) != -1) {
+                                correctInputs += `<input type="checkbox" id="check${count}" checked>`;
+                                optionChecked += `<input type="checkbox" class="d-none quest-answer" checked>`;
+
+                                // if it is checked
+                                correct.push(questionOptionId);
+                                correctOpt += `<p class="mb0">${opt.displayName}</li>`;
+                                ifCorrectCheck = `&nbsp;<i class="success">${Constants.getDefaultTickIcon()}</i>`;
+                            }
+                            let optionsInputs = `<input type="hidden" class="all_options" id="option${count}" value="${opt.displayName}">`;
+                            let imagePreview = `<img src="${imageURL}" class="opt-image opt-image${count} img-responsive smallfit">`;
+                            optionText += UxUtils.getOptionValue(optionsInputs, imagePreview, opt.displayName, questionOptionId, ifCorrectCheck, styleOptionImage, count);
+
+                        });
+
+                        let questionImage = "";
+                        let hideQuestionImage = "d-none";
+                        if (data.attachments.length > 0) {
+                            hideQuestionImage = "";
+                            questionImage = `<img src="${imageQuestionURL}" id="${questionImagearray.id}" class="question-preview-image question-preview-image heightfit" >`;
+                        }
+                        let questSection1 = UxUtils.getQuestionSection(countQuestionno, optionChecked, questionImage, hideQuestionImage, data.displayName, optionText, questionInput, questionImagearray, optionAttachments, correctInputs);
+                        $("div.section-2 div#root").append(questSection1);
+                        countQuestion++;
+                        countQuestionno++;
                     }
                 });
             });
@@ -1997,58 +2129,44 @@ async function getTheme() {
         getStringKeys();
     });
 }
-
-/**
- * Method to validate the string is json or not
- * @param str string identifier
- */
-function isJson(str) {
-    try {
-        JSON.parse(str);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
 /***********************************  Other Actions *******************************/
 
 /**
- * Event to back button
+ * @event to back button
  */
 $(document).on("click", "#back", function() {
     $(".section-2").hide();
     $(".section-2-footer").hide();
 
+    $("#setting").hide();
+
     $(".section-1").show();
     $(".section-1-footer").show();
-    $('.error-msg').remove();
+    $(".error-msg").remove();
 });
 
 /**
- * Event to back button click from setting page
+ * @event to back button click from setting page
  */
 $(document).on("click", "#back-setting", function() {
-    $('.error-msg').remove();
+    $(".error-msg").remove();
     $(".section-1").show();
     $(".section-1-footer").show();
-
     $("form #setting").hide();
-
-    $('#due').text(settingText);
+    $("#due").text(settingText);
 });
 
 /**
- * Event to next button
+ * @event to next button
  */
-$(document).on('click', '#next1', function() {
-    $('.error-msg').remove();
-    $("input[type='text']").removeClass("danger");
+$(document).on("click", "#next1", function() {
+    $(".error-msg").remove();
+    $(`input[type="text"]`).removeClass("danger");
     $("label.label-alert").remove();
     $("div.card-box-alert").removeClass("card-box-alert").addClass("card-box");
 
     $("form > .section-1")
-        .find("input[type='text']")
+        .find(`input[type="text"]`)
         .each(function() {
             let element = $(this);
             if (element.val() == "") {
@@ -2061,127 +2179,177 @@ $(document).on('click', '#next1', function() {
 
                 if (element.attr("id") == "training-title") {
                     $("#training-title").addClass("danger");
-                    $("#training-title").before(`<label class="label-alert d-block"><small>${requiredKey}</small></label>`);
+                    $("#training-title").before(`<label class="label-alert d-block mb--4">${requiredKey}</label>`);
                 }
             } else {
-                $('.section-1').hide();
-                $('div.section-1-footer').hide();
+                $(".section-1").hide();
+                $("div.section-1-footer").hide();
 
-                $('.section-2').show();
-                $('div.section-2-footer').show();
+                $(".section-2").show();
+                $("div.section-2-footer").show();
 
-                $('#training-title-content').text($('#training-title').val());
-                $('#training-description-content').text($('#training-description').val());
-                if ($('.training-title').length > 0) {
-                    $('.training-title').val($('#training-title').val());
-                } else {
-                    $('#cover-image').after('<textarea name="training_title" class="training-title" style="display:none">' + $('#training-title').val() + '</textarea>');
+                $("#training-title-content").text($("#training-title").val());
+                if ($("#training-description").val()) {
+                    $("#training-description-content").text($("#training-description").val());
                 }
-                if ($('.training-description').length > 0) {
-                    $('.training-description').val($('#training-description').val());
-                    $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+
+                if ($(".training-title").length > 0) {
+                    $(".training-title").val($("#training-title").val());
                 } else {
-                    $('#cover-image').after('<textarea name="training_description" class="training-description" style="display:none">' + $('#training-description').val() + '</textarea>');
+                    $("#cover-image").after(`<textarea name="training_title" class="training-title" style="display:none">${$("#training-title").val()}</textarea>`);
+                }
+                if ($(".training-description").length > 0) {
+                    $(".training-description").val($("#training-description").val());
+                    $("#cover-image").after(`<textarea name="training_description" class="training-description" style="display:none">${$("#training-description").val()}</textarea>`);
+                } else {
+                    $("#cover-image").after(`<textarea name="training_description" class="training-description" style="display:none">${$("#training-description").val()}</textarea>`);
                 }
             }
         });
 
-    let imageCounter = $(".training-card-section").find('input[type="file"]').get(0).files.length;
-    let attachmentRequest = '';
+    let imageCounter = $(".training-card-section").find(`input[type="file"]`).get(0).files.length;
     if (imageCounter > 0) {
+        $(".body-outer").before(loader);
         for (let i = 0; i < imageCounter; i++) {
-            let fileData = $(".training-card-section").find('input[type="file"]').get(0).files[i];
-            let attachment = ActionHelper.attachmentUpload(fileData, fileData['type']);
-            attachmentRequest = ActionHelper.requestAttachmentUplod(attachment);
-
-            ActionHelper.executeApi(attachmentRequest)
-                .then(function(response) {
-                    if ($('#training-attachment-id').length > 0) {
-                        $('#training-attachment-id').val(response.attachmentId);
-                        $('#training-title-content').parent('div.col-12').addClass('col-9').removeClass('col-12');
-                        $('#training-title-content').parents('div.row').find('.col-3').show();
-                    } else {
-                        $('.training-card-section').find('textarea:last').after('<textarea id="training-attachment-id" class="d-none" >' + response.attachmentId + '</textarea>');
-                    }
-                })
-                .catch(function(error) {
-                    console.log("GetContext - Error: " + JSON.stringify(error));
-                });
+            let fileData = $(".training-card-section").find(`input[type="file"]`).get(0).files[i];
         }
+        $(".loader-overlay").remove();
     } else {
-        $('#training-title-content').parent('div.col-9').addClass('col-12').removeClass('col-9');
-        $('#training-title-content').parents('div.row').find('div.col-3').hide();
+        $("#training-title-content").parents("div.col-9").addClass("col-12").removeClass("col-9");
+        $("#training-title-content").parents("div.row").find("div.col-3").hide();
     }
 });
 
 /**
- * Event when training cover image changes
+ * @event when training cover image changes
  */
-$(document).on('change', '#cover-image', function() {
-    $('.error-msg').remove();
-    readURL(this, '#training-img-preview, #training-title-image');
-    $('.photo-box').hide();
-    $('.img-thumbnail').show();
-    $('.training-updated-img').show();
-    $('#training-title-image').show();
-    $('.training-clear').show();
+$(document).on("change", "#cover-image", function() {
+    $(".error-msg").remove();
+    if ($(this).val()) {
+        let urlResponse = readURL(this, "#training-img-preview, #training-title-image", "next1");
+        $(".cover-image-loader").parent().parent().find("span.text-danger.pull-right").remove();
+        if (urlResponse == true) {
+            $(".photo-box").hide();
+            // $(".quiz-updated-img").show();
+            $(".training-updated-img").show();
+            $("#training-title-image").show();
+            $("#training-title-image").parent(".quiz-updated-img").show();
+            $(".training-clear").show();
+            if (!$("#next1").hasClass("disabled")) {
+                $("#next1").addClass("disabled");
+                $("#next1").prepend(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
+            }
+
+            /* Perform image upload for quiz template */
+            let fileData = this;
+            if ($(fileData).val() != "") {
+                $(".cover-image-loader").show();
+                let coverImage = fileData.files[0];
+
+                let attachment = ActionHelper.attachmentUpload(coverImage, coverImage["type"]);
+                let attachmentRequest = {};
+                attachmentRequest = ActionHelper.requestAttachmentUploadDraft(attachment);
+                ActionHelper.executeApi(attachmentRequest)
+                    .then(function(response) {
+                        let attachmentData = {
+                            "name": "training-banner",
+                            "type": "Image",
+                            "id": response.attachmentId
+                        };
+                        saveAttachmentData.push(attachmentData);
+                        $("#next1").removeClass("disabled");
+                        $("#next1").find(`span.spinner-border.spinner-border-sm`).remove();
+                        $("div.section-2").find("div.training-card-section").after(`<textarea id="training-attachment-id" class="d-none">${JSON.stringify(attachmentData)}</textarea>`);
+                        attachmentSet.push(attachmentData);
+                    })
+                    .catch(function(error) {
+                        console.log("GetContext - Error2: " + JSON.stringify(error));
+                    });
+            }
+
+        } else {
+
+            $(".photo-box").show();
+            $(".img-thumbnail").hide();
+            $(".training-updated-img").hide();
+            $("#training-title-image").hide();
+            $(".training-clear").hide();
+
+            $(".cover-image-loader").parent().before(`<span class="text-danger pull-right">Invalid file formate</span><div class="clearfix"></div>`);
+        }
+    }
 });
 
 /**
- * Event when click on clear button on training section
+ * @event when click on clear button on training section
  */
-$(document).on('click', '.training-clear', function() {
-    $('.error-msg').remove();
-    $('.photo-box').show();
-    $('.training-updated-img').hide();
-    $('.training-clear').hide();
-    $('#cover-image').val('');
-    $('.img-thumbnail').hide();
+$(document).on("click", ".training-clear", function() {
+    $(".error-msg").remove();
+    $("div.section-1 .photo-box").show();
+    $("div.section-1 .training-updated-img").hide();
+    $("div.section-1 .training-clear").hide();
+
+    $("#training-img-preview").attr("src", "");
+
+    $("#training-title-image").parent().hide();
+
+    $("#training-attachment-id").remove();
+
+    $("div#section-0 #cover-image").val("");
+    $("div#section-0 .img-thumbnail").hide();
+    $("div#section-0 .img-thumbnail").parents(".rows").addClass("col-12").removeClass("col-9");
 });
 
 /**
- * Event when click on class then open hidden file
+ * @event when click on class then open hidden file
  */
-$(document).on('click', '.upvj', function(event) {
+$(document).on("click", ".upvj", function(event) {
     event.preventDefault();
-    $('.section-2').find('div.card-box:last').find('input[type="file"]').click();
-})
-
+    if ($(this).parents("div.section-1").length > 0) {
+        $(".section-2").find("div.training-card-section:first").find(`
+                                    input[type = "file"]
+                                    `).click();
+    } else {
+        $(".section-2").find("div.training-card-section:last").find(`
+                                    input[type = "file"]
+                                    `).click();
+    }
+});
 
 /***********************************  Other Actions Ends ***************************/
 
-
 /***********************************  Settings ***************************/
 /**
- * Event when change on setting inputs
+ * @event when change on setting inputs
  */
-$(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], .visible-to, #show-correct-answer", function() {
-    let end = new Date($('input[name="expiry_date"]').val() + ' ' + $('input[name="expiry_time"]').val());
+$(document).on("change", `input[name="expiry_date"], input[name="expiry_time"], .visible-to, #show-correct-answer`, function() {
+    let end = new Date($(`input[name="expiry_date"]`).val() + " " + $(`input[name="expiry_time"]`).val());
     let start = new Date();
     let days = calc_date_diff(start, end);
-    $(this).parents('div.row').find('.error-msg').remove();
+    $(this).parents("div.row").find(".error-msg").remove();
     if (days == undefined) {
-        let $errSec = $('<div class="alert alert-danger error-msg"></div>');
-        Localizer.getString('alert_invalid_date_time').then(function(result) {
+        let $errSec = $(` < p class = "text-danger error-msg" > < /p>`);
+        Localizer.getString("alert_invalid_date_time").then(function(result) {
             $errSec.append(result);
         });
-        Localizer.getString('greater_current_date').then(function(result) {
-            $errSec.append(`<p class="mb-0">${result}</p>`);
-        });
-        $(this).parents('div.row').find('div.col-sm-12:first').prepend($errSec);
-        $('#back-setting').parents('a.cursur-pointer').addClass('disabled');
+        $("small.invalid-date-error").prepend($errSec);
+        $("#back-setting").parents("a.cursur-pointer").addClass("disabled");
+        $("#back").addClass("disabled");
+        $("#back").find("span[tabindex=0]").addClass("disabled");
     } else {
-        $('#back-setting').parents('a.cursur-pointer').removeClass('disabled');
-        let resultVisible = $('.visible-to:checked').val() == 'Everyone' ? resultEveryoneKey : resultMeKey;
-        let correctAnswer = $('#show-correct-answer:eq(0)').is(":checked") == true ? correctAnswerKey : '';
-        Localizer.getString('dueIn', days, correctAnswer).then(function(result) {
+        $("#back").removeClass("disabled");
+        $("#back").find("span[tabindex=0]").removeClass("disabled");
+        $("#back-setting").parents("a.cursur-pointer").removeClass("disabled");
+        let resultVisible = $(".visible-to:checked").val() == "Everyone" ? resultEveryoneKey : resultMeKey;
+        let correctAnswer = $("#show-correct-answer:eq(0)").is(":checked") == true ? correctAnswerKey : "";
+        Localizer.getString("dueIn", days, correctAnswer).then(function(result) {
             settingText = result;
+            $("span#due").text(settingText);
         });
     }
 });
 
 /********************************  Settings Ends ***********************/
-
 
 /***********************************  Methods ***************************/
 /**
@@ -2191,12 +2359,12 @@ $(document).on("change", "input[name='expiry_date'], input[name='expiry_time'], 
  */
 function calc_date_diff(start, end) {
     let days = (end - start) / (1000 * 60 * 60 * 24);
-    let hourText = '';
-    let minuteText = '';
+    let hourText = "";
+    let minuteText = "";
 
     if (days > 6) {
         let weeks = Math.ceil(days) / 7;
-        return Math.floor(weeks) + ' week';
+        return Math.floor(weeks) + " week";
     } else {
         if (days < 1) {
             let t1 = start.getTime();
@@ -2207,66 +2375,25 @@ function calc_date_diff(start, end) {
             minsDiff = minsDiff % 60;
 
             if (hourDiff > 1) {
-                hourText = 'hours';
+                hourText = "hours";
             } else {
-                hourText = 'hour';
+                hourText = "hour";
             }
             if (hourDiff > 1) {
-                minuteText = 'minutes';
+                minuteText = "minutes";
             } else {
-                minuteText = 'minute';
+                minuteText = "minute";
             }
             if (hourDiff > 0 && minsDiff > 0) {
-                return hourDiff + ' ' + hourText + ', ' + minsDiff + ' ' + minuteText;
+                return hourDiff + " " + hourText + ", " + minsDiff + " " + minuteText;
             } else if (hourDiff > 0 && minsDiff <= 0) {
-                return hourDiff + ' ' + hourText;
+                return hourDiff + " " + hourText;
             } else if (hourDiff <= 0 && minsDiff > 0) {
-                return minsDiff + ' ' + minuteText;
+                return minsDiff + " " + minuteText;
             }
         } else {
-            return Math.ceil(days) + ' days';
+            return Math.ceil(days) + " days";
         }
-    }
-}
-
-/**
- * Method to get number to words
- * @param num Integer
- */
-function numbertowords(num) {
-    switch (num) {
-        case 1:
-            return "one";
-            break;
-        case 2:
-            return "two";
-            break;
-        case 3:
-            return "three";
-            break;
-        case 4:
-            return "four";
-            break;
-        case 5:
-            return "five";
-            break;
-        case 6:
-            return "six";
-            break;
-        case 7:
-            return "seven";
-            break;
-        case 8:
-            return "eight";
-            break;
-        case 9:
-            return "nine";
-            break;
-        case 10:
-            return "ten";
-            break;
-        default:
-            break;
     }
 }
 
@@ -2276,648 +2403,456 @@ function numbertowords(num) {
  * @param elem object html elem where preview need to show
  */
 function readURL(input, elem) {
+    let fileTypes = ["jpg", "jpeg", "png", "gif", "webp", "jfif"];
+    let isSuccess = false;
+    $(elem).removeClass("heightfit");
+    $(elem).removeClass("widthfit");
+    $(elem).removeClass("smallfit");
     if (input.files && input.files[0]) {
         let reader = new FileReader();
+        let extension = input.files[0].name.split(".").pop().toLowerCase();
+        isSuccess = fileTypes.indexOf(extension) > -1;
+        if (isSuccess) {
+            reader.onload = function(e) {
+                let image = new Image();
+                image.src = e.target.result;
 
-        reader.onload = function(e) {
-            $(elem).attr('src', e.target.result);
+                image.onload = function() {
+                    let imgWidth = this.width;
+                    let imgHeight = this.height;
+                    let divWidth = $(elem).width();
+                    let divHeight = $(elem).height();
+                    $(elem).attr("src", this.src);
+                    let classSelector = "";
+                    if (imgHeight > divHeight) {
+                        /* height is greater than width */
+                        classSelector = "heightfit";
+                    } else if (imgWidth > divWidth) {
+                        /* width is greater than height */
+                        classSelector = "widthfit";
+                    } else {
+                        /* small image */
+                        classSelector = "smallfit";
+                    }
+                    $(elem).addClass(classSelector);
+                    let tid = setInterval(() => {
+                        if ($(elem).hasClass(classSelector)) {
+                            $(".loader-cover").hide();
+                            clearInterval(tid);
+                        }
+                    }, Constants.setIntervalTimeHundred());
+                };
+            };
+        } else {
+            return false;
         }
         reader.readAsDataURL(input.files[0]); // convert to base64 string
     }
+    return true;
 }
 
 /***********************************  Methods Ends ***************************/
-
-
 /***********************************  HTML Section ***************************/
+
+/**
+ * @event Onclick Enter or Space Key click on back or submit button
+ */
+$(document).on("keydown", "div[tabindex=0] , span[tabindex=0] , a[tabindex=0]", function(e) {
+    let key = e.which;
+    if (key === 13 || key === 32) {
+        e.preventDefault();
+        if ($(this).attr("role") == "checkbox") {
+            $(this).find("input[type=checkbox]").click();
+        }
+
+        if ($(this).attr("role") == "button") {
+            if ($(this).data("id") == "back" && $(this).hasClass("disabled")) {
+                return false;
+            }
+            $("#" + $(this).data("id")).click();
+        }
+
+        if ($(this).attr("role") == "input") {
+            $(".quiz-clear").click();
+        }
+        if ($(this).attr("role") == "image" || $(this).attr("role") == "doc") {
+            if ($(this).parents("div.section-1").length > 0) {
+                $(".section-2").find("div.training-card-section:first").find(`input[type="file"]`).click();
+            } else {
+                $(".section-2").find("div.training-card-section:last").find(`input[type="file"]`).click();
+            }
+        }
+
+        return false;
+    }
+
+});
+
+/**
+ * @event Keydown and Click when question cover image changes
+ */
+$(document).on({
+    keydown: function(e) {
+        let key = e.which;
+        if (key === 13 || key === 32) {
+            e.preventDefault();
+            $(this).click();
+            return false;
+        }
+    },
+    click: function(e) {
+        e.preventDefault();
+        $(this).parents(".input-group").find(`input[type="file"]`).click();
+        return false;
+    }
+}, ".question-image, .option-image");
+
+/**
+ * @event Change when question cover image changes
+ */
+$(document).on("change", `input[name="question_image"]`, function() {
+    $(".invalid-file-question").remove();
+    let urlReturn = readURL(this, $(this).parents("div.form-group-question").find(".question-preview-image"));
+    if (urlReturn == true) {
+        if (!$("#question-done").hasClass("disabled")) {
+            $("#question-done").addClass("disabled");
+            $("#question-done").append(Constants.getDisabledLoader());
+        }
+        $(this).parents("div.form-group-question").find(".question-preview-image").show();
+        $(this).parents("div.form-group-question").find(".question-preview").show();
+        $(".remove-option").hide();
+
+        /* Perform image upload for question image */
+        let fileData = this;
+        if ($(fileData).val() != "") {
+            if (!$("#submit").hasClass("disabled")) {
+                $("#submit").addClass("disabled");
+                $("#submit").prepend(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
+            }
+            let coverImage = fileData.files[0];
+            let attachment = ActionHelper.attachmentUpload(coverImage, coverImage["type"]);
+            let attachmentRequest = ActionHelper.requestAttachmentUploadDraft(attachment);
+            let imgIndex = $(this).attr("id");
+            ActionHelper.executeApi(attachmentRequest)
+                .then(function(response) {
+                    let attachmentData = {
+                        "name": "question-banner-" + imgIndex,
+                        type: "Image",
+                        id: response.attachmentId
+                    };
+                    let selector = $(this).parents(".question-container").attr("id");
+                    if ($("#" + selector).find("#question-attachment-id").length > 0) {
+                        $("#" + selector).find("#question-attachment-id").val(response.attachmentId);
+                        $("#" + selector).find("#question-attachment-set").val(JSON.stringify(attachmentData));
+                    } else {
+                        $(fileData).after(`<textarea id="question-attachment-id" class="d-none" >${response.attachmentId}</textarea>`);
+                        $(fileData).after(`<textarea id="question-attachment-set" class="d-none" >${JSON.stringify(attachmentData)}</textarea>`);
+                    }
+                    $("#submit").removeClass("disabled");
+                    $("#submit").find(`.spinner-border.spinner-border-sm`).remove();
+                    $("#question-done").removeClass("disabled");
+                    $("#question-done").find(Constants.getDisabledLoaderClass()).remove();
+                })
+                .catch(function(error) {
+                    console.log("GetContext - Error3: " + JSON.stringify(error));
+                });
+        }
+    } else {
+        $(".question-preview-image").attr("src", "");
+        $(".question-preview").hide();
+        $(this).parents(".form-group-question").find(".question-preview").before(`<label class="label-alert d-block mb--4 invalid-file-question"><font class="invalid-file-key">${invalidFileFormatKey}</font></label>`);
+        $(this).parents("div.input-group-append").find("#question-attachment-id").remove();
+        $(this).parents("div.input-group-append").find("#question-attachment-set").remove();
+    }
+});
+
+/**
+ * @event Change when option cover image changes
+ */
+$(document).on("change", `input[name="option_image"]`, function() {
+    $(".invalid-file-option").remove();
+    let urlReturn = readURL(this, $(this).parents("div.row").find(".option-preview-image"));
+    $(this).parents("div.row").find(".option-preview-image").show();
+    $(this).parents("div.row").find("div.option-preview").show();
+    if (urlReturn == true) {
+        if (!$("#question-done").hasClass("disabled")) {
+            $("#question-done").addClass("disabled");
+            $("#question-done").append(Constants.getDisabledLoader());
+        }
+        let fileData = this;
+        $(".remove-option").hide();
+        if ($(fileData).val() != "") {
+            if (!$("#submit").hasClass("disabled")) {
+                $("#submit").addClass("disabled");
+                $("#submit").prepend(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
+            }
+            let coverImage = fileData.files[0];
+            let attachment = ActionHelper.attachmentUpload(coverImage, coverImage["type"]);
+            let attachmentRequest = ActionHelper.requestAttachmentUploadDraft(attachment);
+            let imgIndex = $(this).attr("id");
+            ActionHelper.executeApi(attachmentRequest)
+                .then(function(response) {
+                    let attachmentData = {
+                        "name": "option-banner-" + imgIndex,
+                        type: "Image",
+                        id: response.attachmentId
+                    };
+                    let selector = $(this).parents(".row");
+                    if ($(selector).find("textarea#option-attachment-id").length > 0) {
+                        $(selector).find("textarea#option-attachment-id").val(response.attachmentId);
+                        $(selector).find("textarea#option-attachment-set").val(JSON.stringify(attachmentData));
+                    } else {
+                        $(fileData).after(`<textarea id="option-attachment-id" class="d-none" >${response.attachmentId}</textarea>`);
+                        $(fileData).after(`<textarea id="option-attachment-set" class="d-none" >${JSON.stringify(attachmentData)}</textarea>`);
+                    }
+                    $("#submit").removeClass("disabled");
+                    $("#submit").find(`.spinner-border.spinner-border-sm`).remove();
+                    $("#question-done").removeClass("disabled");
+                    $("#question-done").find(Constants.getDisabledLoaderClass()).remove();
+                })
+                .catch(function(error) {
+                    console.log("GetContext - Error4: " + JSON.stringify(error));
+                });
+        }
+    } else {
+        $(".option-preview-image").attr("src", "");
+        $(".option-preview").hide();
+        $(this).parents("div.option-div").prepend(`<label class="label-alert d-block mb--4 invalid-file-option"><font class="invalid-file-key">${invalidFileFormatKey}</font></label>`);
+        $(this).parents("div.option-div").find("#question-attachment-id").remove();
+        $(this).parents("div.option-div").find("#question-attachment-set").remove();
+    }
+});
+
+/**
+ * @event Keydown event for correct answer inputs
+ */
+KeyboardUtils.keydownClick(document, ".check-me-title");
+
+/**
+ * @event Click event for correct answer inputs
+ */
+$(document).on({
+    click: function(e) {
+        e.preventDefault();
+        if ($(this).parents("div.col-12").find(`input[type="checkbox"]`).prop("checked") == false) {
+            $(this).parents("div.col-12").find(`input[type="checkbox"]`).prop("checked", true);
+            $(this).addClass("checked-112");
+        } else {
+            $(this).parents("div.col-12").find(`input[type="checkbox"]`).prop("checked", false);
+            $(this).removeClass("checked-112");
+        }
+        return false;
+    }
+}, ".check-me-title");
+
+/**
+ * @event Keydown event for remove options
+ */
+KeyboardUtils.removeOptionKeydownClick(document, ".remove-option-href");
+
+/**
+ * @event Keydown and Click for remove the Question from the section-2
+ */
+KeyboardUtils.keydownClick(document, ".remove-question");
+
+/**
+ * @event Click for remove the Question from the section-2
+ */
+$(document).on({
+    click: function(e) {
+        let element = $(this);
+        $(this).parents(".question-container").find(".confirm-box").remove();
+        $(this).parents(".question-container").find(".question-required-err").remove();
+
+        if ($("div.question-container:visible").length > 1) {
+            $(this).parents(".question-container").find(".add-options").hide();
+            $(this).parents(".question-container").find(".form-group-opt").after(`
+            <div class="confirm-box">
+                <div class="clearfix"></div>
+                <div class="d-flex-alert  mb--8">
+                    <div class="pr--8">
+                        <label class="confirm-box text-danger">Are you sure you want to delete?</label>
+                    </div>
+                    <div class="pl--8 text-right">
+                        <button type="button" class="btn btn-primary-outline btn-sm cancel-question-delete mr--8">Cancel</button>
+                        <button type="button" class="btn btn-primary btn-sm" id="delete-question">Ok</button>
+                    </div>
+                </div>
+            </div>
+        `);
+
+            $([document.documentElement, document.body]).animate({
+                scrollTop: $(this).parents(".question-container").find(".confirm-box").offset().top - 200
+            }, 1000);
+
+            $(this).parents(".question-container").find(".confirm-box #delete-question").focus();
+
+            $(document).on("click", "#delete-question", function() {
+                $(this).parents("div.question-container").remove();
+                let questionCounter;
+                $("div.question-container:visible").each(function(index, elem) {
+                    questionCounter = index + 1;
+                    $(elem).find("span.question-number").text("Question # " + questionCounter);
+                    $(elem).find(`input[name="question_image"]`).attr({
+                        id: "question-image-" + questionCounter
+                    });
+                    $(elem).attr({
+                        id: "question" + questionCounter
+                    });
+                });
+            });
+        } else {
+            $(this).parents("div.question-container")
+                .find("div.d-flex-ques")
+                .after(`<label class="text-danger d-block question-required-err"><font class="mb--4 d-block">For quiz atleast one question is required.</font></label>`);
+
+            $([document.documentElement, document.body]).animate({
+                scrollTop: $(".text-danger.d-block:first").offset().top - 200
+            }, 2000);
+        }
+    }
+}, ".remove-question");
+
+/**
+ * @event Keydown to add the Option under question
+ */
+KeyboardUtils.keydownClick(document, ".add-options");
+
+/**
+ * @event Click to add the Option under question
+ */
+$(document).on({
+    click: function(e) {
+        e.preventDefault();
+        if ($(this).parents("div#options").find(`div.option-div input[type="text"][id^=option]`).length >= 10) {
+            $(this).parents(".question-container").find(".add-options").hide();
+            $(this).parents(".question-container").find(".add-options").after(`<div class="max-option-err-box">${maxTenOptionKey}</div>`);
+
+            $([document.documentElement, document.body]).animate({
+                scrollTop: $(this).parents(".question-container").find(".max-option-err-box").offset().top - 200
+            }, 1000);
+            return false;
+        }
+        $(this).parents(".container").find("div.option-div:last").after(opt.clone());
+
+        let selector = $(this).parents("div.container");
+        let counter = 0;
+        $(selector)
+            .find(`div.option-div div.input-group input[type="text"]`)
+            .each(function(index, elem) {
+                counter = index + 1;
+                $(elem).attr({
+                    placeholder: "Enter your choice",
+                });
+                $(elem).attr({
+                    id: "option" + counter
+                });
+                $(elem)
+                    .parents(".option-div")
+                    .find("input[type='file']")
+                    .attr({
+                        id: "option-image-" + counter
+                    });
+                $(elem)
+                    .parents(".option-div")
+                    .find("input.form-check-input")
+                    .attr({
+                        id: "check" + counter
+                    });
+            });
+        $(".check-me").text(checkMeKey);
+        $(".check-me-title").attr({
+            "title": checkMeKey
+        });
+        $(this).parents(".container").find("div.option-div:last").find("input#option" + counter).focus();
+        return false;
+    }
+}, ".add-options");
 
 /*  HTML Sections  */
 /**
  * Variable contains form section
  */
-let formSection = `<div class="section-1" style="display:none">
-            <div class="container pt-4">
-                <div id="root" class="card-box card-border card-bg">
-                    <div class="form-group">
-                        <input type="Text" placeholder="Training Title" class="in-t input-lg form-control"
-                            id="training-title" />
-                    </div>
-                    <div class="form-group">
-                        <textarea placeholder="Training Description" class="in-t form-control"
-                        id="training-description"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label class="cover-image-label">Cover Image (Optional)</label>
-                        <label class="training-clear cursur-pointer pull-right theme-color">Clear</label>
-                        <div class="relative">
-                            <!-- hide this div after img added -->
-                            <div class="photo-box card card-bg card-border max-min-220 upvj cursur-pointer" >
-                                <span class="tap-upload-label">Tap to upload training cover image</span>
-                            </div>
-                            <!-- show this div after img added -->
-                            <div class="training-updated-img card card-bg card-border max-min-220 upvj cursur-pointer" style="display:none">
-                                <img src="" id="training-img-preview" class="training-updated-img card card-bg card-border updated-img max-min-220 upvj cursur-pointer" >
-                            </div>
-                        </div> 
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
-
-        <div class="footer section-1-footer"  style="display:none">
-            <div class="footer-padd bt">
-                <div class="container ">
-                    <div class="row">
-                        <div class="col-9">
-                            <a class="theme-color cursur-pointer show-setting" id="hide1">
-                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="cc gs gt ha gv"><path class="ui-icon__outline cc" d="M13.82,8.07a.735.735,0,0,1,.5.188l1.438,1.3c.2-.008.4,0,.594.007l1.21-1.25a.724.724,0,0,1,.532-.226,3.117,3.117,0,0,1,.867.226c.469.172,1.3.438,1.328,1.032l.094,1.929a5.5,5.5,0,0,1,.414.422c.594-.007,1.187-.023,1.781-.023a.658.658,0,0,1,.352.117,4.122,4.122,0,0,1,1,2.031.735.735,0,0,1-.188.5l-1.3,1.438c.008.2,0,.4-.007.594l1.25,1.21a.724.724,0,0,1,.226.532,3.117,3.117,0,0,1-.226.867c-.172.461-.438,1.3-1.024,1.328l-1.937.094a5.5,5.5,0,0,1-.422.414c.007.594.023,1.187.023,1.781a.611.611,0,0,1-.117.344A4.1,4.1,0,0,1,18.18,23.93a.735.735,0,0,1-.5-.188l-1.438-1.3c-.2.008-.4,0-.594-.007l-1.21,1.25a.724.724,0,0,1-.532.226,3.117,3.117,0,0,1-.867-.226c-.469-.172-1.3-.438-1.328-1.032l-.094-1.929a5.5,5.5,0,0,1-.414-.422c-.594.007-1.187.023-1.781.023a.611.611,0,0,1-.344-.117A4.1,4.1,0,0,1,8.07,18.18a.735.735,0,0,1,.188-.5l1.3-1.438c-.008-.2,0-.4.007-.594l-1.25-1.21a.724.724,0,0,1-.226-.532,3.117,3.117,0,0,1,.226-.867c.172-.461.446-1.3,1.024-1.328l1.937-.094A5.5,5.5,0,0,1,11.7,11.2c-.007-.594-.023-1.187-.023-1.781a.658.658,0,0,1,.117-.352A4.122,4.122,0,0,1,13.82,8.07ZM12.672,9.617l.023,1.8c.008.312-.859,1.164-1.164,1.18l-1.976.1-.422,1.133,1.289,1.258c.2.2.164.562.164.82a1.781,1.781,0,0,1-.148.844L9.117,18.227l.5,1.1c.6-.008,1.211-.023,1.813-.023.312,0,1.156.859,1.172,1.164l.1,1.976,1.133.422,1.258-1.289c.2-.2.562-.164.82-.164a1.7,1.7,0,0,1,.844.148l1.469,1.321,1.1-.5-.023-1.8c-.008-.312.859-1.164,1.164-1.18l1.976-.1.422-1.133-1.289-1.258c-.2-.2-.164-.562-.164-.82a1.781,1.781,0,0,1,.148-.844l1.321-1.469-.5-1.1c-.6.008-1.211.023-1.813.023-.312,0-1.156-.859-1.172-1.164l-.1-1.976-1.133-.422-1.258,1.289c-.2.2-.562.164-.82.164a1.781,1.781,0,0,1-.844-.148L13.773,9.117ZM16.008,13.5A2.5,2.5,0,1,1,13.5,16,2.531,2.531,0,0,1,16.008,13.5ZM16,14.5a1.5,1.5,0,1,0,1.5,1.461A1.513,1.513,0,0,0,16,14.5Z"></path></svg>
-                                <span id="due"> ${settingText}</span>
-                            </a>
-                        </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
-                                id="next1"> Next</button></div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+let formSection = UxUtils.getLandingContainer(uploadCoverImageKey, trainingTitleKey, trainingDescriptionOptionalKey, coverImageKey, clearKey, settingText, nextKey);
 
 /**
  * Variable contains training section
  */
-let trainingSectionView = `<div class="section-2" style="display:none">
-            <div class="container pt-4">
-                <div id="root" class="">
-                    <div class="card-box card-bg card-border training-card-section">
-                        <div class="row">
-                            <div class="col-9">
-                                <h4 id="training-title-content"></h4>
-                                <p class="mb0 text-justify" id="training-description-content"></p>
-                            </div>
-                            <div class="col-3">
-                                <div class="img-thumbnail" style="display:none">
-                                    <img src="" id="training-title-image" style="display:none">
-                                    <input type="file" placeholder="Upload Cover Image" class="in-t form-control" id="cover-image" accept="image/*" src="images/px-img.png" style="width:100%; height: 180px; display:none"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="container pb-100">
-                <div class="row">
-                    <div class="col-6">
-                        <div class="dropdown">
-                            <button type="button" class="btn btn-primary btn-sm  dropdown-toggle dd-btn" id="add-content" data-toggle="dropdown">
-                                <span class="span1 add-content-label">
-                                    Add Content
-                                </span>
-                                <span class="span2">
-                                    <i data-icon-name="ChevronDown" aria-hidden="true" class="ms-Icon root-43"></i>
-                                </span>    
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li class="cursur-pointer"><a id="add-text"><i data-icon-name="InsertTextBox" aria-hidden="true" class="ms-Icon root-43"></i> <span class="text-label">Text</span></a></li>
-                                <li class="cursur-pointer"><a id="add-photo"><i data-icon-name="PictureFill" aria-hidden="true" class="ms-Icon root-43"></i> <span class="photo-label">Photo</span></a></li>
-                                <li class="cursur-pointer"><a id="add-document"><i data-icon-name="TextDocument" aria-hidden="true" class="ms-Icon root-43"></i> <span class="document-label">Document</span></a></li>
-                                <li class="cursur-pointer"><a id="add-video"><i data-icon-name="Video" aria-hidden="true" class="ms-Icon root-43"></i> <span class="video-label">Video</span></a></li>
-                                <li class="cursur-pointer"><a id="add-questions"><i data-icon-name="BulletedList" aria-hidden="true" class="ms-Icon root-43"></i> <span class="quiz-label">Quiz</span></a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <!-- <div class="col-6"><button type="button" class="btn btn-primary btn-sm btn-block" id="add-questions"><i class="fa fa-question" aria-hidden="true"></i> Add Question</button></div> -->
-                </div>
-            </div>
-        </div>
-        <div class="footer section-2-footer" style="display:none">
-            <div class="footer-padd bt">
-                <div class="container ">
-                    <div class="row">
-                        <div class="col-9">
-                            <a class=" cursur-pointer" id="back">
-                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                                    <path class="ui-icon__outline gr"
-                                        d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                                    </path>
-                                    <path class="ui-icon__filled"
-                                        d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                                    </path>
-                                </svg> Back
-                            </a>
-                        </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right"
-                                id="submit"> Submit</button></div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+let trainingSectionView = UxUtils.getTrainingContentArea(backKey, submitKey, addContentKey);
 
 /**
  * Variable contains question section
  */
-let questionsSection = `<div class="question-section">
-        <div class="container question-container pt-4">
-            <div class="card-box card-border card-bg">
-                <div class="form-group">
-                    <div class="input-group mb-2">
-                        <div class="input-group-append">
-                            <span class="question-number input-group-text input-tpt pl-0 strong" style="cursor: pointer;">1.</span>
-                        </div>
-                        <input type="text" class="form-control in-t pr-35 question-title" placeholder="Enter the question" aria-label="Enter the question" aria-describedby="basic-addon2" id="question-title">
-                        <div class="input-group-append">
-                            <span class="input-group-text remove-question remove-option-q input-tpt" style="cursor: pointer;" aria-hidden="true">
-                                <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                    <path
-                                        d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                    <path
-                                        d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                    <path
-                                        d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
-                                    <path
-                                        d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                </svg>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex">
-                    <div class="ext-flex"></div>
-                    <div class="form-group" id="options">
-                        <label><strong>Choices</strong></label>
-                        <div class="option-div">
-                            <div class="form-group">
-                                <div class="input-group mb-2">
-                                    <div class="input-group-append">
-                                        <div class="custom-check-outer mt-04">
-                                            <label class="custom-check  ">
-                                                <input type="checkbox" class="form-check-input" id="check1" value="yes">
-                                                <span class="checkmark"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control in-t" placeholder="Option 1" aria-label="Option 1" aria-describedby="basic-addon2" id="option1">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
-                                            <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                <path
-                                                    d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                                <path
-                                                    d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                                <path
-                                                    d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
-                                                <path
-                                                    d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="option-div">
-                            <div class="form-group">
-                                <div class="input-group mb-2"> 
-                                    <div class="input-group-append">
-                                        <div class="custom-check-outer mt-04">
-                                            <label class="custom-check">
-                                                <input type="checkbox" class="form-check-input" value="yes" id="check2"> 
-                                                <span class="checkmark"></span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    <input type="text" class="form-control in-t" placeholder="Option 2" aria-label="Option 2" aria-describedby="basic-addon2" id="option2">
-                                    <div class="input-group-append">
-                                        <span class="input-group-text remove-option input-tpt" style="cursor: pointer;"><svg
-                                                viewBox="-40 0 427 427.00131"
-                                                xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                                                <path
-                                                    d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                                <path
-                                                    d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                                <path
-                                                    d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
-                                                <path
-                                                    d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                                            </svg>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="">
-                            <button type="button" class="teams-link add-options"> 
-                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="cc gs gt ha gv">
-                                    <path class="ui-icon__outline cc"
-                                        d="M23.352 16.117c.098.1.148.217.148.352 0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149h-6v6c0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149.477.477 0 0 1-.352-.149.477.477 0 0 1-.148-.351v-6h-6a.477.477 0 0 1-.352-.149.48.48 0 0 1-.148-.351c0-.135.05-.252.148-.352A.481.481 0 0 1 10 15.97h6v-6c0-.135.049-.253.148-.352a.48.48 0 0 1 .352-.148c.135 0 .252.05.352.148.098.1.148.216.148.352v6h6c.135 0 .252.05.352.148z">
-                                    </path>
-                                    <path class="ui-icon__filled gr"
-                                        d="M23.5 15.969a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078H17v5.5a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078.965.965 0 0 1-.387-.079.983.983 0 0 1-.535-.535.97.97 0 0 1-.078-.386v-5.5H9.5a.965.965 0 0 1-.387-.078.983.983 0 0 1-.535-.535.972.972 0 0 1-.078-.387 1.002 1.002 0 0 1 1-1H15v-5.5a1.002 1.002 0 0 1 1.387-.922c.122.052.228.124.32.215a.986.986 0 0 1 .293.707v5.5h5.5a.989.989 0 0 1 .707.293c.09.091.162.198.215.32a.984.984 0 0 1 .078.387z">
-                                    </path>
-                                </svg> Add more options</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
+let questionsSection = UxUtils.getQuestionArea(questionKey, questionTitleKey, checkMeKey);
 
 /**
- * Variable contains add buttn section
+ * Variable contains add button section
  */
-let addQuestionButton = `<div class="container pb-5 question_button">
-                <div class="form-group pb-5">
-                    <button type="button" class="btn btn-primary btn-sm" id="add-questions-same-section"> <svg role="presentation"
-                            focusable="false" viewBox="8 8 16 16" class="cc gs gt wh gv">
-                            <path class="ui-icon__outline cc"
-                                d="M23.352 16.117c.098.1.148.217.148.352 0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149h-6v6c0 .136-.05.253-.148.351a.48.48 0 0 1-.352.149.477.477 0 0 1-.352-.149.477.477 0 0 1-.148-.351v-6h-6a.477.477 0 0 1-.352-.149.48.48 0 0 1-.148-.351c0-.135.05-.252.148-.352A.481.481 0 0 1 10 15.97h6v-6c0-.135.049-.253.148-.352a.48.48 0 0 1 .352-.148c.135 0 .252.05.352.148.098.1.148.216.148.352v6h6c.135 0 .252.05.352.148z">
-                            </path>
-                            <path class="ui-icon__filled gr"
-                                d="M23.5 15.969a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078H17v5.5a1.01 1.01 0 0 1-.613.922.971.971 0 0 1-.387.078.965.965 0 0 1-.387-.079.983.983 0 0 1-.535-.535.97.97 0 0 1-.078-.386v-5.5H9.5a.965.965 0 0 1-.387-.078.983.983 0 0 1-.535-.535.972.972 0 0 1-.078-.387 1.002 1.002 0 0 1 1-1H15v-5.5a1.002 1.002 0 0 1 1.387-.922c.122.052.228.124.32.215a.986.986 0 0 1 .293.707v5.5h5.5a.989.989 0 0 1 .707.293c.09.091.162.198.215.32a.984.984 0 0 1 .078.387z">
-                            </path>
-                        </svg> <span class="add-question-label">Add Questions</span></button>
-                </div>
-            </div>`;
+let addQuestionButton = UxUtils.getAddQuestionButton();
 
 /**
  * Variable contains question footer
  */
-let questionFooter = `<div class="footer question-footer" >
-            <div class="footer-padd bt">
-                <div class="container ">
-                    <div class="row">
-                        <div class="col-9">
-                            <a class=" cursur-pointer" id="back-question">
-                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                                    <path class="ui-icon__outline gr"
-                                        d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                                    </path>
-                                    <path class="ui-icon__filled"
-                                        d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                                    </path>
-                                </svg> Back
-                            </a>
-                        </div>
-                        <div class="col-3 text-right"> 
-                            <button type="button" class="btn btn-primary btn-sm pull-right done-label" id="question-done"> Done</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+let questionFooter = UxUtils.getQuestionAreaFooter();
 
 /**
  * Variable contains option section
  */
-let optionSection = `<div style="display: none;" id="option-section">
-        <div class="option-div">
-            <div class="input-group mb-2">
-                <div class="input-group-append">
-                    <div class="custom-check-outer  mt-04">
-                        <label class="custom-check ">
-                            <input type="checkbox" class="form-check-input" value="yes">
-                            <span class="checkmark"></span>
-                        </label>
-                    </div>
-                </div>
-                <input type="text" class="form-control in-t" placeholder="Option" aria-label="Recipient's username" aria-describedby="basic-addon2" id="option-1">
-                <div class="input-group-append">
-                    <span class="input-group-text remove-option input-tpt" style="cursor: pointer;">
-                        <svg viewBox="-40 0 427 427.00131" xmlns="http://www.w3.org/2000/svg" class="gt gs">
-                            <path
-                                d="m232.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                            <path
-                                d="m114.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                            <path
-                                d="m28.398438 127.121094v246.378906c0 14.5625 5.339843 28.238281 14.667968 38.050781 9.285156 9.839844 22.207032 15.425781 35.730469 15.449219h189.203125c13.527344-.023438 26.449219-5.609375 35.730469-15.449219 9.328125-9.8125 14.667969-23.488281 14.667969-38.050781v-246.378906c18.542968-4.921875 30.558593-22.835938 28.078124-41.863282-2.484374-19.023437-18.691406-33.253906-37.878906-33.257812h-51.199218v-12.5c.058593-10.511719-4.097657-20.605469-11.539063-28.03125-7.441406-7.421875-17.550781-11.5546875-28.0625-11.46875h-88.796875c-10.511719-.0859375-20.621094 4.046875-28.0625 11.46875-7.441406 7.425781-11.597656 17.519531-11.539062 28.03125v12.5h-51.199219c-19.1875.003906-35.394531 14.234375-37.878907 33.257812-2.480468 19.027344 9.535157 36.941407 28.078126 41.863282zm239.601562 279.878906h-189.203125c-17.097656 0-30.398437-14.6875-30.398437-33.5v-245.5h250v245.5c0 18.8125-13.300782 33.5-30.398438 33.5zm-158.601562-367.5c-.066407-5.207031 1.980468-10.21875 5.675781-13.894531 3.691406-3.675781 8.714843-5.695313 13.925781-5.605469h88.796875c5.210937-.089844 10.234375 1.929688 13.925781 5.605469 3.695313 3.671875 5.742188 8.6875 5.675782 13.894531v12.5h-128zm-71.199219 32.5h270.398437c9.941406 0 18 8.058594 18 18s-8.058594 18-18 18h-270.398437c-9.941407 0-18-8.058594-18-18s8.058593-18 18-18zm0 0" />
-                            <path
-                                d="m173.398438 154.703125c-5.523438 0-10 4.476563-10 10v189c0 5.519531 4.476562 10 10 10 5.523437 0 10-4.480469 10-10v-189c0-5.523437-4.476563-10-10-10zm0 0" />
-                        </svg>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>`;
+let optionSection = UxUtils.getOptionArea(checkMeKey);
 
 /**
  * Variable contains text section
  */
-let addTextSection = `<div class="text-section" >
-            <div class="container pt-4">
-                <div id="root" class="">
-                    <div class="card-box card-bg card-border">
-                        <div class="form-group">
-                        <textarea class="in-t form-control text-label-placeholder" id="training-text" placeholder="Text"></textarea>
-                    </div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+let addTextSection = UxUtils.getTextContentArea();
 
 /**
  * Variable contains text footer section
  */
-let addTextFooter = `<div class="footer text-footer" >
-            <div class="footer-padd bt">
-                <div class="container ">
-                    <div class="row">
-                        <div class="col-9">
-                            <a class=" cursur-pointer" id="back-text">
-                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                                    <path class="ui-icon__outline gr"
-                                        d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                                    </path>
-                                    <path class="ui-icon__filled"
-                                        d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                                    </path>
-                                </svg> Back
-                            </a>
-                        </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
-                                id="text-done"> Done</button></div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+let addTextFooter = UxUtils.getTextContentFooter();
 
 /**
  * Variable contains photo section
  */
-let addPhotoSection = `<div class="text-section" >
-            <div class="container pt-4">
-                <div id="root" class="">
-                    <div class="card-box card-bg card-border">
-                        <div class="form-group">
-                            <label class="w-100"><span class="upload-photo-label">Upload Photo</span>   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
-                            <div class="relative">
-                                <div class="photo-box card card-bg card-border max-min-220 upvj" >
-                                    <span class="tap-upload-photo-label">Tap to upload photos</span>
-                                </div>
-                                
-                                <!-- show this div after img added -->
-                                <div class="updated-img card card-bg card-border max-min-220" style="display:none">
-                                    
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <textarea class="in-t form-control desc-content-about-placeholder" id="photo-description" placeholder="Description. What is the content about?"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
+let addPhotoSection = UxUtils.getImageContentArea(addTitlePlaceholderKey, addDescriptionPlaceholderKey, uploadImageLabelKey);
 
 /**
  * Variable contains photo footer section
  */
-let addPhotoFooter = `<div class="footer text-footer" >
-            <div class="footer-padd bt">
-                <div class="container ">
-                    <div class="row">
-                        <div class="col-9">
-                            <a class=" cursur-pointer" id="back-photo">
-                                <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                                    <path class="ui-icon__outline gr"
-                                        d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                                    </path>
-                                    <path class="ui-icon__filled"
-                                        d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                                    </path>
-                                </svg> Back
-                            </a>
-                        </div>
-                        <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
-                                id="photo-done"> Done</button></div>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-
+let addPhotoFooter = UxUtils.getImageContentFooter();
 /**
  * Variable contains video section
  */
-let addVideoSection = `<div class="text-section" >
-    <div class="container pt-4">
-        <div id="root" class="">
-            <div class="card-box card-bg card-border">
-                <div class="form-group">
-                    <label class="w-100">Upload Video   <span class="float-right"><a class="upvj change-link" style="display:none">Change?</a></span></label>
-                    <div class="relative">
-                        <div class="video-box card card-bg card-border max-min-220 upvj">
-                            <span class="tap-upload-video-label">Tap to upload Video</span>
-                        </div>
-                        <div class="updated-video card card-bg card-border max-min-220 upvj" style="display:none">
-                            <div class="embed-responsive embed-responsive-21by9">
-                                <video controls class="video video-section-preview">
-                                </video>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <textarea class="in-t form-control desc-content-about-placeholder" id="video-description" placeholder="Description. What is the content about?"></textarea>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>`;
+let addVideoSection = UxUtils.getVideoContentArea();
 
 /**
  * Variable contains video footer section
  */
-let addVideoFooter = `<div class="footer text-footer" >
-    <div class="footer-padd bt">
-        <div class="container ">
-            <div class="row">
-                <div class="col-9">
-                    <a class=" cursur-pointer" id="back-video">
-                        <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                            <path class="ui-icon__outline gr"
-                                d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                            </path>
-                            <path class="ui-icon__filled"
-                                d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                            </path>
-                        </svg> Back
-                    </a>
-                </div>
-                <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label" id="video-done"> Done</button></div>
-            </div>
-        </div>
-    </div>
-</div>`;
-
-
+let addVideoFooter = UxUtils.getVideoContentFooter();
 /**
  * Variable contains document section
  */
-let addDocumentSection = `<div class="text-section" >
-    <div class="container pt-4">
-        <div id="root" class="">
-            <div class="card-box card-bg card-border">
-                <div class="form-group">
-                    <div class="relative">
-                        <!-- hide this div afte img added -->
-                        <div class="doc-box card card-bg card-border max-min-220 upvj">
-                            <span class="tap-upload-files-label">Tap to upload files</span>
-                        </div>
-                        <!-- show this div afte img added -->
-                        <div class="card-bg card-border p14 doc-name">
-                        </div>
-
-
-                    </div>
-                    <!-- <img src="" id="document-image-preview"> -->
-                </div>
-                <div class="form-group">
-                    <textarea class="in-t form-control desc-content-about-placeholder" id="document-description" placeholder="Description. What is the content about?"></textarea>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>`;
+let addDocumentSection = UxUtils.getDocumentContentArea();
 
 /**
  * Variable contains document footer section
  */
-let addDocumentFooter = `<div class="footer text-footer" >
-    <div class="footer-padd bt">
-        <div class="container ">
-            <div class="row">
-                <div class="col-9">
-                    <a class=" cursur-pointer" id="back-photo">
-                        <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="gt ki gs">
-                            <path class="ui-icon__outline gr"
-                                d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                            </path>
-                            <path class="ui-icon__filled"
-                                d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                            </path>
-                        </svg> Back
-                    </a>
-                </div>
-                <div class="col-3 text-right"> <button type="button" class="btn btn-primary btn-sm pull-right done-label"
-                        id="document-done"> Done</button></div>
-            </div>
-        </div>
-    </div>
-</div>`;
-
-
+let addDocumentFooter = UxUtils.getDocumentContentFooter();
 /**
  * Variable contains setting section
  */
-let settingSection = `<div style="display:none" id="setting">
-        <div class="container pt-4 setting-section">
-            <div class="row">
-                <div class="col-sm-12">
-                    <label><strong class="due-by-key">${dueByKey}</strong></label>
-                </div>
-                <div class="clearfix"></div>
-                <div class="col-6">
-                    <div class="input-group date form_date" data-date="1979-09-16T05:25:07Z" data-date-format="M dd, yyyy" data-link-field="dtp_input1">
-                        <input class="form-control in-t" size="16" name="expiry_date" type="text" value="" readonly>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="input-group date form_time" data-date="" data-date-format="hh:ii" data-link-field="dtp_input3" data-link-format="hh:ii">
-                        <input class="form-control in-t" name="expiry_time" size="16" type="text" value="" readonly>
-                        <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-                        <span class="input-group-addon"><span class="glyphicon glyphicon-time"></span></span>
-                    </div>
-                </div>
-                <div class="clearfix"></div>
-                <div class="d-none">
-                    <div class="col-12">
-                        <label><strong class="result-visible-key">${resultVisibleToKey}</strong></label>
-                    </div>
-                    <div class="clearfix"></div>
-                    <div class="col-1"></div>
-                    <div class="col-11">
-                        <div class="custom-radio-outer">
-                            <label class="custom-radio">
-                                <input type="radio" name="visible_to" class="visible-to" value="Everyone" checked>
-                                <span class="radio-block"></span> <span class="everyone-key">${everyoneKey}</span>
-                            </label>
-                        </div>
-                        <div class="custom-radio-outer">
-                            <label class="custom-radio">
-                                <input type="radio" name="visible_to" class="visible-to" value="Only me"><span
-                                    class="radio-block"></span> <span class="onlyme-key">${onlyMeKey}</span>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="clearfix"></div>
-                </div>
-                <div class="col-12 mt-4">
-                    <div class="input-group mb-2 form-check custom-check-outer">
-                        <label class="custom-check form-check-label">
-                            <input type="checkbox" name="show_correctAnswer" id="show-correct-answer" value="Yes" checked/>
-                            <span class="checkmark"></span>
-                            <strong class="show-correct-key">${showCorrectAnswerKey}</strong><br>
-                        </label>
-                        <br>
-                        <small><span class="answer-cannot-change-key">${answerCannotChangeKey}</span></small>
-                    </div>
-                </div>
-                <div class="clearfix"></div>
-            </div>
-            <div class="footer">
-                <div class="footer-padd bt">
-                    <div class="container ">
-                        <div class="row">
-                            <div class="col-9">
-                                <a class=" cursur-pointer" id="back">
-                                    <svg role="presentation" focusable="false" viewBox="8 8 16 16" class="back-btn">
-                                        <path class="ui-icon__outline gr" d="M16.38 20.85l7-7a.485.485 0 0 0 0-.7.485.485 0 0 0-.7 0l-6.65 6.64-6.65-6.64a.485.485 0 0 0-.7 0 .485.485 0 0 0 0 .7l7 7c.1.1.21.15.35.15.14 0 .25-.05.35-.15z">
-                                        </path>
-                                        <path class="ui-icon__filled" d="M16.74 21.21l7-7c.19-.19.29-.43.29-.71 0-.14-.03-.26-.08-.38-.06-.12-.13-.23-.22-.32s-.2-.17-.32-.22a.995.995 0 0 0-.38-.08c-.13 0-.26.02-.39.07a.85.85 0 0 0-.32.21l-6.29 6.3-6.29-6.3a.988.988 0 0 0-.32-.21 1.036 1.036 0 0 0-.77.01c-.12.06-.23.13-.32.22s-.17.2-.22.32c-.05.12-.08.24-.08.38 0 .28.1.52.29.71l7 7c.19.19.43.29.71.29.28 0 .52-.1.71-.29z">
-                                        </path>
-                                    </svg> <span class="back-key" id="back-setting">${backKey}</span>
-                                </a>
-                            </div>
-                            <div class="col-3">
-                                <button class="btn btn-tpt">&nbsp;</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-
-
+let settingSection = UxUtils.getSettingContentArea(dueByKey, resultVisibleToKey, everyoneKey, onlyMeKey, showCorrectAnswerKey, answerCannotChangeKey, allowMultipleAttemptKey, assigneeTakeMultipleTraining);
 /**
  * Variable contains toggle section
  */
-let toggleSection = `<div class="slideup-content">
-    <div class="row">
-        <div class="col-3">
-            <div id="add-text">
-                <i data-icon-name="InsertTextBox" aria-hidden="true" class="ms-Icon root-43"></i>
 
-                <p>Text</p>
-            </div>
-        </div>
-        <div class="col-3">
-            <div id="add-photo">
-                <i data-icon-name="PictureFill" aria-hidden="true" class="ms-Icon root-43"></i>
-                <p>Photo</p>
-            </div>
-        </div>
-        <div class="col-3">
-            <div id="add-document">
-                <i data-icon-name="TextDocument" aria-hidden="true" class="ms-Icon root-43"></i>
-                <p>Document</p>
-            </div>
-        </div>
-        <div class="col-3">
-            <div id="add-video">
-                <i data-icon-name="Video" aria-hidden="true" class="ms-Icon root-43"></i>
-                <p>Video</p>
-            </div>
-        </div>
-    </div>
-</div>`;
+/**
+ * Variable contains Loader
+ */
+let loader = UxUtils.getLoaderContentArea();
+
+/**
+ * Variable contains Discard content
+ */
+let discardContent = UxUtils.getDiscardContentArea();
 
 /***********************************  HTML Section Ends***************************/

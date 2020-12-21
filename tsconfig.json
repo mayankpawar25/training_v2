@@ -1,18 +1,21 @@
 {
     "compilerOptions": {
-        "outDir": "./output",
-        "target": "es5",
-        "sourceMap": true,
-        "noImplicitAny": false,
-        "resolveJsonModule": true,
-        "esModuleInterop": true,
+        "allowJs": true,
+        "experimentalDecorators": true,
+        "moduleResolution": "node",
+        "target": "es6",
         "lib": [
             "dom",
             "dom.iterable",
             "esnext"
         ]
     },
+    "exclude": [
+        "output",
+        "assets",
+        "node_modules"
+    ],
     "include": [
-        "./src/**/*.ts", "src/common/ActionSdkHelper.js"
+        "./src/**/*.*"
     ]
 }

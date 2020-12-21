@@ -1,4 +1,5 @@
 import * as actionSDK from "@microsoft/m365-action-sdk";
+
 export class Localizer {
     /**
      * Method to get Local string and check contains argument to append or not
@@ -46,13 +47,14 @@ export class ActionHelper {
         return new actionSDK.GetContext.Request();
     }
 
-
     /**
      * Method to exceute api
      * @param request object identifier
      */
     static async executeApi(request) {
-        return await actionSDK.executeApi(request);
+        return await actionSDK.executeApi(request).catch(function (error) {
+            console.error("executeApi - Error: " + JSON.stringify(error));
+        });
     }
 
     /**
@@ -101,8 +103,18 @@ export class ActionHelper {
      * Method to request upload attachment
      * @param attachment objet identifier
      */
-    static requestAttachmentUplod(attachment) {
+    static requestAttachmentUpload(attachment) {
         return new actionSDK.UploadAttachment.Request(attachment, function(status) {
+            console.log("Status: " + status);
+        });
+    }
+
+    /**
+     * Method to request upload attachment as draft
+     * @param attachment objet identifier
+     */
+    static requestAttachmentUploadDraft(attachment) {
+        return new actionSDK.UploadAttachmentDraft.Request(attachment, null, function(status) {
             console.log("Status: " + status);
         });
     }
@@ -111,8 +123,16 @@ export class ActionHelper {
      * Method to get attachment information
      * @param attachmentId string identifier
      */
-    static getAttachmentInfo(attachmentId) {
-        return new actionSDK.GetAttachmentInfo.Request(attachmentId);
+    static getAttachmentInfo(actionId, attachmentId) {
+        return new actionSDK.GetAttachmentInfo.Request(actionId, attachmentId);
+    }
+
+    /**
+     * Method to get attachment information draft
+     * @param attachmentId string identifier
+     */
+    static getAttachmentInfoDraft(attachmentId) {
+        return new actionSDK.GetAttachmentInfoDraft.Request(attachmentId);
     }
 
     /**
@@ -145,7 +165,7 @@ export class ActionHelper {
      * Method to get set attachment preview in summary view
      * @param request object identfier
      * @param questionname string
-     * @param filesAmount Int 
+     * @param filesAmount Int
      * @param $imgThumbnail object contaains html object of image thumbnail
      * @param $col3 object contains html object where preview gets append
      * @param type string such as photo, document, video, question
@@ -153,19 +173,19 @@ export class ActionHelper {
     static setAttachmentPreview(request, questionName, filesAmount, $imgThumbnail, $col3, type) {
         actionSDK.executeApi(request)
             .then(function(response) {
-                if (type == 'photo') {
+                if (type == "photo") {
                     $imgThumbnail.append(`<img class="image-sec" id="${questionName}" src="${response.attachmentInfo.downloadUrl}"></img>`);
                     if (filesAmount > 1) {
                         $imgThumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
                     }
                     $col3.append($imgThumbnail);
-                } else if (type == 'document') {
+                } else if (type == "document") {
                     $imgThumbnail.append(`<img class="image-sec" id="${questionName}" src="images/doc.png"></img>`);
                     if (filesAmount > 1) {
                         $imgThumbnail.append(`<span class="file-counter"> +${filesAmount - 1} </span>`);
                     }
                     $col3.append($imgThumbnail);
-                } else if (type == 'video') {
+                } else if (type == "video") {
                     $imgThumbnail.append(`<div class="embed-responsive embed-responsive-4by3"><video controls="" class="video" id="${questionName}" src="${response.attachmentInfo.downloadUrl}"></video></div>`);
                     $col3.append($imgThumbnail);
                 }
@@ -203,12 +223,12 @@ export class ActionHelper {
      * @param type string identifer
      */
     static getColumnType(type) {
-        if (type == 'multiselect') {
+        if (type == "multiselect") {
             return actionSDK.ActionDataColumnValueType.MultiOption;
-        } else if (type == 'singleselect') {
+        } else if (type == "singleselect") {
             return actionSDK.ActionDataColumnValueType.SingleOption;
-        } else if (type == 'largetext') {
-            return actionSDK.ActionDataColumnValueType.LargeText
+        } else if (type == "largetext") {
+            return actionSDK.ActionDataColumnValueType.LargeText;
         }
     }
 
@@ -226,5 +246,126 @@ export class ActionHelper {
     static createAction(action) {
         return new actionSDK.CreateAction.Request(action);
     }
+
+    /*
+     * @desc Method to return the input is json object
+     * @param str object contains json values
+     */
+    static isJson(str) {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
+
+    static async downloadCSV(actionId, fileName) {
+        let request = new actionSDK.DownloadActionDataRowsResult.Request(actionId, fileName);
+        try {
+            let response = actionSDK.executeApi(request);
+            // Logger.logInfo(`downloadCSV success - Request: ${JSON.stringify(request)} Response: ${JSON.stringify(response)}`);
+            return { success: true };
+        } catch (error) {
+            Logger.logError(`downloadCSV failed, Error: ${error.category}, ${error.code}, ${error.message}`);
+            return { success: false, error: error };
+        }
+    }
+
+    /**
+     * Method to delete action instance
+     * @param actionId action instance id
+     */
+    static async deleteActionInstance(actionId) {
+        let request = new actionSDK.DeleteAction.Request(actionId);
+        let response = await actionSDK.executeApi(request);
+        if (!response.error) {
+            let closeViewRequest = new actionSDK.CloseView.Request();
+
+            actionSDK
+                .executeApi(closeViewRequest)
+                .then(function(batchResponse) {
+                    console.info("BatchResponse: " + JSON.stringify(batchResponse));
+                })
+                .catch(function(error) {
+                    console.error("Error3: " + JSON.stringify(error));
+                });
+
+            return { success: true, updateSuccess: response.success };
+        } else {
+            return { success: false, error: response.error };
+        }
+    }
+
+    /**
+     * Method to update action instance data
+     * @param data object of data we want modify
+     */
+    static async updateActionInstance(actionUpdateInfo) {
+        let request = new actionSDK.UpdateAction.Request(actionUpdateInfo);
+        let response = await actionSDK.executeApi(request);
+        if (!response.error) {
+            let closeViewRequest = new actionSDK.CloseView.Request();
+            actionSDK
+                .executeApi(closeViewRequest)
+                .then(function(batchResponse) {
+                    console.info("BatchResponse: " + JSON.stringify(batchResponse));
+                })
+                .catch(function(error) {
+                    console.error("Error3: " + JSON.stringify(error));
+                });
+            return { success: true, updateSuccess: response.success };
+        } else {
+            return { success: false, error: response.error };
+        }
+    }
+
+    /**
+     * Method to Close the action instance
+     * @param actionId object of action instance id
+     * @param version object of action instance version
+     */
+    static async closeActionInstance(actionId, version) {
+        let actionInstanceUpdateInfo = {
+            id: actionId,
+            version: version,
+            status: actionSDK.ActionStatus.Closed,
+        };
+        let response = {};
+        let request = new actionSDK.UpdateAction.Request(actionInstanceUpdateInfo);
+        await actionSDK.executeApi(request);
+        if (!response.error) {
+            let closeViewRequest = new actionSDK.CloseView.Request();
+            actionSDK
+                .executeApi(closeViewRequest)
+                .then(function(batchResponse) {
+                    console.info("BatchResponse: " + JSON.stringify(batchResponse));
+                })
+                .catch(function(error) {
+                    console.error("Error3: " + JSON.stringify(error));
+                });
+            response = { success: true, updateSuccess: response.success };
+        } else {
+            response = { success: false, error: response.error };
+        }
+        if (response.success == true) {
+            if (response.updateSuccess) {
+                let closeViewRequest = new actionSDK.CloseView.Request();
+                actionSDK
+                    .executeApi(closeViewRequest)
+                    .then(function(batchResponse) {
+                        console.info("BatchResponse: " + JSON.stringify(batchResponse));
+                    })
+                    .catch(function(error) {
+                        console.error("Error3: " + JSON.stringify(error));
+                    });
+            } else {
+                return { success: false, error: response.error };
+            }
+        } else {
+            return { success: false, error: response.error };
+        }
+    }
+
 }
 Localizer.jsonObject = {};
