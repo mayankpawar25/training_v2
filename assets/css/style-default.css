@@ -2757,10 +2757,9 @@ button.close {
     margin-top: -2px;
 }
 
-
-/* .option-sec .card-box:last-child {
+.card-box-question .option-sec .card-box:last-child {
     margin-bottom: 0px !important;
-} */
+}
 
 .content-menu .dropdown-menu a {
     float: left;
@@ -2834,6 +2833,15 @@ button.close {
     animation-duration: 1s;
     animation-direction: alternate;
     animation-iteration-count: 1;
+}
+
+.text-label-placeholder::-webkit-scrollbar {
+    width: 0px;
+}
+
+.footer svg {
+    width: 16px;
+    height: 16px;
 }
 
 @media screen and (max-width: 576px) {
