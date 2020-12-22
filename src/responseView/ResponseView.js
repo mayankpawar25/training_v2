@@ -255,7 +255,6 @@ function createBody() {
         $spDiv.append($sDiv);
         $root.append($card);
     } else {
-        console.log("actionInstance", actionInstance);
         $("div.section-1").show();
         $("div.section-1").append(headSection1);
         $("#section1-training-title").html(actionInstance.displayName);
@@ -291,8 +290,6 @@ function createBody() {
                 let req = ActionHelper.getAttachmentInfo(contextActionId, dataTable.attachments[0].id);
                 ActionHelper.executeApi(req).then(function(response) {
                         actionInstance.dataTables[ind].attachments[0].url = response.attachmentInfo.downloadUrl;
-                        console.log("response:");
-                        console.log(JSON.stringify(response));
                         if (actionInstance.dataTables[ind].attachments[0].url != null) {
                             $("#quiz-title-image").attr("src", actionInstance.dataTables[0].attachments[0].url);
                             getClassFromDimension(response.attachmentInfo.downloadUrl, ".quiz-template-image");
@@ -444,7 +441,6 @@ function createBody() {
         $("#start").addClass("disabled");
         $("#start").prepend(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`);
         let tid = setInterval(() => {
-            //console.log(`${imageCounter} == ${successDownLoadImageCounter}`)
             if (imageCounter == successDownLoadImageCounter) {
                 $("#start").find(".spinner-border").remove();
                 $("#start").removeClass("disabled");
@@ -532,9 +528,7 @@ function createQuestionView(indexNum, questionNumber) {
                 if (question.valueType == "SingleOption") {
                     //add checkbox button
                     question.options.forEach((option) => {
-                        console.log("option radio:");
                         let attachmentURL = option.attachments.length > 0 ? option.attachments[0].url : "";
-                        console.log(option);
                         let $radioOption = getRadioButton(
                             option.displayName,
                             question.name,
@@ -546,8 +540,6 @@ function createQuestionView(indexNum, questionNumber) {
                 } else {
                     question.options.forEach((option) => {
                         let attachmentURL = option.attachments.length > 0 ? option.attachments[0].url : "";
-                        console.log("option check:");
-                        console.log(option);
                         let $radioOption = getCheckboxButton(
                             option.displayName,
                             question.name,
@@ -717,8 +709,6 @@ function loadSummaryView() {
             });
 
             let $mb16Div2 = $(`<div class="mt--16"></div>`);
-            console.log("Object testsing");
-            console.log(row);
             /*  Check Show Correct Answer  */
             if (Object.keys(row).length > 0) {
                 let correctAnswer = actionInstance.customProperties[Constants.getCorrectAnswerIndex()].value;
@@ -731,11 +721,9 @@ function loadSummaryView() {
                     let userAnswerArray = row[i + 1];
                     if ($(val).find(".option-sec input[type='radio']").length > 0) {
                         if (Utils.isJson(correctAnswer)) {
-                            //  console.log("Rahul Correct Ans" + JSON.parse(correctAnswer));
                             correctAnswer = JSON.parse(correctAnswer);
                         }
                         correctAnswerString = correctAnswer[i];
-                        //console.log("correctAnswer[i]" + correctAnswerString);
                         $(val).find(".option-sec input[type='radio']").each(function(optindex, opt) {
                             let optId = $(opt).attr("id");
                             if (correctAnswer[i].includes(optId)) {
@@ -750,7 +738,6 @@ function loadSummaryView() {
                         }
                         correctAnswerString = correctAnswer[i];
                         //correctAnswerString = correctAnswer[questCount].join(",");
-                        //console.log("correctAnswer[i]" + correctAnswer);
                         $(val).find(".option-sec input[type='checkbox']").each(function(optindex, opt) {
                             let optId = $(opt).attr("id");
                             if (correctAnswer[i].includes(optId)) {
@@ -766,7 +753,6 @@ function loadSummaryView() {
                         userAnswerString = userAnswerArray;
                     }
 
-                    //console.log("correctAnswerString", correctAnswerString);
                     if (correctAnswerString == userAnswerString) {
                         score++;
                         $(cardQuestion).find(".result-status").html(UxUtils.getCorrectArea(correctKey));
@@ -775,7 +761,6 @@ function loadSummaryView() {
                     }
                 });
                 let scoreIs = (score / correctAnswer.length) * 100;
-                /* console.log(scoreIs); */
                 if (scoreIs % 1 != 0) {
                     scoreIs = parseFloat(scoreIs).toFixed(2);
                 }
@@ -855,8 +840,6 @@ function addDataRows(actionId) {
  */
 function createTrainingSection(indexNum) {
     /* Create Text and Question summary */
-    console.log("JSON.stringify(actionInstance)");
-    console.log(JSON.stringify(actionInstance));
     actionInstance.dataTables.forEach((dataTable, index) => {
         if (index == 0) {
             let y = Object.keys(dataTable.dataColumns).length;
@@ -950,7 +933,6 @@ function createTrainingSection(indexNum) {
                     }
                 }
                 if ($("#x").text() == $("#y").text()) {
-                    //console.log('testing rahul11111');
                     $(".footer.section-2-footer .check-key").text(doneKey);
                     $(".footer.section-2-footer #next").text(doneKey);
                     $(".footer.section-2-footer #next").addClass("done-key");
@@ -1078,10 +1060,7 @@ $(document).on("click", "#check", function() {
 
         let correctValue = correctAnsArr.join();
         if (actionInstance.customProperties[3].value == "Yes" && $("div.card-box:visible").find("input").parent("label").attr("disabled") !== "disabled") {
-            //console.log('Correct Answer');
-            console.log(actionInstance.customProperties[3]);
             if (correctAnswer == true) {
-                //console.log('correctAnswer= true');
                 $("div.card-box:last").find(".result").remove();
                 $(".result-status").append('<span class="text-success semi-bold">Correct</span>');
 
@@ -1161,8 +1140,6 @@ $(document).on("click", "#next", function() {
     }
     /* Validate */
     if ($("div.card-box:visible").find(".training-type").text() == "Question") {
-        //console.log('actionInstance.customProperties[5].value');
-        console.log(actionInstance.customProperties);
         /* Question Validations */
         let answerKeys = Utils.isJson(actionInstance.customProperties[Constants.getCorrectAnswerIndex()].value) ? JSON.parse(actionInstance.customProperties[Constants.getCorrectAnswerIndex()].value) : actionInstance.customProperties[Constants.getCorrectAnswerIndex()].value;
         let correctAnsArr = [];
@@ -1372,10 +1349,7 @@ $(document).on("click", "#next", function() {
             loadSummaryView();
         }
     }
-    console.log('XXXXXXXXXXXXXX', $("#x").text());
-    console.log('XXXXXXXXXXXXXX', $("#y").text());
     if ($("#x").text() == $("#y").text()) {
-        //console.log('testing rahul11111');
         $(".footer.section-2-footer .check-key").text(doneKey);
         $(".footer.section-2-footer #next").text(doneKey);
         $(".footer.section-2-footer #next").addClass("done-key");
@@ -1416,7 +1390,6 @@ $(document).on("click", "#back", function() {
         pagination--;
     }
     if ($("#x").text() == $("#y").text()) {
-        //console.log('testing rahul11111');
         $(".footer.section-2-footer .check-key").text(doneKey);
         $(".footer.section-2-footer #next").text(doneKey);
         $(".footer.section-2-footer #next").addClass("done-key");
@@ -1442,7 +1415,6 @@ $(document).on("click", ".submit-form", function() {
 });
 
 // *********************************************** OTHER ACTION END***********************************************
-
 /**
  * @description Variable contains head section
  */
