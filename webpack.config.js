@@ -89,4 +89,4 @@ module.exports = env => {
         config.watch = false;
     }
     return config;
-} 
+}
